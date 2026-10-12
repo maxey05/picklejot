@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="home_title">Picklelog</string>
+    <string name="home_title">Picklejot</string>
     <string name="home_match_headline">%1$s · %2$s</string>
     <string name="new_match">Log a match</string>
 
@@ -173,13 +173,13 @@
     <string name="streak_notice_dismiss">Dismiss</string>
     <string name="settings_reminder_label">Streak reminder</string>
     <string name="settings_reminder_supporting">Weekly, only if your streak is at risk</string>
-    <string name="settings_reminder_blocked">Notifications are turned off for Picklelog in system settings, so no reminder can arrive.</string>
+    <string name="settings_reminder_blocked">Notifications are turned off for Picklejot in system settings, so no reminder can arrive.</string>
     <string name="settings_reminder_open_settings">Open notification settings</string>
     <string name="reminder_permission_title">Turn on streak reminders?</string>
     <string name="reminder_permission_confirm">Turn on</string>
-    <string name="reminder_permission_body">Picklelog sends a notification once a week, only when your streak is at risk.</string>
+    <string name="reminder_permission_body">Picklejot sends a notification once a week, only when your streak is at risk.</string>
     <string name="reminder_settings_title">Notifications are off</string>
-    <string name="reminder_settings_body">To get streak reminders, turn on notifications for Picklelog in system settings.</string>
+    <string name="reminder_settings_body">To get streak reminders, turn on notifications for Picklejot in system settings.</string>
     <string name="streak_notification_channel_name">Streak reminders</string>
     <string name="streak_notification_channel_description">A single nudge late in the week when your streak is at risk.</string>
     <string name="streak_notification_title">Keep your streak going</string>
@@ -281,9 +281,9 @@
     <string name="photo_unreadable">Couldn\'t read that photo — it may be damaged or no longer available. The match can still be saved without it.</string>
     <string name="photo_error_dismiss">OK</string>
     <string name="camera_rationale_title">Use your camera?</string>
-    <string name="camera_rationale_body">Picklelog needs camera access only to take this photo. The photo stays on your phone. You can always add photos from your gallery without giving this permission.</string>
+    <string name="camera_rationale_body">Picklejot needs camera access only to take this photo. The photo stays on your phone. You can always add photos from your gallery without giving this permission.</string>
     <string name="camera_settings_title">Camera access is off</string>
-    <string name="camera_settings_body">Camera access was turned off for Picklelog. To take photos here, allow it in Settings. Adding photos from your gallery still works without it.</string>
+    <string name="camera_settings_body">Camera access was turned off for Picklejot. To take photos here, allow it in Settings. Adding photos from your gallery still works without it.</string>
     <string name="permission_continue">Continue</string>
     <string name="permission_not_now">Not now</string>
     <string name="permission_open_settings">Open settings</string>
@@ -304,7 +304,7 @@
     <string name="share_failed">Couldn\'t make the card this time. Your match is safe — try again.</string>
     <string name="share_retry">Try again</string>
     <string name="share_send_failed">Couldn\'t prepare the image to share. Check that your phone has free storage, then try again.</string>
-    <string name="card_brand">Picklelog</string>
+    <string name="card_brand">Picklejot</string>
     <string name="card_caption_with">With</string>
     <string name="card_caption_time">Time</string>
     <string name="card_caption_against">Against</string>
@@ -328,7 +328,7 @@
     <string name="upgrade_photo_limit_title">One photo per match on the free version</string>
     <string name="upgrade_photo_limit_body">Your first photo is attached. Pro removes the limit so you can keep every photo from the day.</string>
     <string name="upgrade_pro_theme_title">That card style is part of Pro</string>
-    <string name="upgrade_pro_theme_body">Pro adds more card styles and takes the Picklelog wordmark off your shared cards.</string>
+    <string name="upgrade_pro_theme_body">Pro adds more card styles and takes the Picklejot wordmark off your shared cards.</string>
     <string name="upgrade_see_pro">See Pro</string>
     <string name="upgrade_not_now">Not now</string>
     <string name="upgrade_got_it">Got it</string>
@@ -338,7 +338,7 @@
     </plurals>
     <string name="cap_banner_reached">You\'ve used all your free matches. Everything you\'ve logged stays yours.</string>
     <string name="cap_banner_dismiss">Dismiss</string>
-    <string name="paywall_title">Picklelog Pro</string>
+    <string name="paywall_title">Picklejot Pro</string>
     <string name="paywall_close">Close</string>
     <string name="paywall_retry_price">Try loading the price again</string>
     <string name="paywall_buy_with_price">Unlock Pro · %1$s</string>
@@ -355,7 +355,7 @@
     <string name="store_unexpected">Something went wrong talking to Google Play. Try again, or use Restore purchase if you\'ve already paid.</string>
     <string name="settings_title">Settings</string>
     <string name="settings_open">Settings</string>
-    <string name="settings_pro_heading">Picklelog Pro</string>
+    <string name="settings_pro_heading">Picklejot Pro</string>
 
     <string name="delete_match_title">Delete this match?</string>
     <string name="delete_match_body">The match and its photos will be permanently deleted. This can\'t be undone.</string>
@@ -376,8 +376,8 @@
         <item quantity="other">Added %1$d matches.</item>
     </plurals>
     <plurals name="backup_import_skipped">
-        <item quantity="one">%1$d match was already in Picklelog and was skipped.</item>
-        <item quantity="other">%1$d matches were already in Picklelog and were skipped.</item>
+        <item quantity="one">%1$d match was already in Picklejot and was skipped.</item>
+        <item quantity="other">%1$d matches were already in Picklejot and were skipped.</item>
     </plurals>
     <plurals name="backup_import_held_back">
         <item quantity="one">%1$d older match was held back because the free version holds %2$d matches. Upgrade to Pro, then import the same file again to add it.</item>
@@ -388,11 +388,11 @@
         <item quantity="other">%1$d photos could not be restored because their files aren\'t on this device.</item>
     </plurals>
     <string name="backup_error_export">Couldn\'t create the export file. Check that your device has free storage, then try again.</string>
-    <string name="backup_error_not_readable">Couldn\'t read that file. It may be incomplete, or it may not be a Picklelog export. Nothing was changed.</string>
-    <string name="backup_error_not_export">That file isn\'t a Picklelog export. Nothing was changed.</string>
-    <string name="backup_error_newer">That export was made by a newer version of Picklelog. Update the app and try again. Nothing was changed.</string>
+    <string name="backup_error_not_readable">Couldn\'t read that file. It may be incomplete, or it may not be a Picklejot export. Nothing was changed.</string>
+    <string name="backup_error_not_export">That file isn\'t a Picklejot export. Nothing was changed.</string>
+    <string name="backup_error_newer">That export was made by a newer version of Picklejot. Update the app and try again. Nothing was changed.</string>
     <string name="backup_error_corrupt">That export file is damaged or has been edited, so it wasn\'t imported. Nothing was changed.</string>
-    <string name="backup_error_too_large">That file is too large to be a Picklelog export. Nothing was changed.</string>
+    <string name="backup_error_too_large">That file is too large to be a Picklejot export. Nothing was changed.</string>
     <string name="backup_error_write">Couldn\'t save the imported matches. Nothing was changed. Check your device\'s free storage, then try again.</string>
     <string name="export_prompt_matches_added">You\'ve logged 25 or more matches since your last backup. Export a copy so they\'re safe.</string>
     <string name="export_prompt_periodic">It\'s been a while since your last backup. Export a copy of your matches to keep them safe.</string>
@@ -418,7 +418,7 @@
     <string name="intro_art_logging_description">A phone showing large Win and Loss buttons, with score, partner and photo as optional extras</string>
     <string name="intro_art_stats_description">A month calendar shaded day by day with a win-loss record and win rate, a streak flame and a rising bar chart</string>
     <string name="intro_art_share_description">A match card showing an 11 to 7 doubles win with a court photo, and a share button</string>
-    <string name="intro_art_privacy_description">The Picklelog duck standing ready with its paddle</string>
+    <string name="intro_art_privacy_description">The Picklejot duck standing ready with its paddle</string>
     <string name="intro_art_win">W</string>
     <string name="intro_art_loss">L</string>
     <string name="intro_art_score">Score</string>
@@ -430,7 +430,7 @@
     <string name="intro_art_win_rate">Win rate</string>
     <string name="intro_art_card_score">11 – 7</string>
     <string name="intro_art_card_meta">Doubles · Sat, Oct 3</string>
-    <string name="intro_art_wordmark">Picklelog</string>
+    <string name="intro_art_wordmark">Picklejot</string>
     <string name="onboarding_continue">Get started</string>
     <string name="onboarding_save_failed">Couldn\'t save your name. Try again.</string>
     <string name="settings_name_save">Save name</string>
@@ -454,7 +454,7 @@
     <string name="about_title">About</string>
     <string name="about_version">Version %1$s</string>
     <string name="about_privacy_heading">Privacy</string>
-    <string name="about_app_name">Picklelog</string>
+    <string name="about_app_name">Picklejot</string>
     <string name="about_mascot_description">Pet the duck</string>
     <string name="about_privacy_point_account">No account and no server.</string>
     <string name="about_privacy_point_device">Your matches, photos and name stay on this device.</string>
@@ -503,18 +503,18 @@
     <string name="privacy_point_tracking">No servers, ads or tracking</string>
     <string name="privacy_point_sharing">Nothing is sold or shared</string>
     <string name="privacy_effective">Effective 3 October 2026</string>
-    <string name="privacy_stores_heading">What Picklelog stores</string>
+    <string name="privacy_stores_heading">What Picklejot stores</string>
     <string name="privacy_stores_body">Your matches, scores, notes, photos, player names, your name and your reminder settings. All of it is saved on this device only. We never receive a copy.</string>
     <string name="privacy_permissions_heading">Permissions</string>
     <string name="privacy_permissions_body">Camera, only when you take a match photo. Notifications, only for the streak reminder you turn on. You can turn either off in system settings.</string>
     <string name="privacy_google_heading">Google services</string>
-    <string name="privacy_google_body">Buying Pro goes through Google Play. Google handles the payment, and Picklelog only learns that Pro is unlocked. Android may also back up app data to your Google account. Both follow Google\'s privacy policy.</string>
+    <string name="privacy_google_body">Buying Pro goes through Google Play. Google handles the payment, and Picklejot only learns that Pro is unlocked. Android may also back up app data to your Google account. Both follow Google\'s privacy policy.</string>
     <string name="privacy_exports_heading">Exports and sharing</string>
     <string name="privacy_exports_body">Export files and share cards are created only when you ask. Where they go next is up to you.</string>
     <string name="privacy_delete_heading">Deleting your data</string>
     <string name="privacy_delete_body">Use Erase all data in Settings, or uninstall the app. Since we hold no copy, there is nothing left for us to delete.</string>
     <string name="privacy_children_heading">Children</string>
-    <string name="privacy_children_body">Picklelog collects no personal data from anyone, including children.</string>
+    <string name="privacy_children_body">Picklejot collects no personal data from anyone, including children.</string>
     <string name="privacy_changes_heading">Changes and contact</string>
-    <string name="privacy_changes_body">If this policy changes, the new version appears here with a new date. For questions, use the developer contact on Picklelog\'s Google Play listing.</string>
+    <string name="privacy_changes_body">If this policy changes, the new version appears here with a new date. For questions, use the developer contact on Picklejot\'s Google Play listing.</string>
 </resources>
