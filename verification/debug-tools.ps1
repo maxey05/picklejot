@@ -1,4 +1,4 @@
-$Package = "com.maxeydev.picklelog"
+$Package = "com.maxeydev.picklejot"
 $Uri = "content://$Package.debugtools"
 
 if (-not (Get-Command adb -ErrorAction SilentlyContinue)) {
