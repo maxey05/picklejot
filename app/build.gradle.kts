@@ -19,11 +19,11 @@ val uploadKeystore =
         ?.takeIf { it.exists() }
 
 android {
-    namespace = "com.maxeydev.picklelog"
+    namespace = "com.maxeydev.picklejot"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.maxeydev.picklelog"
+        applicationId = "com.maxeydev.picklejot"
         minSdk = 26
         targetSdk = 37
         versionCode = libs.versions.appVersionCode.get().toInt()
@@ -55,7 +55,7 @@ android {
                     signingConfigs.getByName("release")
                 } else {
                     logger.warn(
-                        "picklelog: keystore/keystore.properties absent — release build will be " +
+                        "picklejot: keystore/keystore.properties absent — release build will be " +
                             "debug-signed and is NOT uploadable to Play. See keystore/README.md.",
                     )
                     signingConfigs.getByName("debug")
