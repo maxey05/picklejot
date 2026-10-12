@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalUuidApi::class)
 
-package com.maxeydev.picklelog.data.backup
+package com.maxeydev.picklejot.data.backup
 
 import java.time.LocalDate
 import kotlin.uuid.ExperimentalUuidApi
