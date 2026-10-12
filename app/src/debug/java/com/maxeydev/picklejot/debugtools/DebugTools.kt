@@ -1,26 +1,26 @@
 @file:OptIn(ExperimentalUuidApi::class)
 
-package com.maxeydev.picklelog.debugtools
+package com.maxeydev.picklejot.debugtools
 
 import android.content.Context
 import android.os.Bundle
 import androidx.core.os.bundleOf
-import com.maxeydev.picklelog.AppContainer
-import com.maxeydev.picklelog.domain.datetime.AppDate
-import com.maxeydev.picklelog.domain.datetime.AppTime
-import com.maxeydev.picklelog.domain.datetime.atTimeIn
-import com.maxeydev.picklelog.domain.datetime.minusDays
-import com.maxeydev.picklelog.domain.datetime.toAppDateIn
-import com.maxeydev.picklelog.domain.entitlement.EntitlementSignal
-import com.maxeydev.picklelog.domain.match.FilterState
-import com.maxeydev.picklelog.domain.match.GameScore
-import com.maxeydev.picklelog.domain.match.Match
-import com.maxeydev.picklelog.domain.match.MatchFormat
-import com.maxeydev.picklelog.domain.match.MatchResult
-import com.maxeydev.picklelog.domain.match.MatchSort
-import com.maxeydev.picklelog.domain.streak.InsuredStreakEngine
-import com.maxeydev.picklelog.domain.streak.streakInsuranceStart
-import com.maxeydev.picklelog.ui.notification.StreakReminderNotifier
+import com.maxeydev.picklejot.AppContainer
+import com.maxeydev.picklejot.domain.datetime.AppDate
+import com.maxeydev.picklejot.domain.datetime.AppTime
+import com.maxeydev.picklejot.domain.datetime.atTimeIn
+import com.maxeydev.picklejot.domain.datetime.minusDays
+import com.maxeydev.picklejot.domain.datetime.toAppDateIn
+import com.maxeydev.picklejot.domain.entitlement.EntitlementSignal
+import com.maxeydev.picklejot.domain.match.FilterState
+import com.maxeydev.picklejot.domain.match.GameScore
+import com.maxeydev.picklejot.domain.match.Match
+import com.maxeydev.picklejot.domain.match.MatchFormat
+import com.maxeydev.picklejot.domain.match.MatchResult
+import com.maxeydev.picklejot.domain.match.MatchSort
+import com.maxeydev.picklejot.domain.streak.InsuredStreakEngine
+import com.maxeydev.picklejot.domain.streak.streakInsuranceStart
+import com.maxeydev.picklejot.ui.notification.StreakReminderNotifier
 import kotlinx.coroutines.flow.first
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.milliseconds

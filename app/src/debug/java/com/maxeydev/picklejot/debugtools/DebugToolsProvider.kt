@@ -1,11 +1,11 @@
-package com.maxeydev.picklelog.debugtools
+package com.maxeydev.picklejot.debugtools
 
 import android.content.ContentProvider
 import android.content.ContentValues
 import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
-import com.maxeydev.picklelog.PicklelogApplication
+import com.maxeydev.picklejot.PicklejotApplication
 import kotlinx.coroutines.runBlocking
 
 class DebugToolsProvider : ContentProvider() {
@@ -17,7 +17,7 @@ class DebugToolsProvider : ContentProvider() {
         extras: Bundle?,
     ): Bundle {
         val applicationContext = requireNotNull(context).applicationContext
-        val application = applicationContext as PicklelogApplication
+        val application = applicationContext as PicklejotApplication
         return runBlocking {
             DebugTools(application.container.await(), applicationContext).run(method, arg, extras ?: Bundle.EMPTY)
         }
