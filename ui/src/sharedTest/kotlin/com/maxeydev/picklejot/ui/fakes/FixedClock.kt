@@ -1,4 +1,4 @@
-package com.maxeydev.picklelog.ui.fakes
+package com.maxeydev.picklejot.ui.fakes
 
 import kotlin.time.Clock
 import kotlin.time.Instant

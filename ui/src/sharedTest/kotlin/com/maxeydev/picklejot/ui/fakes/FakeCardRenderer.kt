@@ -1,9 +1,9 @@
-package com.maxeydev.picklelog.ui.fakes
+package com.maxeydev.picklejot.ui.fakes
 
-import com.maxeydev.picklelog.ui.share.CardData
-import com.maxeydev.picklelog.ui.share.CardRenderFailure
-import com.maxeydev.picklelog.ui.share.CardRenderResult
-import com.maxeydev.picklelog.ui.share.CardRendering
+import com.maxeydev.picklejot.ui.share.CardData
+import com.maxeydev.picklejot.ui.share.CardRenderFailure
+import com.maxeydev.picklejot.ui.share.CardRenderResult
+import com.maxeydev.picklejot.ui.share.CardRendering
 import java.util.concurrent.CopyOnWriteArrayList
 
 class FakeCardRenderer(

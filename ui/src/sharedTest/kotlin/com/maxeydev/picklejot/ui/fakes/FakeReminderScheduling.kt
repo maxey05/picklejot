@@ -1,7 +1,7 @@
-package com.maxeydev.picklelog.ui.fakes
+package com.maxeydev.picklejot.ui.fakes
 
-import com.maxeydev.picklelog.domain.datetime.AppInstant
-import com.maxeydev.picklelog.domain.reminder.ReminderScheduling
+import com.maxeydev.picklejot.domain.datetime.AppInstant
+import com.maxeydev.picklejot.domain.reminder.ReminderScheduling
 
 class FakeReminderScheduling : ReminderScheduling {
     val scheduled = mutableListOf<AppInstant>()

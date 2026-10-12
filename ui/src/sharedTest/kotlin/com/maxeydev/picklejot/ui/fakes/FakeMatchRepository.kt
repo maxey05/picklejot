@@ -1,22 +1,22 @@
 @file:OptIn(ExperimentalUuidApi::class)
 
-package com.maxeydev.picklelog.ui.fakes
+package com.maxeydev.picklejot.ui.fakes
 
-import com.maxeydev.picklelog.domain.match.FilterState
-import com.maxeydev.picklelog.domain.match.FreeTextField
-import com.maxeydev.picklelog.domain.match.FreeTextUsage
-import com.maxeydev.picklelog.domain.match.Match
-import com.maxeydev.picklelog.domain.match.MatchListItem
-import com.maxeydev.picklelog.domain.match.MatchRepository
-import com.maxeydev.picklelog.domain.match.MatchResult
-import com.maxeydev.picklelog.domain.match.MatchSort
-import com.maxeydev.picklelog.domain.match.SearchTerm
-import com.maxeydev.picklelog.domain.match.deriveDuration
-import com.maxeydev.picklelog.domain.match.requireValidRoster
-import com.maxeydev.picklelog.domain.person.normalizePersonName
-import com.maxeydev.picklelog.domain.photo.ImportedPhoto
-import com.maxeydev.picklelog.domain.stats.AdvancedMatchLine
-import com.maxeydev.picklelog.domain.stats.MatchStatLine
+import com.maxeydev.picklejot.domain.match.FilterState
+import com.maxeydev.picklejot.domain.match.FreeTextField
+import com.maxeydev.picklejot.domain.match.FreeTextUsage
+import com.maxeydev.picklejot.domain.match.Match
+import com.maxeydev.picklejot.domain.match.MatchListItem
+import com.maxeydev.picklejot.domain.match.MatchRepository
+import com.maxeydev.picklejot.domain.match.MatchResult
+import com.maxeydev.picklejot.domain.match.MatchSort
+import com.maxeydev.picklejot.domain.match.SearchTerm
+import com.maxeydev.picklejot.domain.match.deriveDuration
+import com.maxeydev.picklejot.domain.match.requireValidRoster
+import com.maxeydev.picklejot.domain.person.normalizePersonName
+import com.maxeydev.picklejot.domain.photo.ImportedPhoto
+import com.maxeydev.picklejot.domain.stats.AdvancedMatchLine
+import com.maxeydev.picklejot.domain.stats.MatchStatLine
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map

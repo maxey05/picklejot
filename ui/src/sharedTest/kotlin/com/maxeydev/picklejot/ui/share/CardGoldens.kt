@@ -1,8 +1,8 @@
-package com.maxeydev.picklelog.ui.share
+package com.maxeydev.picklejot.ui.share
 
-import com.maxeydev.picklelog.domain.share.CardLayout
-import com.maxeydev.picklelog.domain.share.CardRatio
-import com.maxeydev.picklelog.domain.share.CardTheme
+import com.maxeydev.picklejot.domain.share.CardLayout
+import com.maxeydev.picklejot.domain.share.CardRatio
+import com.maxeydev.picklejot.domain.share.CardTheme
 
 enum class GoldenContent {
     STANDARD,

@@ -1,7 +1,7 @@
-package com.maxeydev.picklelog.ui.fakes
+package com.maxeydev.picklejot.ui.fakes
 
-import com.maxeydev.picklelog.domain.streak.StreakNoticeState
-import com.maxeydev.picklelog.domain.streak.StreakNoticeStore
+import com.maxeydev.picklejot.domain.streak.StreakNoticeState
+import com.maxeydev.picklejot.domain.streak.StreakNoticeStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update

@@ -1,12 +1,12 @@
-package com.maxeydev.picklelog.ui.fakes
+package com.maxeydev.picklejot.ui.fakes
 
-import com.maxeydev.picklelog.domain.backup.BackupRepository
-import com.maxeydev.picklelog.domain.backup.BackupStatus
-import com.maxeydev.picklelog.domain.backup.ExportOutcome
-import com.maxeydev.picklelog.domain.backup.ExportPromptReason
-import com.maxeydev.picklelog.domain.backup.ImportOutcome
-import com.maxeydev.picklelog.domain.backup.ImportSummary
-import com.maxeydev.picklelog.domain.datetime.AppInstant
+import com.maxeydev.picklejot.domain.backup.BackupRepository
+import com.maxeydev.picklejot.domain.backup.BackupStatus
+import com.maxeydev.picklejot.domain.backup.ExportOutcome
+import com.maxeydev.picklejot.domain.backup.ExportPromptReason
+import com.maxeydev.picklejot.domain.backup.ImportOutcome
+import com.maxeydev.picklejot.domain.backup.ImportSummary
+import com.maxeydev.picklejot.domain.datetime.AppInstant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -15,8 +15,8 @@ import java.util.concurrent.CopyOnWriteArrayList
 class FakeBackupRepository(
     var exportOutcome: ExportOutcome =
         ExportOutcome.Ready(
-            filePath = "/tmp/picklelog-export-2026-09-30.json",
-            fileName = "picklelog-export-2026-09-30.json",
+            filePath = "/tmp/picklejot-export-2026-09-30.json",
+            fileName = "picklejot-export-2026-09-30.json",
             matchCount = 3,
         ),
     var importOutcome: ImportOutcome = ImportOutcome.Imported(ImportSummary(0, 0, 0, 0)),

@@ -1,7 +1,7 @@
-package com.maxeydev.picklelog.ui.fakes
+package com.maxeydev.picklejot.ui.fakes
 
-import com.maxeydev.picklelog.domain.match.MatchSort
-import com.maxeydev.picklelog.domain.match.MatchSortStore
+import com.maxeydev.picklejot.domain.match.MatchSort
+import com.maxeydev.picklejot.domain.match.MatchSortStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 

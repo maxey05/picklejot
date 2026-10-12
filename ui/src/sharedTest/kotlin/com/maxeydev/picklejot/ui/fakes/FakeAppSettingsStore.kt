@@ -1,7 +1,7 @@
-package com.maxeydev.picklelog.ui.fakes
+package com.maxeydev.picklejot.ui.fakes
 
-import com.maxeydev.picklelog.domain.settings.AppSettings
-import com.maxeydev.picklelog.domain.settings.AppSettingsStore
+import com.maxeydev.picklejot.domain.settings.AppSettings
+import com.maxeydev.picklejot.domain.settings.AppSettingsStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update

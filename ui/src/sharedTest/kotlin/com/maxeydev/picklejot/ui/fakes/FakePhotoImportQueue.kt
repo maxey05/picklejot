@@ -1,11 +1,11 @@
 @file:OptIn(ExperimentalUuidApi::class)
 
-package com.maxeydev.picklelog.ui.fakes
+package com.maxeydev.picklejot.ui.fakes
 
-import com.maxeydev.picklelog.domain.photo.ImportedPhoto
-import com.maxeydev.picklelog.domain.photo.PhotoImportQueue
-import com.maxeydev.picklelog.domain.photo.PhotoImportState
-import com.maxeydev.picklelog.domain.photo.PhotoSource
+import com.maxeydev.picklejot.domain.photo.ImportedPhoto
+import com.maxeydev.picklejot.domain.photo.PhotoImportQueue
+import com.maxeydev.picklejot.domain.photo.PhotoImportState
+import com.maxeydev.picklejot.domain.photo.PhotoSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf

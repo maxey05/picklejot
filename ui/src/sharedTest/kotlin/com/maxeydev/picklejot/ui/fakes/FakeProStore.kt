@@ -1,11 +1,11 @@
-package com.maxeydev.picklelog.ui.fakes
+package com.maxeydev.picklejot.ui.fakes
 
-import com.maxeydev.picklelog.domain.billing.PriceResult
-import com.maxeydev.picklelog.domain.billing.ProStore
-import com.maxeydev.picklelog.domain.billing.PurchaseOutcome
-import com.maxeydev.picklelog.domain.billing.RestoreOutcome
-import com.maxeydev.picklelog.domain.datetime.AppInstant
-import com.maxeydev.picklelog.domain.entitlement.EntitlementSignal
+import com.maxeydev.picklejot.domain.billing.PriceResult
+import com.maxeydev.picklejot.domain.billing.ProStore
+import com.maxeydev.picklejot.domain.billing.PurchaseOutcome
+import com.maxeydev.picklejot.domain.billing.RestoreOutcome
+import com.maxeydev.picklejot.domain.datetime.AppInstant
+import com.maxeydev.picklejot.domain.entitlement.EntitlementSignal
 
 class FakeProStore(
     private val entitlements: FakeEntitlementRepository,

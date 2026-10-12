@@ -1,6 +1,6 @@
-package com.maxeydev.picklelog.ui.fakes
+package com.maxeydev.picklejot.ui.fakes
 
-import com.maxeydev.picklelog.domain.erase.LocalDataEraser
+import com.maxeydev.picklejot.domain.erase.LocalDataEraser
 
 class FakeLocalDataEraser(
     var failure: Exception? = null,

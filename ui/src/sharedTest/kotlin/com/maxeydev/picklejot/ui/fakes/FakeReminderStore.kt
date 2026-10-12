@@ -1,8 +1,8 @@
-package com.maxeydev.picklelog.ui.fakes
+package com.maxeydev.picklejot.ui.fakes
 
-import com.maxeydev.picklelog.domain.datetime.AppTime
-import com.maxeydev.picklelog.domain.reminder.ReminderState
-import com.maxeydev.picklelog.domain.reminder.ReminderStore
+import com.maxeydev.picklejot.domain.datetime.AppTime
+import com.maxeydev.picklejot.domain.reminder.ReminderState
+import com.maxeydev.picklejot.domain.reminder.ReminderStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update

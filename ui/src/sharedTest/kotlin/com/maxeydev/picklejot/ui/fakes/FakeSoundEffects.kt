@@ -1,7 +1,7 @@
-package com.maxeydev.picklelog.ui.fakes
+package com.maxeydev.picklejot.ui.fakes
 
-import com.maxeydev.picklelog.ui.sound.Cue
-import com.maxeydev.picklelog.ui.sound.SoundEffects
+import com.maxeydev.picklejot.ui.sound.Cue
+import com.maxeydev.picklejot.ui.sound.SoundEffects
 
 class FakeSoundEffects : SoundEffects {
     val played = mutableListOf<Cue>()

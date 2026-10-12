@@ -1,9 +1,9 @@
-package com.maxeydev.picklelog.ui.fakes
+package com.maxeydev.picklejot.ui.fakes
 
-import com.maxeydev.picklelog.domain.entitlement.EntitlementRules
-import com.maxeydev.picklelog.domain.entitlement.EntitlementSignal
-import com.maxeydev.picklelog.domain.profile.Entitlement
-import com.maxeydev.picklelog.domain.profile.EntitlementRepository
+import com.maxeydev.picklejot.domain.entitlement.EntitlementRules
+import com.maxeydev.picklejot.domain.entitlement.EntitlementSignal
+import com.maxeydev.picklejot.domain.profile.Entitlement
+import com.maxeydev.picklejot.domain.profile.EntitlementRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update

@@ -1,6 +1,6 @@
-package com.maxeydev.picklelog.ui.fakes
+package com.maxeydev.picklejot.ui.fakes
 
-import com.maxeydev.picklelog.domain.settings.AppCache
+import com.maxeydev.picklejot.domain.settings.AppCache
 
 class FakeAppCache(
     var bytes: Long = 0L,

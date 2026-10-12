@@ -1,7 +1,7 @@
-package com.maxeydev.picklelog.ui.fakes
+package com.maxeydev.picklejot.ui.fakes
 
-import com.maxeydev.picklelog.domain.match.LastUsedFormatStore
-import com.maxeydev.picklelog.domain.match.MatchFormat
+import com.maxeydev.picklejot.domain.match.LastUsedFormatStore
+import com.maxeydev.picklejot.domain.match.MatchFormat
 
 class FakeLastUsedFormatStore(
     var format: MatchFormat = LastUsedFormatStore.FIRST_LAUNCH_FORMAT,

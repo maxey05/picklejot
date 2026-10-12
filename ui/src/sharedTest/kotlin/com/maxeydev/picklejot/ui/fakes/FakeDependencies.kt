@@ -1,12 +1,12 @@
-package com.maxeydev.picklelog.ui.fakes
+package com.maxeydev.picklejot.ui.fakes
 
-import com.maxeydev.picklelog.domain.erase.EraseAllData
-import com.maxeydev.picklelog.domain.match.FilterState
-import com.maxeydev.picklelog.domain.onboarding.Onboarding
-import com.maxeydev.picklelog.domain.reminder.StreakReminder
-import com.maxeydev.picklelog.domain.streak.InsuredStreakEngine
-import com.maxeydev.picklelog.domain.streak.streakInsuranceStart
-import com.maxeydev.picklelog.ui.PicklelogDependencies
+import com.maxeydev.picklejot.domain.erase.EraseAllData
+import com.maxeydev.picklejot.domain.match.FilterState
+import com.maxeydev.picklejot.domain.onboarding.Onboarding
+import com.maxeydev.picklejot.domain.reminder.StreakReminder
+import com.maxeydev.picklejot.domain.streak.InsuredStreakEngine
+import com.maxeydev.picklejot.domain.streak.streakInsuranceStart
+import com.maxeydev.picklejot.ui.PicklejotDependencies
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -53,11 +53,11 @@ class FakeDependencies(
     val localDataEraser: FakeLocalDataEraser = FakeLocalDataEraser(),
     override val eraseAllData: EraseAllData = EraseAllData(streakReminder, localDataEraser),
     override val appVersionName: String = "1.0.0-test",
-    private val photoRoot: File = File(System.getProperty("java.io.tmpdir"), "picklelog-fake-photos"),
-) : PicklelogDependencies {
+    private val photoRoot: File = File(System.getProperty("java.io.tmpdir"), "picklejot-fake-photos"),
+) : PicklejotDependencies {
     override fun currentTimeZone(): TimeZone = timeZone
 
     override fun photoFile(relativePath: String): File = File(photoRoot, relativePath)
 
-    override fun newCaptureUri(): String = "content://picklelog.test/camera/capture.jpg"
+    override fun newCaptureUri(): String = "content://picklejot.test/camera/capture.jpg"
 }

@@ -1,13 +1,13 @@
 @file:OptIn(ExperimentalUuidApi::class)
 
-package com.maxeydev.picklelog.ui.fakes
+package com.maxeydev.picklejot.ui.fakes
 
-import com.maxeydev.picklelog.domain.datetime.AppInstant
-import com.maxeydev.picklelog.domain.match.Match
-import com.maxeydev.picklelog.domain.person.Person
-import com.maxeydev.picklelog.domain.person.PersonRepository
-import com.maxeydev.picklelog.domain.person.PersonUsage
-import com.maxeydev.picklelog.domain.person.normalizePersonName
+import com.maxeydev.picklejot.domain.datetime.AppInstant
+import com.maxeydev.picklejot.domain.match.Match
+import com.maxeydev.picklejot.domain.person.Person
+import com.maxeydev.picklejot.domain.person.PersonRepository
+import com.maxeydev.picklejot.domain.person.PersonUsage
+import com.maxeydev.picklejot.domain.person.normalizePersonName
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf

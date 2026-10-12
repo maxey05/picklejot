@@ -1,9 +1,9 @@
-package com.maxeydev.picklelog.ui.fakes
+package com.maxeydev.picklejot.ui.fakes
 
-import com.maxeydev.picklelog.domain.datetime.AppInstant
-import com.maxeydev.picklelog.domain.profile.Entitlement
-import com.maxeydev.picklelog.domain.profile.ProfileRepository
-import com.maxeydev.picklelog.domain.profile.UserProfile
+import com.maxeydev.picklejot.domain.datetime.AppInstant
+import com.maxeydev.picklejot.domain.profile.Entitlement
+import com.maxeydev.picklejot.domain.profile.ProfileRepository
+import com.maxeydev.picklejot.domain.profile.UserProfile
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
