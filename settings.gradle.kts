@@ -20,7 +20,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "picklelog"
+rootProject.name = "picklejot"
 
 include(":app")
 include(":domain")
