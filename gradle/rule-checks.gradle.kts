@@ -177,7 +177,7 @@ val checkDomainDateTimeIndirection by tasks.registering {
         val domainRoot = rootDir.resolve("domain")
         val indirection =
             rootDir
-                .resolve("domain/src/main/kotlin/com/maxeydev/picklelog/domain/datetime/DateTime.kt")
+                .resolve("domain/src/main/kotlin/com/maxeydev/picklejot/domain/datetime/DateTime.kt")
                 .canonicalFile
         val reachingPast = listOf("kotlinx.datetime", "kotlin.time.Instant")
         val hits =
@@ -207,17 +207,17 @@ val checkSchemaJsonCommitted by tasks.registering {
     description = "Fails if Room's exported schema JSON for the current version is absent (R33, AC-2.11)."
     doLast {
         val databaseSource =
-            rootDir.resolve("data/src/main/kotlin/com/maxeydev/picklelog/data/db/PicklelogDatabase.kt")
+            rootDir.resolve("data/src/main/kotlin/com/maxeydev/picklejot/data/db/PicklejotDatabase.kt")
         if (!databaseSource.exists()) {
             logger.lifecycle("checkSchemaJsonCommitted: no Room database yet — nothing to check.")
             return@doLast
         }
         val version =
-            Regex("PICKLELOG_DB_VERSION\\s*=\\s*(\\d+)")
+            Regex("PICKLEJOT_DB_VERSION\\s*=\\s*(\\d+)")
                 .find(databaseSource.readText())
                 ?.groupValues
                 ?.get(1)
-                ?: throw GradleException("checkSchemaJsonCommitted could not read PICKLELOG_DB_VERSION.")
+                ?: throw GradleException("checkSchemaJsonCommitted could not read PICKLEJOT_DB_VERSION.")
         val exported =
             rootDir
                 .resolve("data/schemas")
@@ -301,7 +301,7 @@ val checkBackupRules by tasks.registering {
             }
         }
 
-        val databaseBackup = rootDir.resolve("data/src/main/kotlin/com/maxeydev/picklelog/data/db/DatabaseBackup.kt")
+        val databaseBackup = rootDir.resolve("data/src/main/kotlin/com/maxeydev/picklejot/data/db/DatabaseBackup.kt")
         if (!databaseBackup.exists() || !databaseBackup.readText().contains("context.noBackupFilesDir")) {
             problems += "DatabaseBackup.kt must keep the pre-migration copy under noBackupFilesDir, which Auto Backup " +
                 "never includes (AC-14.18)"
