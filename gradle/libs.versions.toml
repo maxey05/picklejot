@@ -1,4 +1,4 @@
-# Picklelog version catalog — AC-1.4, AC-1.5, AC-1.9, AC-1.18.
+# Picklejot version catalog — AC-1.4, AC-1.5, AC-1.9, AC-1.18.
 #
 # R2: this file is the ONLY place a version literal may appear. No version string
 # is permitted in any build.gradle.kts; the AC-1.5 check (`./gradlew checkNoVersionLiterals`)
