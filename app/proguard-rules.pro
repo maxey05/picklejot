@@ -9,29 +9,29 @@
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.**
 # Tightened at RFC-002 (AC-1.10 deferred this until real @Serializable classes existed).
-# com.maxeydev.picklelog.data.profile and com.maxeydev.picklelog.data.backup hold the
+# com.maxeydev.picklejot.data.profile and com.maxeydev.picklejot.data.backup hold the
 # @Serializable classes, so the global wildcards above are narrowed to them. Widen this if
 # another package gains @Serializable.
--keepclassmembers class com.maxeydev.picklelog.data.profile.**$$serializer { *; }
--keepclasseswithmembers class com.maxeydev.picklelog.data.profile.** {
+-keepclassmembers class com.maxeydev.picklejot.data.profile.**$$serializer { *; }
+-keepclasseswithmembers class com.maxeydev.picklejot.data.profile.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
--if @kotlinx.serialization.Serializable class com.maxeydev.picklelog.data.profile.**
+-if @kotlinx.serialization.Serializable class com.maxeydev.picklejot.data.profile.**
 -keepclassmembers class <1> {
     static <1>$Companion Companion;
 }
 
--keepclassmembers class com.maxeydev.picklelog.data.backup.**$$serializer { *; }
--keepclasseswithmembers class com.maxeydev.picklelog.data.backup.** {
+-keepclassmembers class com.maxeydev.picklejot.data.backup.**$$serializer { *; }
+-keepclasseswithmembers class com.maxeydev.picklejot.data.backup.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
--if @kotlinx.serialization.Serializable class com.maxeydev.picklelog.data.backup.**
+-if @kotlinx.serialization.Serializable class com.maxeydev.picklejot.data.backup.**
 -keepclassmembers class <1> {
     static <1>$Companion Companion;
 }
 
 # --- WorkManager -----------------------------------------------------------
--keepnames class com.maxeydev.picklelog.data.backup.ExportPromptWorker
+-keepnames class com.maxeydev.picklejot.data.backup.ExportPromptWorker
 
 # --- Play Billing ----------------------------------------------------------
 # Billing responses are parsed from JSON into library types; keep the surface.
