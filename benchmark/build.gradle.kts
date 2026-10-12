@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.maxeydev.picklelog.macrobenchmark"
+    namespace = "com.maxeydev.picklejot.macrobenchmark"
     compileSdk = 37
 
     defaultConfig {
