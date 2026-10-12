@@ -1,4 +1,4 @@
-package com.maxeydev.picklelog.macrobenchmark
+package com.maxeydev.picklejot.macrobenchmark
 
 import androidx.benchmark.macro.CompilationMode
 import androidx.benchmark.macro.FrameTimingMetric
@@ -14,7 +14,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-private const val TARGET_PACKAGE = "com.maxeydev.picklelog.benchmark"
+private const val TARGET_PACKAGE = "com.maxeydev.picklejot.benchmark"
 private const val MATCH_LIST_RESOURCE_ID = "match_list"
 private const val EXPECTED_MATCH_COUNT = 1_000
 private const val ITERATIONS = 5
