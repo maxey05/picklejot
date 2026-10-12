@@ -1,12 +1,12 @@
-package com.maxeydev.picklelog.notification
+package com.maxeydev.picklejot.notification
 
 import android.app.Notification
 import android.content.Intent
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.maxeydev.picklelog.ui.R
-import com.maxeydev.picklelog.ui.notification.StreakNotification
-import com.maxeydev.picklelog.ui.notification.StreakReminderNotifier
+import com.maxeydev.picklejot.ui.R
+import com.maxeydev.picklejot.ui.notification.StreakNotification
+import com.maxeydev.picklejot.ui.notification.StreakReminderNotifier
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull

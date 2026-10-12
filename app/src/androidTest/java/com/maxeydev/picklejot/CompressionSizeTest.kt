@@ -1,11 +1,11 @@
-package com.maxeydev.picklelog
+package com.maxeydev.picklejot
 
 import android.os.Bundle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.maxeydev.picklelog.data.photo.CompressionResult
-import com.maxeydev.picklelog.data.photo.ImageCompressor
-import com.maxeydev.picklelog.data.photo.MAX_LONG_EDGE_PX
+import com.maxeydev.picklejot.data.photo.CompressionResult
+import com.maxeydev.picklejot.data.photo.ImageCompressor
+import com.maxeydev.picklejot.data.photo.MAX_LONG_EDGE_PX
 import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
 import org.junit.Test

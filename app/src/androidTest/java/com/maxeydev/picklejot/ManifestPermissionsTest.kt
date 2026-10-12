@@ -1,4 +1,4 @@
-package com.maxeydev.picklelog
+package com.maxeydev.picklejot
 
 import android.Manifest
 import android.content.pm.FeatureInfo

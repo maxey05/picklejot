@@ -1,9 +1,9 @@
-package com.maxeydev.picklelog
+package com.maxeydev.picklejot
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.maxeydev.picklelog.data.db.PICKLELOG_DB_NAME
-import com.maxeydev.picklelog.data.photo.PHOTO_DIRECTORY
+import com.maxeydev.picklejot.data.db.PICKLEJOT_DB_NAME
+import com.maxeydev.picklejot.data.photo.PHOTO_DIRECTORY
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -100,8 +100,8 @@ class BackupRulesTest {
     fun the_database_lives_in_the_default_directory_that_auto_backup_includes() {
         val defaultDirectory = File(context.dataDir, "databases").canonicalFile
 
-        assertFalse(PICKLELOG_DB_NAME.contains('/'))
-        assertEquals(defaultDirectory, context.getDatabasePath(PICKLELOG_DB_NAME).canonicalFile.parentFile)
+        assertFalse(PICKLEJOT_DB_NAME.contains('/'))
+        assertEquals(defaultDirectory, context.getDatabasePath(PICKLEJOT_DB_NAME).canonicalFile.parentFile)
     }
 
     @Test
