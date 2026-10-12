@@ -166,7 +166,7 @@
             scale = fitToViewport();
             document.body.getBoundingClientRect();
             setTimeout(function () {
-                window.PicklelogCard.onLayoutReady(token, JSON.stringify(diagnostics(scale)));
+                window.PicklejotCard.onLayoutReady(token, JSON.stringify(diagnostics(scale)));
             }, 0);
         });
     };
