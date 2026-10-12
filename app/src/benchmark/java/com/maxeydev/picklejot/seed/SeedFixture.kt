@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalUuidApi::class)
 
-package com.maxeydev.picklelog.seed
+package com.maxeydev.picklejot.seed
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -8,16 +8,16 @@ import android.graphics.Color
 import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Shader
-import com.maxeydev.picklelog.domain.datetime.AppDate
-import com.maxeydev.picklelog.domain.datetime.AppInstant
-import com.maxeydev.picklelog.domain.match.GameScore
-import com.maxeydev.picklelog.domain.match.Match
-import com.maxeydev.picklelog.domain.match.MatchFormat
-import com.maxeydev.picklelog.domain.match.MatchRepository
-import com.maxeydev.picklelog.domain.match.MatchResult
-import com.maxeydev.picklelog.domain.person.Person
-import com.maxeydev.picklelog.domain.person.PersonRepository
-import com.maxeydev.picklelog.domain.photo.PhotoRef
+import com.maxeydev.picklejot.domain.datetime.AppDate
+import com.maxeydev.picklejot.domain.datetime.AppInstant
+import com.maxeydev.picklejot.domain.match.GameScore
+import com.maxeydev.picklejot.domain.match.Match
+import com.maxeydev.picklejot.domain.match.MatchFormat
+import com.maxeydev.picklejot.domain.match.MatchRepository
+import com.maxeydev.picklejot.domain.match.MatchResult
+import com.maxeydev.picklejot.domain.person.Person
+import com.maxeydev.picklejot.domain.person.PersonRepository
+import com.maxeydev.picklejot.domain.photo.PhotoRef
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.plus
 import java.io.File

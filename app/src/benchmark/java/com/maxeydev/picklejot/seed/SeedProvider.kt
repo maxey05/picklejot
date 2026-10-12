@@ -1,11 +1,11 @@
-package com.maxeydev.picklelog.seed
+package com.maxeydev.picklejot.seed
 
 import android.content.ContentProvider
 import android.content.ContentValues
 import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
-import com.maxeydev.picklelog.PicklelogApplication
+import com.maxeydev.picklejot.PicklejotApplication
 import kotlinx.coroutines.runBlocking
 import java.io.File
 
@@ -22,7 +22,7 @@ class SeedProvider : ContentProvider() {
         extras: Bundle?,
     ): Bundle {
         require(method == SEED_METHOD) { "SeedProvider only understands '$SEED_METHOD', not '$method'." }
-        val application = requireNotNull(context).applicationContext as PicklelogApplication
+        val application = requireNotNull(context).applicationContext as PicklejotApplication
         val seededCount =
             runBlocking {
                 val container = application.container.await()
