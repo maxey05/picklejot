@@ -89,13 +89,13 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: |
             adb install -r app/build/outputs/apk/debug/app-debug.apk
-            adb shell am start -W -n com.maxeydev.picklelog/.MainActivity
+            adb shell am start -W -n com.maxeydev.picklejot/.MainActivity
             sleep 5
             # AC-1.19 — "it installed" is not "it launched". Assert the process is
             # actually alive after start, so a crash-on-launch fails the job.
-            adb shell pidof com.maxeydev.picklelog
+            adb shell pidof com.maxeydev.picklejot
             # And assert nothing crashed into the log on the way up.
-            if adb logcat -d -b crash | grep -q "com.maxeydev.picklelog"; then
+            if adb logcat -d -b crash | grep -q "com.maxeydev.picklejot"; then
               echo "::error::App crashed on launch (API ${{ matrix.api-level }})"
               adb logcat -d -b crash | tail -50
               exit 1
