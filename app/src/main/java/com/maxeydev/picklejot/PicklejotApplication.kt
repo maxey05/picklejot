@@ -1,16 +1,16 @@
-package com.maxeydev.picklelog
+package com.maxeydev.picklejot
 
 import android.app.Application
 import android.util.Log
 import androidx.work.Configuration
 import androidx.work.DelegatingWorkerFactory
 import androidx.work.WorkManager
-import com.maxeydev.picklelog.data.DataLayer
-import com.maxeydev.picklelog.data.backup.ExportPromptScheduler
-import com.maxeydev.picklelog.data.backup.ExportPromptWorkerFactory
-import com.maxeydev.picklelog.data.billing.ForegroundActivity
-import com.maxeydev.picklelog.data.createDataLayer
-import com.maxeydev.picklelog.data.reminder.StreakReminderWorkerFactory
+import com.maxeydev.picklejot.data.DataLayer
+import com.maxeydev.picklejot.data.backup.ExportPromptScheduler
+import com.maxeydev.picklejot.data.backup.ExportPromptWorkerFactory
+import com.maxeydev.picklejot.data.billing.ForegroundActivity
+import com.maxeydev.picklejot.data.createDataLayer
+import com.maxeydev.picklejot.data.reminder.StreakReminderWorkerFactory
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -20,9 +20,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
-private const val LOG_TAG = "Picklelog"
+private const val LOG_TAG = "Picklejot"
 
-class PicklelogApplication :
+class PicklejotApplication :
     Application(),
     Configuration.Provider {
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -49,13 +49,13 @@ class PicklelogApplication :
         container =
             applicationScope.async {
                 val dataLayer =
-                    createDataLayer(this@PicklelogApplication, applicationScope, Dispatchers.IO) {
+                    createDataLayer(this@PicklejotApplication, applicationScope, Dispatchers.IO) {
                         foregroundActivity.current
                     }
                 applicationScope.launch { dataLayer.sweepOrphanPhotos(System.currentTimeMillis()) }
                 dataLayer.billingStartupCheck.start()
                 scheduleExportPrompts(dataLayer)
-                AppContainer(this@PicklelogApplication, dataLayer).also { rearmStreakReminder(it) }
+                AppContainer(this@PicklejotApplication, dataLayer).also { rearmStreakReminder(it) }
             }
     }
 

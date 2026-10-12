@@ -1,39 +1,39 @@
-package com.maxeydev.picklelog
+package com.maxeydev.picklejot
 
 import android.content.Context
 import androidx.annotation.MainThread
 import androidx.work.WorkManager
-import com.maxeydev.picklelog.data.DataLayer
-import com.maxeydev.picklelog.data.photo.PhotoStore
-import com.maxeydev.picklelog.data.reminder.ReminderScheduler
-import com.maxeydev.picklelog.data.settings.DirectoryAppCache
-import com.maxeydev.picklelog.domain.backup.BackupRepository
-import com.maxeydev.picklelog.domain.billing.ProStore
-import com.maxeydev.picklelog.domain.erase.EraseAllData
-import com.maxeydev.picklelog.domain.match.FilterState
-import com.maxeydev.picklelog.domain.match.LastUsedFormatStore
-import com.maxeydev.picklelog.domain.match.MatchRepository
-import com.maxeydev.picklelog.domain.match.MatchSortStore
-import com.maxeydev.picklelog.domain.onboarding.Onboarding
-import com.maxeydev.picklelog.domain.person.PersonRepository
-import com.maxeydev.picklelog.domain.photo.PhotoImportQueue
-import com.maxeydev.picklelog.domain.profile.EntitlementRepository
-import com.maxeydev.picklelog.domain.profile.ProfileRepository
-import com.maxeydev.picklelog.domain.reminder.ReminderStore
-import com.maxeydev.picklelog.domain.reminder.StreakReminder
-import com.maxeydev.picklelog.domain.settings.AppCache
-import com.maxeydev.picklelog.domain.settings.AppSettingsStore
-import com.maxeydev.picklelog.domain.share.CardFormatStore
-import com.maxeydev.picklelog.domain.streak.InsuredStreakEngine
-import com.maxeydev.picklelog.domain.streak.StreakNoticeStore
-import com.maxeydev.picklelog.domain.streak.streakInsuranceStart
-import com.maxeydev.picklelog.ui.PicklelogDependencies
-import com.maxeydev.picklelog.ui.common.createCaptureUri
-import com.maxeydev.picklelog.ui.notification.StreakReminderNotifier
-import com.maxeydev.picklelog.ui.share.CardRenderer
-import com.maxeydev.picklelog.ui.share.CardRendering
-import com.maxeydev.picklelog.ui.share.WebViewWarmer
-import com.maxeydev.picklelog.ui.sound.SoundPoolSoundEffects
+import com.maxeydev.picklejot.data.DataLayer
+import com.maxeydev.picklejot.data.photo.PhotoStore
+import com.maxeydev.picklejot.data.reminder.ReminderScheduler
+import com.maxeydev.picklejot.data.settings.DirectoryAppCache
+import com.maxeydev.picklejot.domain.backup.BackupRepository
+import com.maxeydev.picklejot.domain.billing.ProStore
+import com.maxeydev.picklejot.domain.erase.EraseAllData
+import com.maxeydev.picklejot.domain.match.FilterState
+import com.maxeydev.picklejot.domain.match.LastUsedFormatStore
+import com.maxeydev.picklejot.domain.match.MatchRepository
+import com.maxeydev.picklejot.domain.match.MatchSortStore
+import com.maxeydev.picklejot.domain.onboarding.Onboarding
+import com.maxeydev.picklejot.domain.person.PersonRepository
+import com.maxeydev.picklejot.domain.photo.PhotoImportQueue
+import com.maxeydev.picklejot.domain.profile.EntitlementRepository
+import com.maxeydev.picklejot.domain.profile.ProfileRepository
+import com.maxeydev.picklejot.domain.reminder.ReminderStore
+import com.maxeydev.picklejot.domain.reminder.StreakReminder
+import com.maxeydev.picklejot.domain.settings.AppCache
+import com.maxeydev.picklejot.domain.settings.AppSettingsStore
+import com.maxeydev.picklejot.domain.share.CardFormatStore
+import com.maxeydev.picklejot.domain.streak.InsuredStreakEngine
+import com.maxeydev.picklejot.domain.streak.StreakNoticeStore
+import com.maxeydev.picklejot.domain.streak.streakInsuranceStart
+import com.maxeydev.picklejot.ui.PicklejotDependencies
+import com.maxeydev.picklejot.ui.common.createCaptureUri
+import com.maxeydev.picklejot.ui.notification.StreakReminderNotifier
+import com.maxeydev.picklejot.ui.share.CardRenderer
+import com.maxeydev.picklejot.ui.share.CardRendering
+import com.maxeydev.picklejot.ui.share.WebViewWarmer
+import com.maxeydev.picklejot.ui.sound.SoundPoolSoundEffects
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -44,7 +44,7 @@ import kotlin.time.Clock
 class AppContainer(
     private val context: Context,
     dataLayer: DataLayer,
-) : PicklelogDependencies {
+) : PicklejotDependencies {
     private val photoStore: PhotoStore = dataLayer.photoStore
 
     override val matchRepository: MatchRepository = dataLayer.matchRepository

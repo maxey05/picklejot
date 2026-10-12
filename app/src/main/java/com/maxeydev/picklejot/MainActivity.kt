@@ -1,4 +1,4 @@
-package com.maxeydev.picklelog
+package com.maxeydev.picklejot
 
 import android.content.Intent
 import android.graphics.Color
@@ -20,10 +20,10 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
-import com.maxeydev.picklelog.domain.settings.AppSettings
-import com.maxeydev.picklelog.ui.navigation.PicklelogNavHost
-import com.maxeydev.picklelog.ui.notification.StreakNotification
-import com.maxeydev.picklelog.ui.theme.PicklelogTheme
+import com.maxeydev.picklejot.domain.settings.AppSettings
+import com.maxeydev.picklejot.ui.navigation.PicklejotNavHost
+import com.maxeydev.picklejot.ui.notification.StreakNotification
+import com.maxeydev.picklejot.ui.theme.PicklejotTheme
 
 private val LIGHT_NAVIGATION_SCRIM = Color.argb(0xE6, 0xFF, 0xFF, 0xFF)
 private val DARK_NAVIGATION_SCRIM = Color.argb(0x80, 0x1B, 0x1B, 0x1B)
@@ -35,7 +35,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         openLogging = StreakNotification.wantsLogging(intent)
-        val container = (application as PicklelogApplication).container
+        val container = (application as PicklejotApplication).container
         setContent {
             val dependencies by produceState<AppContainer?>(initialValue = null, container) {
                 value = container.await()
@@ -57,12 +57,12 @@ class MainActivity : ComponentActivity() {
                     LaunchedEffect(ready, loaded.soundEffectsEnabled) {
                         ready.soundEffects.setEnabled(loaded.soundEffectsEnabled)
                     }
-                    PicklelogTheme(darkTheme = darkTheme) {
+                    PicklejotTheme(darkTheme = darkTheme) {
                         Surface(
                             modifier = Modifier.fillMaxSize(),
                             color = MaterialTheme.colorScheme.background,
                         ) {
-                            PicklelogNavHost(
+                            PicklejotNavHost(
                                 dependencies = ready,
                                 openLogging = openLogging,
                                 onOpenLoggingHandled = {
