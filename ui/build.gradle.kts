@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.maxeydev.picklelog.ui"
+    namespace = "com.maxeydev.picklejot.ui"
     compileSdk = 37
 
     defaultConfig {
