@@ -1,4 +1,4 @@
-package com.maxeydev.picklelog.data.billing
+package com.maxeydev.picklejot.data.billing
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle

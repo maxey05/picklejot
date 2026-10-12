@@ -1,7 +1,7 @@
-package com.maxeydev.picklelog.data.profile
+package com.maxeydev.picklejot.data.profile
 
-import com.maxeydev.picklelog.domain.profile.Entitlement
-import com.maxeydev.picklelog.domain.profile.UserProfile
+import com.maxeydev.picklejot.domain.profile.Entitlement
+import com.maxeydev.picklejot.domain.profile.UserProfile
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json

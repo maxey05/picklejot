@@ -1,9 +1,9 @@
-package com.maxeydev.picklelog.data.billing
+package com.maxeydev.picklejot.data.billing
 
-import com.maxeydev.picklelog.domain.billing.PriceResult
-import com.maxeydev.picklelog.domain.billing.PurchaseOutcome
-import com.maxeydev.picklelog.domain.billing.RestoreOutcome
-import com.maxeydev.picklelog.domain.billing.StoreProblem
+import com.maxeydev.picklejot.domain.billing.PriceResult
+import com.maxeydev.picklejot.domain.billing.PurchaseOutcome
+import com.maxeydev.picklejot.domain.billing.RestoreOutcome
+import com.maxeydev.picklejot.domain.billing.StoreProblem
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse

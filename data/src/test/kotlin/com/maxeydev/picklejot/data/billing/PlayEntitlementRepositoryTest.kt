@@ -1,7 +1,7 @@
-package com.maxeydev.picklelog.data.billing
+package com.maxeydev.picklejot.data.billing
 
-import com.maxeydev.picklelog.domain.entitlement.EntitlementSignal
-import com.maxeydev.picklelog.domain.profile.Entitlement
+import com.maxeydev.picklejot.domain.entitlement.EntitlementSignal
+import com.maxeydev.picklejot.domain.profile.Entitlement
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse

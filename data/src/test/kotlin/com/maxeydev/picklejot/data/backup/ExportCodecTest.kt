@@ -1,8 +1,8 @@
 @file:OptIn(ExperimentalUuidApi::class)
 
-package com.maxeydev.picklelog.data.backup
+package com.maxeydev.picklejot.data.backup
 
-import com.maxeydev.picklelog.domain.backup.ImportProblem
+import com.maxeydev.picklejot.domain.backup.ImportProblem
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -30,7 +30,7 @@ class ExportCodecTest {
 
         val text = ExportFixtures.text(file)
 
-        assertTrue(text.contains("\"format\": \"picklelog-export\""))
+        assertTrue(text.contains("\"format\": \"picklejot-export\""))
         assertTrue(text.contains("\"schemaVersion\": 1"))
     }
 
@@ -121,31 +121,38 @@ class ExportCodecTest {
     }
 
     @Test
-    fun `json that is not an object is not a picklelog export`() {
-        assertEquals(ImportProblem.NOT_A_PICKLELOG_EXPORT, problemOf("[]"))
-        assertEquals(ImportProblem.NOT_A_PICKLELOG_EXPORT, problemOf("null"))
-        assertEquals(ImportProblem.NOT_A_PICKLELOG_EXPORT, problemOf("{}"))
+    fun `json that is not an object is not a picklejot export`() {
+        assertEquals(ImportProblem.NOT_A_PICKLEJOT_EXPORT, problemOf("[]"))
+        assertEquals(ImportProblem.NOT_A_PICKLEJOT_EXPORT, problemOf("null"))
+        assertEquals(ImportProblem.NOT_A_PICKLEJOT_EXPORT, problemOf("{}"))
     }
 
     @Test
-    fun `a file with another format name is not a picklelog export`() {
+    fun `a file with another format name is not a picklejot export`() {
         val file = ExportFixtures.file(emptyList(), emptyList(), format = "something-else")
 
-        assertEquals(ImportProblem.NOT_A_PICKLELOG_EXPORT, problemOf(file))
+        assertEquals(ImportProblem.NOT_A_PICKLEJOT_EXPORT, problemOf(file))
     }
 
     @Test
-    fun `a file with no schema version is not a picklelog export`() {
+    fun `an export made before the rename to picklejot still imports`() {
+        val file = ExportFixtures.file(emptyList(), emptyList(), format = "picklelog-export")
+
+        validOf(file)
+    }
+
+    @Test
+    fun `a file with no schema version is not a picklejot export`() {
         val original = ExportFixtures.text(ExportFixtures.file(emptyList(), emptyList()))
         val text = original.replace("\"schemaVersion\"", "\"other\"")
 
-        assertEquals(ImportProblem.NOT_A_PICKLELOG_EXPORT, problemOf(text))
+        assertEquals(ImportProblem.NOT_A_PICKLEJOT_EXPORT, problemOf(text))
     }
 
     @Test
-    fun `a schema version below one is not a picklelog export`() {
+    fun `a schema version below one is not a picklejot export`() {
         val file = ExportFixtures.file(emptyList(), emptyList(), version = 0)
-        assertEquals(ImportProblem.NOT_A_PICKLELOG_EXPORT, problemOf(file))
+        assertEquals(ImportProblem.NOT_A_PICKLEJOT_EXPORT, problemOf(file))
     }
 
     @Test
@@ -157,7 +164,7 @@ class ExportCodecTest {
 
     @Test
     fun `a newer schema is refused even when its structure no longer matches`() {
-        val text = """{"format":"picklelog-export","schemaVersion":99,"matches":"a different shape"}"""
+        val text = """{"format":"picklejot-export","schemaVersion":99,"matches":"a different shape"}"""
 
         assertEquals(ImportProblem.NEWER_VERSION, problemOf(text))
     }
@@ -260,7 +267,7 @@ class ExportCodecTest {
     fun `a photo path that leaves the photos folder is corrupt content`() {
         val escapes =
             listOf(
-                "../databases/picklelog.db",
+                "../databases/picklejot.db",
                 "photos/../x.jpg",
                 "/etc/passwd",
                 "other/x.jpg",

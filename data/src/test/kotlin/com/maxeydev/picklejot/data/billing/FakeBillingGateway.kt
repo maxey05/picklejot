@@ -1,4 +1,4 @@
-package com.maxeydev.picklelog.data.billing
+package com.maxeydev.picklejot.data.billing
 
 import android.app.Activity
 

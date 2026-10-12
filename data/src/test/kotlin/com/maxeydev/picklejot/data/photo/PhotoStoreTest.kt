@@ -1,4 +1,4 @@
-package com.maxeydev.picklelog.data.photo
+package com.maxeydev.picklejot.data.photo
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse

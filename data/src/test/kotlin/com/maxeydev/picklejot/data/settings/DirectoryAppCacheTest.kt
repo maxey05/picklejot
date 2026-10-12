@@ -1,4 +1,4 @@
-package com.maxeydev.picklelog.data.settings
+package com.maxeydev.picklejot.data.settings
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
@@ -40,7 +40,7 @@ class DirectoryAppCacheTest {
         runTest {
             val root = temporaryFolder.newFolder("cache")
             write(root, "cards/a.jpg", 100)
-            write(root, "exports/picklelog.json", 20)
+            write(root, "exports/picklejot.json", 20)
             val cache = DirectoryAppCache(root, Dispatchers.Unconfined)
 
             cache.clear()
