@@ -2,18 +2,18 @@
 <resources>
     <string name="settings_support">Support the creator</string>
     <string name="support_title">Support the creator</string>
-    <string name="support_hero_heading">Thanks for using Picklelog</string>
-    <string name="support_hero_body">Hi! I\'m the creator of Picklelog. I made this app as a passion project for my friends and family, and I am so thankful to all of you for using my app. Just downloading my app already means the world to me, but if you would like to support me and my next projects, feel free to drop a donation, thank you!</string>
+    <string name="support_hero_heading">Thanks for using Picklejot</string>
+    <string name="support_hero_body">Hi! I\'m the creator of Picklejot. I made this app as a passion project for my friends and family, and I am so thankful to all of you for using my app. Just downloading my app already means the world to me, but if you would like to support me and my next projects, feel free to drop a donation, thank you!</string>
     <string name="support_ways_heading">Support me by...</string>
-    <string name="support_pro_title">Unlock Picklelog Pro</string>
+    <string name="support_pro_title">Unlock Picklejot Pro</string>
     <string name="support_pro_supporting">One payment, no subscription!</string>
-    <string name="support_pro_thanks_title">You\'ve unlocked Picklelog Pro</string>
-    <string name="support_pro_thanks_supporting">Thank you. That is the biggest way to support Picklelog, and it\'s already done.</string>
-    <string name="support_rate_title">Rate Picklelog</string>
-    <string name="support_rate_supporting">Rating Picklelog helps others discover it!</string>
+    <string name="support_pro_thanks_title">You\'ve unlocked Picklejot Pro</string>
+    <string name="support_pro_thanks_supporting">Thank you. That is the biggest way to support Picklejot, and it\'s already done.</string>
+    <string name="support_rate_title">Rate Picklejot</string>
+    <string name="support_rate_supporting">Rating Picklejot helps others discover it!</string>
     <string name="support_share_title">Share with your friends!</string>
-    <string name="support_share_supporting">Share Picklelog with your pickleball partners and friends!</string>
+    <string name="support_share_supporting">Share Picklejot with your pickleball partners and friends!</string>
     <string name="support_donate_title">Donate!</string>
-    <string name="support_share_message">I log my pickleball matches with Picklelog: %1$s</string>
-    <string name="support_share_chooser_title">Share Picklelog</string>
+    <string name="support_share_message">I log my pickleball matches with Picklejot: %1$s</string>
+    <string name="support_share_chooser_title">Share Picklejot</string>
 </resources>
