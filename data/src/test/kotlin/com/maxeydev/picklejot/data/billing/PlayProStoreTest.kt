@@ -15,7 +15,13 @@ class PlayProStoreTest {
     private val gateway = FakeBillingGateway()
     private val local = InMemoryEntitlementRepository()
     private val repository =
-        PlayEntitlementRepository(local, gateway, PurchaseAcknowledger(gateway, Backoff(emptyList())), Clock.System)
+        PlayEntitlementRepository(
+            local,
+            gateway,
+            PurchaseAcknowledger(gateway, Backoff(emptyList())),
+            FakePurchaseValidator(),
+            Clock.System,
+        )
 
     private fun store(launch: GatewayResult<List<PlayPurchase>>?): PlayProStore =
         PlayProStore(gateway, repository) { launch }
