@@ -30,6 +30,15 @@
     static <1>$Companion Companion;
 }
 
+-keepclassmembers class com.maxeydev.picklejot.data.billing.**$$serializer { *; }
+-keepclasseswithmembers class com.maxeydev.picklejot.data.billing.** {
+    kotlinx.serialization.KSerializer serializer(...);
+}
+-if @kotlinx.serialization.Serializable class com.maxeydev.picklejot.data.billing.**
+-keepclassmembers class <1> {
+    static <1>$Companion Companion;
+}
+
 # --- WorkManager -----------------------------------------------------------
 -keepnames class com.maxeydev.picklejot.data.backup.ExportPromptWorker
 
