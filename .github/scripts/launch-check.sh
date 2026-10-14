@@ -8,6 +8,7 @@ pkg=com.maxeydev.picklejot
 
 fail() {
   echo "::error::$1 (API $api): $(echo "$2" | tr '\n' ' ' | cut -c1-400)"
+  echo "::error::emulator: $(adb logcat -d 2>&1 | grep -E 'FATAL|ANR in|Out of memory|lowmemorykiller|system_server.*(died|crash)' | tail -8 | cut -c1-200 | tr '\n' '|')"
   adb logcat -d -t 300
   exit 1
 }

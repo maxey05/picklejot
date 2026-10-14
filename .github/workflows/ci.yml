@@ -86,6 +86,9 @@ jobs:
           arch: x86_64
           profile: pixel_6
           disk-size: 6000M
+          cores: 4
+          ram-size: 4096M
+          heap-size: 512M
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: bash .github/scripts/launch-check.sh ${{ matrix.api-level }}
@@ -142,9 +145,12 @@ jobs:
           arch: x86_64
           profile: pixel_6
           disk-size: 6000M
+          cores: 4
+          ram-size: 4096M
+          heap-size: 512M
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: ./gradlew :app:connectedDebugAndroidTest :data:connectedDebugAndroidTest :ui:connectedDebugAndroidTest --continue --stacktrace
+          script: bash .github/scripts/run-instrumented.sh
 
       - name: Annotate failed tests
         if: failure()
