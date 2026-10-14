@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalUuidApi::class)
+@file:OptIn(ExperimentalUuidApi::class, ExperimentalSerializationApi::class)
 
 package com.maxeydev.picklejot.data.backup
 
@@ -16,13 +16,24 @@ import com.maxeydev.picklejot.domain.match.maxOpponentsFor
 import com.maxeydev.picklejot.domain.person.normalizePersonName
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.intOrNull
+import java.io.BufferedInputStream
+import java.io.InputStream
 import kotlin.time.Instant
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
+
+@Serializable
+private class ExportHeader(
+    val format: JsonElement? = null,
+    val schemaVersion: JsonElement? = null,
+)
 
 internal data class ParsedMatch(
     val match: MatchEntity,
@@ -51,6 +62,7 @@ internal object ExportCodec {
     const val FORMAT_NAME = "picklejot-export"
     private val ACCEPTED_FORMAT_NAMES = setOf(FORMAT_NAME, "picklelog-export")
     const val SCHEMA_VERSION = 1
+    private val UTF8_BOM = intArrayOf(0xEF, 0xBB, 0xBF)
 
     private val json =
         Json {
@@ -62,20 +74,23 @@ internal object ExportCodec {
 
     fun encode(file: ExportFile): String = json.encodeToString(ExportFile.serializer(), file)
 
-    fun decode(text: String): DecodeResult {
-        val root =
+    fun decode(text: String): DecodeResult = decode { text.byteInputStream() }
+
+    // Streams the file twice (a cheap header pass, then the full decode) so no String or JsonElement
+    // tree of the whole file is ever held. IOExceptions from `open` or the stream propagate to the caller.
+    fun decode(open: () -> InputStream): DecodeResult {
+        val header =
             try {
-                json.parseToJsonElement(text)
+                open().withoutBom().use { json.decodeFromStream(ExportHeader.serializer(), it) }
             } catch (unreadable: IllegalArgumentException) {
-                return DecodeResult.Invalid(ImportProblem.NOT_READABLE)
+                return unreadableProblem(open)
             }
-        val objectRoot = root as? JsonObject ?: return DecodeResult.Invalid(ImportProblem.NOT_A_PICKLEJOT_EXPORT)
-        val formatName = (objectRoot["format"] as? JsonPrimitive)?.takeIf { it.isString }?.content
+        val formatName = (header.format as? JsonPrimitive)?.takeIf { it.isString }?.content
         if (formatName !in ACCEPTED_FORMAT_NAMES) {
             return DecodeResult.Invalid(ImportProblem.NOT_A_PICKLEJOT_EXPORT)
         }
         val version =
-            (objectRoot["schemaVersion"] as? JsonPrimitive)?.intOrNull
+            (header.schemaVersion as? JsonPrimitive)?.intOrNull
                 ?: return DecodeResult.Invalid(ImportProblem.NOT_A_PICKLEJOT_EXPORT)
         if (version > SCHEMA_VERSION) {
             return DecodeResult.Invalid(ImportProblem.NEWER_VERSION)
@@ -84,10 +99,28 @@ internal object ExportCodec {
             return DecodeResult.Invalid(ImportProblem.NOT_A_PICKLEJOT_EXPORT)
         }
         return try {
-            DecodeResult.Valid(validate(json.decodeFromJsonElement(ExportFile.serializer(), objectRoot)))
+            DecodeResult.Valid(validate(open().withoutBom().use { json.decodeFromStream(ExportFile.serializer(), it) }))
         } catch (corrupt: IllegalArgumentException) {
             DecodeResult.Invalid(ImportProblem.CORRUPT_CONTENT)
         }
+    }
+
+    // The header pass fails on bad syntax or on a root that is not an object; only a tree parse tells them apart.
+    private fun unreadableProblem(open: () -> InputStream): DecodeResult.Invalid =
+        try {
+            open().withoutBom().use { json.decodeFromStream(JsonElement.serializer(), it) }
+            DecodeResult.Invalid(ImportProblem.NOT_A_PICKLEJOT_EXPORT)
+        } catch (unreadable: IllegalArgumentException) {
+            DecodeResult.Invalid(ImportProblem.NOT_READABLE)
+        }
+
+    private fun InputStream.withoutBom(): InputStream {
+        val buffered = BufferedInputStream(this)
+        buffered.mark(UTF8_BOM.size)
+        if (!UTF8_BOM.all { buffered.read() == it }) {
+            buffered.reset()
+        }
+        return buffered
     }
 
     fun build(
