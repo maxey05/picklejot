@@ -13,7 +13,13 @@ class BillingStartupCheckTest {
     private val gateway = FakeBillingGateway()
     private val local = InMemoryEntitlementRepository()
     private val repository =
-        PlayEntitlementRepository(local, gateway, PurchaseAcknowledger(gateway, Backoff(emptyList())), Clock.System)
+        PlayEntitlementRepository(
+            local,
+            gateway,
+            PurchaseAcknowledger(gateway, Backoff(emptyList())),
+            FakePurchaseValidator(),
+            Clock.System,
+        )
 
     @Test
     fun `every app start restores and acknowledges a purchase left unacknowledged by a force quit`() =
