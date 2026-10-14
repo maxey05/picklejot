@@ -64,7 +64,8 @@ import com.maxeydev.picklejot.ui.settings.BackupSettingsScreen
 import com.maxeydev.picklejot.ui.settings.BackupViewModel
 import com.maxeydev.picklejot.ui.settings.ExportPromptBanner
 import com.maxeydev.picklejot.ui.settings.ExportPromptViewModel
-import com.maxeydev.picklejot.ui.settings.PrivacyPolicyScreen
+import com.maxeydev.picklejot.ui.settings.LegalDocument
+import com.maxeydev.picklejot.ui.settings.LegalDocumentScreen
 import com.maxeydev.picklejot.ui.settings.SettingsActions
 import com.maxeydev.picklejot.ui.settings.SettingsDrawer
 import com.maxeydev.picklejot.ui.settings.SettingsDrawerHost
@@ -196,6 +197,7 @@ private fun PicklejotNavGraph(
                         onSeePro = { navController.navigate(PaywallRoute) },
                         onOpenBackup = { navController.navigate(BackupRoute) },
                         onOpenPrivacy = { navController.navigate(PrivacyRoute) },
+                        onOpenTerms = { navController.navigate(TermsRoute) },
                         onOpenAbout = { navController.navigate(AboutRoute) },
                         onRateUs = { openStoreListing(context) },
                         onOpenSupport = { navController.navigate(SupportRoute) },
@@ -416,7 +418,18 @@ private fun PicklejotNavGraph(
             )
         }
         composable<PrivacyRoute> {
-            PrivacyPolicyScreen(onBack = { navController.popBackStack() })
+            LegalDocumentScreen(
+                document = LegalDocument.PRIVACY,
+                onBack = { navController.popBackStack() },
+                onOpenDocument = navController::openLegalDocument,
+            )
+        }
+        composable<TermsRoute> {
+            LegalDocumentScreen(
+                document = LegalDocument.TERMS,
+                onBack = { navController.popBackStack() },
+                onOpenDocument = navController::openLegalDocument,
+            )
         }
         composable<AboutRoute> {
             AboutScreen(
@@ -644,5 +657,12 @@ private fun PicklejotNavGraph(
             }
             onOpenLoggingHandled()
         }
+    }
+}
+
+private fun NavHostController.openLegalDocument(document: LegalDocument) {
+    when (document) {
+        LegalDocument.PRIVACY -> navigate(PrivacyRoute)
+        LegalDocument.TERMS -> navigate(TermsRoute)
     }
 }

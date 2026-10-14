@@ -20,6 +20,7 @@ android {
     }
 
     sourceSets {
+        getByName("main").assets.srcDir("../site-src/legal")
         getByName("test").java.srcDir("src/sharedTest/kotlin")
         getByName("androidTest").java.srcDir("src/sharedTest/kotlin")
     }

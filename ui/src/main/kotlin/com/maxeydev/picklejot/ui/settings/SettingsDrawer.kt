@@ -312,6 +312,16 @@ private fun InfoCard(
                     .testTag(SettingsTestTags.PRIVACY_OPEN),
         )
         SettingsRow(
+            icon = R.drawable.ic_notes,
+            label = stringResource(R.string.settings_terms),
+            navigates = true,
+            showDivider = true,
+            modifier =
+                Modifier
+                    .clickable(role = Role.Button, onClick = actions.onOpenTerms)
+                    .testTag(SettingsTestTags.TERMS_OPEN),
+        )
+        SettingsRow(
             icon = R.drawable.ic_star,
             label = stringResource(R.string.settings_rate_us),
             showDivider = true,

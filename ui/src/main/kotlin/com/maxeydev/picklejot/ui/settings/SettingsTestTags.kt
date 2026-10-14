@@ -20,6 +20,7 @@ object SettingsTestTags {
     const val CLEAR_CACHE = "settings_clear_cache"
     const val CACHE_SIZE = "settings_cache_size"
     const val PRIVACY_OPEN = "settings_privacy_open"
+    const val TERMS_OPEN = "settings_terms_open"
     const val RATE_US = "settings_rate_us"
     const val SUPPORT_OPEN = "settings_support_open"
     const val ABOUT_OPEN = "settings_about_open"

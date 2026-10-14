@@ -32,6 +32,9 @@ data object PaywallRoute
 data object PrivacyRoute
 
 @Serializable
+data object TermsRoute
+
+@Serializable
 data object BackupRoute
 
 @Serializable

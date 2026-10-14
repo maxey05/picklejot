@@ -19,6 +19,7 @@ class SettingsActions(
     val onNameEditCancelled: () -> Unit,
     val onDarkThemeChanged: (Boolean) -> Unit,
     val onSoundEffectsChanged: (Boolean) -> Unit = {},
+    val onOpenTerms: () -> Unit = {},
     val onEraseConfirmed: () -> Unit,
     val onEraseFailureDismissed: () -> Unit,
 )

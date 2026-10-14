@@ -35,6 +35,7 @@ class SettingsDrawerTest {
     private var supportOpens = 0
     private var backupOpens = 0
     private var privacyOpens = 0
+    private var termsOpens = 0
     private var proOpens = 0
     private var cacheClears = 0
     private var closes = 0
@@ -45,6 +46,7 @@ class SettingsDrawerTest {
             onSeePro = { proOpens++ },
             onOpenBackup = { backupOpens++ },
             onOpenPrivacy = { privacyOpens++ },
+            onOpenTerms = { termsOpens++ },
             onOpenAbout = { aboutOpens++ },
             onRateUs = {},
             onOpenSupport = { supportOpens++ },
@@ -222,6 +224,15 @@ class SettingsDrawerTest {
         compose.onNodeWithTag(SettingsTestTags.PRIVACY_OPEN).performScrollTo().performClick()
 
         assertEquals(1, privacyOpens)
+    }
+
+    @Test
+    fun the_terms_of_service_open_inside_the_app() {
+        show(SettingsUiState())
+
+        compose.onNodeWithTag(SettingsTestTags.TERMS_OPEN).performScrollTo().performClick()
+
+        assertEquals(1, termsOpens)
     }
 
     @Test
