@@ -9,6 +9,9 @@ sealed interface SyncOutcome {
 
     data object NothingFound : SyncOutcome
 
+    /** Play reports a purchase but the verifier refused it. Nothing was granted; nothing was revoked. */
+    data object Rejected : SyncOutcome
+
     data class CouldNotCheck(
         val response: BillingResponse,
     ) : SyncOutcome
