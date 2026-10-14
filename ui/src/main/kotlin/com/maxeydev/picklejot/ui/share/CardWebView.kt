@@ -100,6 +100,9 @@ class CardWebView(
             displayZoomControls = false
             allowFileAccess = false
             allowContentAccess = false
+            // INTERNET is now declared (purchase verifier), so the old "no permission, no network"
+            // backstop is gone. This restores it for the card renderer; the client and CSP are the rest.
+            blockNetworkLoads = true
             domStorageEnabled = false
             setGeolocationEnabled(false)
             javaScriptCanOpenWindowsAutomatically = false
