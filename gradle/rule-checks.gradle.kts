@@ -4,7 +4,7 @@ fun sourceTree(): Sequence<File> {
     val self = rootDir.resolve("gradle/rule-checks.gradle.kts").canonicalFile
     return rootDir.walkTopDown()
         .onEnter { dir ->
-            dir.name !in setOf("build", "bin", "out", "gen", ".git", ".gradle", ".idea", "node_modules", ".kotlin")
+            dir.name !in setOf("build", "bin", "out", "gen", ".git", ".gradle", ".idea", "node_modules", ".kotlin", ".claude")
         }
         .filter { it.isFile && it.canonicalFile != self }
 }

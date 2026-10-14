@@ -215,7 +215,10 @@ class QueuedPhotoImporterTest {
             }
 
             keys.forEach { key ->
-                val state = withTimeout(BULK_WAIT_MILLIS) { importer.observe(key).first { it !is PhotoImportState.Importing } }
+                val state =
+                    withTimeout(BULK_WAIT_MILLIS) {
+                        importer.observe(key).first { it !is PhotoImportState.Importing }
+                    }
                 assertTrue("$key ended as $state", state is PhotoImportState.Ready)
             }
             assertTrue("peak ${peakOpenStreams.get()}", peakOpenStreams.get() <= MAX_CONCURRENT_DECODES)
