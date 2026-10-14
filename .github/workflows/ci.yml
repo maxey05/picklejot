@@ -76,7 +76,7 @@ jobs:
           sudo udevadm trigger --name-match=kvm
 
       - name: Assemble debug APK
-        run: ./gradlew :app:assembleDebug
+        run: ./gradlew :app:assembleDebug && ./gradlew --stop
 
       - name: Install and launch on emulator
         uses: reactivecircus/android-emulator-runner@v2
@@ -113,6 +113,9 @@ jobs:
           :app:compileDebugAndroidTestKotlin
           :data:compileDebugAndroidTestKotlin
           :ui:compileDebugAndroidTestKotlin
+          :app:dexBuilderDebugAndroidTest
+          :data:dexBuilderDebugAndroidTest
+          :ui:dexBuilderDebugAndroidTest
           --stacktrace
 
   instrumented:
@@ -136,6 +139,11 @@ jobs:
             | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
+
+      # Build everything first and free the daemons, so dexing does not fight the
+      # emulator for the runner's 4 cores (that starves system_server / systemui).
+      - name: Build test APKs
+        run: ./gradlew :app:assembleDebugAndroidTest :data:assembleDebugAndroidTest :ui:assembleDebugAndroidTest :app:assembleDebug --stacktrace && ./gradlew --stop
 
       - name: Run instrumented tests on emulator
         uses: reactivecircus/android-emulator-runner@v2

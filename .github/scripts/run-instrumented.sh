@@ -2,6 +2,7 @@
 # Run by android-emulator-runner (one script line at a time, see launch-check.sh).
 # On failure, surfaces the Gradle and emulator evidence as annotations, since job
 # logs are not readable without auth.
+bash .github/scripts/wait-ready.sh
 ./gradlew :app:connectedDebugAndroidTest :data:connectedDebugAndroidTest :ui:connectedDebugAndroidTest \
   --continue --stacktrace 2>&1 | tee gradle.log
 status=${PIPESTATUS[0]}

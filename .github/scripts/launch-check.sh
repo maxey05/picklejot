@@ -13,8 +13,13 @@ fail() {
   exit 1
 }
 
+bash .github/scripts/wait-ready.sh
 out=$(adb install -r "$apk" 2>&1) || fail "adb install failed" "$out"
-out=$(adb shell am start -W -n "$pkg/.MainActivity" 2>&1) || fail "am start failed" "$out"
+for try in 1 2 3; do
+  out=$(adb shell am start -W -n "$pkg/.MainActivity" 2>&1) && break
+  [ "$try" = 3 ] && fail "am start failed" "$out"
+  sleep 15
+done
 sleep 5
 # AC-1.19 — "it installed" is not "it launched". Assert the process is alive after
 # start, so a crash-on-launch fails the job.

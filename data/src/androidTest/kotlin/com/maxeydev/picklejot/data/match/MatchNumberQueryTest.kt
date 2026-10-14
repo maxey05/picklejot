@@ -59,7 +59,7 @@ class MatchNumberQueryTest {
         )
 
     @Test
-    fun `numbers follow date then creation time`() =
+    fun `numbers_follow_date_then_creation_time`() =
         runBlocking {
             val first = match("2026-09-01")
             val secondLoggedFirst = match("2026-09-10", createdAtMillis = 1_000)
@@ -74,7 +74,7 @@ class MatchNumberQueryTest {
         }
 
     @Test
-    fun `deleting an earlier match renumbers later ones`() =
+    fun `deleting_an_earlier_match_renumbers_later_ones`() =
         runBlocking {
             val earlier = match("2026-09-01")
             val later = match("2026-09-02")
@@ -87,7 +87,7 @@ class MatchNumberQueryTest {
         }
 
     @Test
-    fun `an unknown match has no number`() =
+    fun `an_unknown_match_has_no_number`() =
         runBlocking {
             assertEquals(0, matches.observeMatchNumber(Uuid.random()).first())
         }
