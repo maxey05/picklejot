@@ -35,6 +35,7 @@ class PlayProStore(
             is SyncOutcome.Granted -> RestoreOutcome.Restored
             SyncOutcome.Pending -> RestoreOutcome.Pending
             SyncOutcome.NothingFound -> RestoreOutcome.NothingToRestore
+            SyncOutcome.Rejected -> RestoreOutcome.CouldNotCheck(StoreProblem.UNEXPECTED)
             is SyncOutcome.CouldNotCheck -> RestoreOutcome.CouldNotCheck(outcome.response.problem)
         }
 
@@ -42,7 +43,7 @@ class PlayProStore(
         when (sync) {
             is SyncOutcome.Granted -> PurchaseOutcome.Unlocked
             SyncOutcome.Pending -> PurchaseOutcome.Pending
-            SyncOutcome.NothingFound -> PurchaseOutcome.Failed(StoreProblem.UNEXPECTED)
+            SyncOutcome.NothingFound, SyncOutcome.Rejected -> PurchaseOutcome.Failed(StoreProblem.UNEXPECTED)
             is SyncOutcome.CouldNotCheck -> PurchaseOutcome.Failed(sync.response.problem)
         }
 }
