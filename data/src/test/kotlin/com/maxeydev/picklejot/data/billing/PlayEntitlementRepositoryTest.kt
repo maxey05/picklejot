@@ -13,7 +13,11 @@ import kotlin.time.Instant
 private val NOW = Instant.parse("2026-09-28T09:00:00Z")
 
 private val PRO =
-    Entitlement(isPro = true, purchaseToken = "token-1", lastVerifiedAt = Instant.parse("2026-01-01T00:00:00Z"))
+    Entitlement(isPro = true, purchaseToken = "token-1", lastVerifiedAt = Instant.parse("2026-09-27T00:00:00Z"))
+
+// Verified long enough ago that the stored purchase is due to be asked about again.
+private val STALE_PRO =
+    PRO.copy(lastVerifiedAt = Instant.parse("2026-01-01T00:00:00Z"), proSince = Instant.parse("2025-12-01T00:00:00Z"))
 
 class PlayEntitlementRepositoryTest {
     private val gateway = FakeBillingGateway()
@@ -22,8 +26,10 @@ class PlayEntitlementRepositoryTest {
             override fun now(): Instant = NOW
         }
 
+    private val validator = FakePurchaseValidator()
+
     private fun repository(local: InMemoryEntitlementRepository): PlayEntitlementRepository =
-        PlayEntitlementRepository(local, gateway, PurchaseAcknowledger(gateway, Backoff(emptyList())), clock)
+        PlayEntitlementRepository(local, gateway, PurchaseAcknowledger(gateway, Backoff(emptyList())), validator, clock)
 
     @Test
     fun `no failed purchase query of any kind revokes pro`() =
@@ -145,5 +151,144 @@ class PlayEntitlementRepositoryTest {
 
             assertTrue(local.current.isPro)
             assertTrue(local.signals.none { it is EntitlementSignal.RefundConfirmed })
+        }
+
+    @Test
+    fun `a purchase the verifier rejects grants nothing and is not acknowledged`() =
+        runTest {
+            val local = InMemoryEntitlementRepository()
+            validator.result = ValidationResult.REJECTED
+            gateway.purchasesResults = mutableListOf(GatewayResult.Success(listOf(proPurchase())))
+
+            assertEquals(SyncOutcome.Rejected, repository(local).syncWithPlay())
+            assertFalse(local.current.isPro)
+            assertTrue(gateway.acknowledged.isEmpty())
+        }
+
+    @Test
+    fun `an unreachable verifier grants nothing yet is reported as a check problem not as not-purchased`() =
+        runTest {
+            val local = InMemoryEntitlementRepository()
+            validator.result = ValidationResult.UNREACHABLE
+            gateway.purchasesResults = mutableListOf(GatewayResult.Success(listOf(proPurchase())))
+
+            assertEquals(SyncOutcome.CouldNotCheck(BillingResponse.NETWORK_ERROR), repository(local).syncWithPlay())
+            assertFalse(local.current.isPro)
+            assertTrue(gateway.acknowledged.isEmpty())
+            assertEquals(EntitlementSignal.CheckUnavailable, local.signals.single())
+        }
+
+    @Test
+    fun `a rejected or unreachable verifier never revokes an existing pro`() =
+        runTest {
+            ValidationResult.entries.filter { it != ValidationResult.VALID }.forEach { result ->
+                val local = InMemoryEntitlementRepository(PRO)
+                validator.result = result
+                gateway.purchasesResults = mutableListOf(GatewayResult.Success(listOf(proPurchase(token = "token-2"))))
+
+                repository(local).syncWithPlay()
+
+                assertEquals("after $result", PRO, local.current)
+            }
+        }
+
+    @Test
+    fun `a token already verified is not sent to the verifier again on every launch`() =
+        runTest {
+            val local = InMemoryEntitlementRepository(PRO)
+            validator.result = ValidationResult.REJECTED
+            gateway.purchasesResults = mutableListOf(GatewayResult.Success(listOf(proPurchase(token = "token-1"))))
+            gateway.acknowledgeResponses = mutableListOf(BillingResponse.OK)
+
+            assertEquals(SyncOutcome.Granted(isAcknowledged = true), repository(local).syncWithPlay())
+            assertTrue(validator.validated.isEmpty())
+        }
+
+    @Test
+    fun `a new token is always verified even when pro is already cached`() =
+        runTest {
+            val local = InMemoryEntitlementRepository(PRO)
+            gateway.purchasesResults = mutableListOf(GatewayResult.Success(listOf(proPurchase(token = "token-2"))))
+            gateway.acknowledgeResponses = mutableListOf(BillingResponse.OK)
+
+            repository(local).syncWithPlay()
+
+            assertEquals(listOf("token-2"), validator.validated)
+            assertEquals("token-2", local.current.purchaseToken)
+        }
+
+    @Test
+    fun `an explicit refund verdict is recorded and grants nothing`() =
+        runTest {
+            val local = InMemoryEntitlementRepository()
+            validator.result = ValidationResult.REFUNDED
+            gateway.purchasesResults = mutableListOf(GatewayResult.Success(listOf(proPurchase(token = "token-9"))))
+
+            assertEquals(SyncOutcome.NothingFound, repository(local).syncWithPlay())
+            assertFalse(local.current.isPro)
+            assertTrue(local.signals.contains(EntitlementSignal.RefundConfirmed("token-9")))
+        }
+
+    @Test
+    fun `a stale cached purchase that Play no longer lists is revoked only by an explicit refund verdict`() =
+        runTest {
+            val local = InMemoryEntitlementRepository(STALE_PRO)
+            validator.result = ValidationResult.REFUNDED
+            gateway.purchasesResults = mutableListOf(GatewayResult.Success(emptyList()))
+
+            assertEquals(SyncOutcome.NothingFound, repository(local).syncWithPlay())
+
+            assertEquals(listOf("token-1"), validator.validated)
+            assertFalse(local.current.isPro)
+        }
+
+    @Test
+    fun `a stale cached purchase that is still valid gets a fresh stamp and keeps its original purchase date`() =
+        runTest {
+            val local = InMemoryEntitlementRepository(STALE_PRO)
+            gateway.purchasesResults = mutableListOf(GatewayResult.Success(emptyList()))
+
+            repository(local).syncWithPlay()
+
+            assertTrue(local.current.isPro)
+            assertEquals(NOW, local.current.lastVerifiedAt)
+            assertEquals(STALE_PRO.proSince, local.current.proSince)
+        }
+
+    @Test
+    fun `a stale recheck that is rejected or unreachable changes nothing and is not reported to the user`() =
+        runTest {
+            listOf(ValidationResult.REJECTED, ValidationResult.UNREACHABLE).forEach { result ->
+                val local = InMemoryEntitlementRepository(STALE_PRO)
+                validator.result = result
+                gateway.purchasesResults = mutableListOf(GatewayResult.Success(emptyList()))
+
+                assertEquals(SyncOutcome.NothingFound, repository(local).syncWithPlay())
+                assertEquals("after $result", STALE_PRO, local.current)
+            }
+        }
+
+    @Test
+    fun `a recently verified purchase is not rechecked`() =
+        runTest {
+            val local = InMemoryEntitlementRepository(PRO)
+            gateway.purchasesResults = mutableListOf(GatewayResult.Success(emptyList()))
+
+            repository(local).syncWithPlay()
+
+            assertTrue(validator.validated.isEmpty())
+        }
+
+    @Test
+    fun `the recheck runs once per process however often play is synced`() =
+        runTest {
+            val local = InMemoryEntitlementRepository(STALE_PRO)
+            validator.result = ValidationResult.UNREACHABLE
+            gateway.purchasesResults = mutableListOf(GatewayResult.Success(emptyList()))
+            val repository = repository(local)
+
+            repeat(3) { repository.syncWithPlay() }
+
+            assertEquals(1, validator.validated.size)
         }
 }
