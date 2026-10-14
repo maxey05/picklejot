@@ -73,17 +73,28 @@ class ImageCompressor(
         source: String,
         bounds: Pair<Int, Int>,
     ): Bitmap? {
+        val longEdge = max(bounds.first, bounds.second)
+        val sampleSize = sampleSizeFor(longEdge)
         val options =
             BitmapFactory.Options().apply {
-                inSampleSize = sampleSizeFor(max(bounds.first, bounds.second))
+                inSampleSize = sampleSize
                 inPreferredConfig = Bitmap.Config.ARGB_8888
+                if (sampleSize > 1 || longEdge > maxLongEdge) {
+                    // Let the decoder land exactly on maxLongEdge (a small up- or down-scale from the
+                    // sampled size) so no separate full-size copy has to be scaled afterwards.
+                    inScaled = true
+                    inDensity = (longEdge + sampleSize - 1) / sampleSize
+                    inTargetDensity = maxLongEdge
+                }
             }
         return open(source).use { stream -> BitmapFactory.decodeStream(stream, null, options) }
     }
 
+    // Largest power-of-two sample whose decoded long edge stays within SAMPLE_TOLERANCE of maxLongEdge
+    // (a 4032px photo decodes at 2016px, 12MB, instead of 48MB, then is nudged up to 2048).
     private fun sampleSizeFor(longEdge: Int): Int {
         var sampleSize = 1
-        while (longEdge / (sampleSize * 2) >= maxLongEdge) {
+        while (longEdge / (sampleSize * 2) >= maxLongEdge * SAMPLE_TOLERANCE) {
             sampleSize *= 2
         }
         return sampleSize
@@ -157,6 +168,7 @@ class ImageCompressor(
         openSource(source) ?: throw IOException("The photo source could not be opened.")
 
     private companion object {
+        const val SAMPLE_TOLERANCE = 0.95
         const val QUARTER_TURN = 90f
         const val HALF_TURN = 180f
         const val THREE_QUARTER_TURN = 270f
