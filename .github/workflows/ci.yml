@@ -57,7 +57,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api-level: [26, 37]
+        api-level: ['26', '37.0']
     steps:
       - uses: actions/checkout@v4
 
@@ -82,7 +82,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
-          target: ${{ matrix.api-level == 26 && 'default' || 'google_apis' }}
+          target: ${{ matrix.api-level == '26' && 'default' || 'google_apis' }}
           arch: x86_64
           profile: pixel_6
           disable-animations: true
@@ -136,7 +136,7 @@ jobs:
       - name: Run instrumented tests on emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 37
+          api-level: '37.0'
           target: google_apis
           arch: x86_64
           profile: pixel_6
