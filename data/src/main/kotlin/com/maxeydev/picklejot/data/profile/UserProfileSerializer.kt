@@ -4,9 +4,12 @@ import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.Serializer
 import com.maxeydev.picklejot.domain.profile.Entitlement
 import com.maxeydev.picklejot.domain.profile.UserProfile
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
+import kotlinx.serialization.json.encodeToStream
 import java.io.InputStream
 import java.io.OutputStream
 import kotlin.time.Clock
@@ -60,6 +63,7 @@ internal fun UserProfile.toJson(): UserProfileJson =
             ),
     )
 
+@OptIn(ExperimentalSerializationApi::class)
 class UserProfileSerializer(
     private val clock: Clock = Clock.System,
 ) : Serializer<UserProfile> {
@@ -73,9 +77,7 @@ class UserProfileSerializer(
 
     override suspend fun readFrom(input: InputStream): UserProfile =
         try {
-            userProfileJson
-                .decodeFromString(UserProfileJson.serializer(), input.readBytes().decodeToString())
-                .toDomain()
+            userProfileJson.decodeFromStream(UserProfileJson.serializer(), input).toDomain()
         } catch (cause: SerializationException) {
             throw CorruptionException(
                 "Couldn't read your saved profile — the file isn't valid Picklejot data.",
@@ -87,7 +89,6 @@ class UserProfileSerializer(
         t: UserProfile,
         output: OutputStream,
     ) {
-        val encoded = userProfileJson.encodeToString(UserProfileJson.serializer(), t.toJson())
-        output.write(encoded.encodeToByteArray())
+        userProfileJson.encodeToStream(UserProfileJson.serializer(), t.toJson(), output)
     }
 }
