@@ -1,4 +1,4 @@
-package com.maxeydev.picklelog.ui.share
+package com.maxeydev.picklejot.ui.share
 
 import android.content.Intent
 import android.graphics.Bitmap
@@ -6,7 +6,7 @@ import android.graphics.Color
 import android.net.Uri
 import androidx.core.content.IntentCompat
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.maxeydev.picklelog.ui.common.CARD_CACHE_DIRECTORY
+import com.maxeydev.picklejot.ui.common.CARD_CACHE_DIRECTORY
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals

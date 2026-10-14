@@ -1,4 +1,4 @@
-package com.maxeydev.picklelog.ui.share
+package com.maxeydev.picklejot.ui.share
 
 import android.os.Bundle
 import android.os.SystemClock

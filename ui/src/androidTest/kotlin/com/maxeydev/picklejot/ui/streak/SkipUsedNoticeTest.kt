@@ -1,4 +1,4 @@
-package com.maxeydev.picklelog.ui.streak
+package com.maxeydev.picklejot.ui.streak
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assert
@@ -10,9 +10,9 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.maxeydev.picklelog.domain.datetime.AppDate
-import com.maxeydev.picklelog.domain.streak.MissedSkipOpportunity
-import com.maxeydev.picklelog.domain.streak.WeekKey
+import com.maxeydev.picklejot.domain.datetime.AppDate
+import com.maxeydev.picklejot.domain.streak.MissedSkipOpportunity
+import com.maxeydev.picklejot.domain.streak.WeekKey
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test

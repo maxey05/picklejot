@@ -1,4 +1,4 @@
-package com.maxeydev.picklelog.ui.share
+package com.maxeydev.picklejot.ui.share
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.runBlocking
@@ -12,7 +12,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 private const val LOCKDOWN_PAGE = "file:///android_asset/lockdown/index.html"
-private const val REMOTE = "https://invalid.picklelog.test/"
+private const val REMOTE = "https://invalid.picklejot.test/"
 
 @RunWith(AndroidJUnit4::class)
 class LockdownTest {
