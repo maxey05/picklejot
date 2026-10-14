@@ -9,6 +9,7 @@ import com.maxeydev.picklejot.data.DataLayer
 import com.maxeydev.picklejot.data.backup.ExportPromptScheduler
 import com.maxeydev.picklejot.data.backup.ExportPromptWorkerFactory
 import com.maxeydev.picklejot.data.billing.ForegroundActivity
+import com.maxeydev.picklejot.data.billing.LicenseServerConfig
 import com.maxeydev.picklejot.data.createDataLayer
 import com.maxeydev.picklejot.data.reminder.StreakReminderWorkerFactory
 import kotlinx.coroutines.CancellationException
@@ -49,7 +50,12 @@ class PicklejotApplication :
         container =
             applicationScope.async {
                 val dataLayer =
-                    createDataLayer(this@PicklejotApplication, applicationScope, Dispatchers.IO) {
+                    createDataLayer(
+                        this@PicklejotApplication,
+                        applicationScope,
+                        Dispatchers.IO,
+                        LicenseServerConfig(BuildConfig.LICENSE_SERVER_URL, BuildConfig.LICENSE_SERVER_PUBLIC_KEY),
+                    ) {
                         foregroundActivity.current
                     }
                 applicationScope.launch { dataLayer.sweepOrphanPhotos(System.currentTimeMillis()) }
