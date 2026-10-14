@@ -9,6 +9,7 @@ import com.maxeydev.picklejot.data.billing.GatewayResult
 import com.maxeydev.picklejot.data.billing.PlayEntitlementRepository
 import com.maxeydev.picklejot.data.billing.PurchaseAcknowledger
 import com.maxeydev.picklejot.data.billing.SyncOutcome
+import com.maxeydev.picklejot.data.billing.ValidationResult
 import com.maxeydev.picklejot.domain.entitlement.EntitlementRules
 import com.maxeydev.picklejot.domain.entitlement.EntitlementSignal
 import com.maxeydev.picklejot.domain.profile.Entitlement
@@ -59,7 +60,14 @@ class BillingFlowTest {
         runBlocking {
             val gateway = BillingClientWrapper(context, Backoff(listOf(500L)))
             val local = MemoryEntitlements(Entitlement(isPro = true, purchaseToken = "installed-before"))
-            val repository = PlayEntitlementRepository(local, gateway, PurchaseAcknowledger(gateway), Clock.System)
+            val repository =
+                PlayEntitlementRepository(
+                    local,
+                    gateway,
+                    PurchaseAcknowledger(gateway),
+                    { ValidationResult.UNREACHABLE },
+                    Clock.System,
+                )
 
             val outcome = repository.syncWithPlay()
 
