@@ -18,6 +18,23 @@ val uploadKeystore =
         ?.let { rootProject.file(it) }
         ?.takeIf { it.exists() }
 
+// A release without the verifier configured builds fine and then can never sell Pro, so refuse to build it.
+// CI has no verifier and never ships, so it opts out with -PallowUnverifiedRelease=true.
+val verifierConfigured =
+    listOf("licenseServerUrl", "licenseServerPublicKey").none { findProperty(it)?.toString().isNullOrBlank() }
+val allowUnverifiedRelease = findProperty("allowUnverifiedRelease") == "true"
+if (!verifierConfigured) {
+    logger.warn("picklejot: licenseServerUrl/licenseServerPublicKey blank - this build grants NO new Pro purchases.")
+}
+tasks.matching { it.name == "generateReleaseBuildConfig" }.configureEach {
+    doFirst {
+        check(verifierConfigured || allowUnverifiedRelease) {
+            "Release build refused: set licenseServerUrl and licenseServerPublicKey (see server/README.md). " +
+                "Pass -PallowUnverifiedRelease=true only for builds that will never be published."
+        }
+    }
+}
+
 android {
     namespace = "com.maxeydev.picklejot"
     compileSdk = 37
@@ -28,6 +45,11 @@ android {
         targetSdk = 37
         versionCode = libs.versions.appVersionCode.get().toInt()
         versionName = libs.versions.appVersionName.get()
+
+        // Purchase verifier (server/). Both are public, not secrets. Set them in gradle.properties or
+        // ~/.gradle/gradle.properties. Left blank the app grants no new Pro purchases (fail closed).
+        buildConfigField("String", "LICENSE_SERVER_URL", "\"${findProperty("licenseServerUrl") ?: ""}\"")
+        buildConfigField("String", "LICENSE_SERVER_PUBLIC_KEY", "\"${findProperty("licenseServerPublicKey") ?: ""}\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -72,6 +94,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
