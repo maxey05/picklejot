@@ -32,10 +32,14 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
 import java.io.FileInputStream
+import java.util.Collections
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 private const val WAIT_MILLIS = 10_000L
+private const val BULK_WAIT_MILLIS = 120_000L
+private const val BULK_COUNT = 10
 
 @RunWith(AndroidJUnit4::class)
 class QueuedPhotoImporterTest {
@@ -44,7 +48,9 @@ class QueuedPhotoImporterTest {
     private lateinit var matches: RoomMatchRepository
     private lateinit var scope: CoroutineScope
     private lateinit var importer: QueuedPhotoImporter
-    private val deletedCaptures = mutableListOf<String>()
+    private val deletedCaptures = Collections.synchronizedList(mutableListOf<String>())
+    private val openStreams = AtomicInteger()
+    private val peakOpenStreams = AtomicInteger()
 
     @Before
     fun setUp() {
@@ -58,7 +64,7 @@ class QueuedPhotoImporterTest {
             QueuedPhotoImporter(
                 scope = scope,
                 ioDispatcher = Dispatchers.IO,
-                compressor = ImageCompressor(openSource = { FileInputStream(it) }),
+                compressor = ImageCompressor(openSource = { trackedStream(it) }),
                 photoStore = store,
                 matchRepository = matches,
                 deleteTemporaryCapture = { path ->
@@ -66,6 +72,23 @@ class QueuedPhotoImporterTest {
                     File(path).delete()
                 },
             )
+    }
+
+    // A compression opens its streams one after another, so open streams never exceed running compressions.
+    private fun trackedStream(path: String): FileInputStream {
+        val current = openStreams.incrementAndGet()
+        peakOpenStreams.accumulateAndGet(current, ::maxOf)
+        return object : FileInputStream(path) {
+            private var closed = false
+
+            override fun close() {
+                super.close()
+                if (!closed) {
+                    closed = true
+                    openStreams.decrementAndGet()
+                }
+            }
+        }
     }
 
     @After
@@ -180,5 +203,37 @@ class QueuedPhotoImporterTest {
                 }
             }
             assertEquals(PhotoImportState.Failed, importer.observe("a").first())
+        }
+
+    @Test
+    fun importing_ten_large_photos_succeeds_with_bounded_concurrent_decoding() =
+        runBlocking {
+            val keys = (0 until BULK_COUNT).map { "bulk-$it" }
+            keys.forEachIndexed { index, key ->
+                val path = writeTestJpeg(File(root, "gallery/$key.jpg"), 4000, 3000, seed = index).path
+                importer.ensureStarted(key, PhotoSource(path, isTemporaryCapture = false))
+            }
+
+            keys.forEach { key ->
+                val state = withTimeout(BULK_WAIT_MILLIS) { importer.observe(key).first { it !is PhotoImportState.Importing } }
+                assertTrue("$key ended as $state", state is PhotoImportState.Ready)
+            }
+            assertTrue("peak ${peakOpenStreams.get()}", peakOpenStreams.get() <= MAX_CONCURRENT_DECODES)
+        }
+
+    @Test
+    fun discarding_queued_camera_captures_still_deletes_them() =
+        runBlocking {
+            val captures = (0 until BULK_COUNT).map { source("capture-$it") }
+            captures.forEachIndexed { index, path ->
+                importer.ensureStarted("c$index", PhotoSource(path, isTemporaryCapture = true))
+            }
+            captures.indices.forEach { importer.discard("c$it") }
+
+            withTimeout(WAIT_MILLIS) {
+                while (captures.any { File(it).exists() }) {
+                    delay(20)
+                }
+            }
         }
 }
