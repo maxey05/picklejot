@@ -44,6 +44,8 @@ navigation = "2.10.1"
 glance = "1.2.0"
 benchmark = "1.5.0"
 billing = "9.1.0"
+# VERIFIED 2026-10-14 against dl.google.com/dl/android/maven2/com/google/android/play/integrity (release 1.6.0).
+integrity = "1.6.0"
 coil = "3.6.3"
 kotlinxDatetime = "0.8.0"
 
@@ -122,6 +124,7 @@ benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchmark-macro
 
 # AC-1.8 — must resolve on the :app classpath before any billing code exists (F65).
 billing-ktx = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "billing" }
+play-integrity = { group = "com.google.android.play", name = "integrity", version.ref = "integrity" }
 
 # Coil 3 moved its Maven group to io.coil-kt.coil3. RULES.md flagged the group as
 # unconfirmed; RFC-001 3.2 checked it against Maven Central and confirmed the move.
