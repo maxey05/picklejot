@@ -43,6 +43,7 @@ dependencies {
     ksp(libs.room.compiler)
 
     implementation(libs.billing.ktx)
+    implementation(libs.play.integrity)
     implementation(libs.datastore)
     implementation(libs.datastore.preferences)
     implementation(libs.work.runtime.ktx)
