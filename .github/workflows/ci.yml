@@ -87,19 +87,7 @@ jobs:
           profile: pixel_6
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: |
-            adb install -r app/build/outputs/apk/debug/app-debug.apk
-            adb shell am start -W -n com.maxeydev.picklejot/.MainActivity
-            sleep 5
-            # AC-1.19 — "it installed" is not "it launched". Assert the process is
-            # actually alive after start, so a crash-on-launch fails the job.
-            adb shell pidof com.maxeydev.picklejot
-            # And assert nothing crashed into the log on the way up.
-            if adb logcat -d -b crash | grep -q "com.maxeydev.picklejot"; then
-              echo "::error::App crashed on launch (API ${{ matrix.api-level }})"
-              adb logcat -d -b crash | tail -50
-              exit 1
-            fi
+          script: bash .github/scripts/launch-check.sh ${{ matrix.api-level }}
 
   instrumented-compile:
     name: Compile instrumented tests
@@ -155,6 +143,19 @@ jobs:
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: ./gradlew :app:connectedDebugAndroidTest :data:connectedDebugAndroidTest :ui:connectedDebugAndroidTest --continue --stacktrace
+
+      - name: Annotate failed tests
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          import glob, xml.etree.ElementTree as ET
+          for f in glob.glob('**/build/outputs/androidTest-results/**/*.xml', recursive=True):
+              for tc in ET.parse(f).iter('testcase'):
+                  for k in tc:
+                      if k.tag in ('failure', 'error'):
+                          msg = (k.get('message') or k.text or '')[:300].replace('\n', ' ')
+                          print(f"::error::{tc.get('classname')}.{tc.get('name')}: {msg}")
+          PY
 
       - name: Upload test reports
         if: failure()
