@@ -23,15 +23,24 @@ private const val BLANK_SAMPLES_PER_SIDE = 16
 class CardRenderer(
     private val warmer: WebViewWarmer,
     private val mainDispatcher: CoroutineDispatcher = Dispatchers.Main,
+    private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : CardRendering {
     private val mutex = Mutex()
 
-    override suspend fun render(data: CardData): CardRenderResult =
-        mutex.withLock {
-            withContext(mainDispatcher) { renderOnMainThread(data) }
+    override suspend fun render(data: CardData): CardRenderResult {
+        // Encoding a card with a photo means copying a multi-megabyte data URI: keep it off the main thread.
+        val token = Uuid.random().toString()
+        val script = withContext(defaultDispatcher) { CardDataSerializer.renderCall(data, token) }
+        return mutex.withLock {
+            withContext(mainDispatcher) { renderOnMainThread(data, token, script) }
         }
+    }
 
-    private suspend fun renderOnMainThread(data: CardData): CardRenderResult {
+    private suspend fun renderOnMainThread(
+        data: CardData,
+        token: String,
+        script: String,
+    ): CardRenderResult {
         val card = warmer.obtain(data.ratio)
         val loaded = withTimeoutOrNull(TEMPLATE_TIMEOUT_MILLIS) { runCatching { card.awaitTemplateLoaded() } }
         if (loaded == null || loaded.isFailure) {
@@ -40,9 +49,8 @@ class CardRenderer(
                 if (card.isAlive) CardRenderFailure.TEMPLATE_NOT_LOADED else CardRenderFailure.RENDERER_CRASHED,
             )
         }
-        val token = Uuid.random().toString()
         val ready = card.bridge.expect(token)
-        card.webView.evaluateJavascript(CardDataSerializer.renderCall(data, token), null)
+        card.webView.evaluateJavascript(script, null)
         val diagnostics = withTimeoutOrNull(LAYOUT_READY_TIMEOUT_MILLIS) { ready.await() }
         if (diagnostics == null) {
             val crashed = !card.isAlive
