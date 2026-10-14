@@ -130,9 +130,8 @@ val checkNoPrereleaseVersions by tasks.registering {
             hits,
             "Release builds depend only on stable versions. WorkManager 2.12.0-rc01 and Glance\n" +
                 "1.3.0-alpha02 exist and are explicitly out.\n" +
-                "Note this scans the catalog TEXT: `latest.release` entries hold a selector, not a\n" +
-                "resolved version, so this task cannot see what they resolve to. That is the\n" +
-                "reproducibility gap owner decision #4 accepted knowingly.",
+                "Note this scans the catalog TEXT, so a dynamic selector such as `latest.release`\n" +
+                "would hide what it resolves to. Test dependencies are pinned for that reason.",
         )
     }
 }
