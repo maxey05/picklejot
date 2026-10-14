@@ -20,9 +20,9 @@ Our [Privacy Policy](privacy-policy.html) explains how information is handled an
 
 You must be old enough to form a binding agreement where you live. The App is not directed to children under 13. If you are under the age of majority in your country, you may use the App only with a parent or guardian's permission, and they accept these Terms for you.
 
-## 3. Licence to use the App
+## 3. License to use the App
 
-We grant you a personal, non-exclusive, non-transferable, revocable licence to install and use the App on Android devices that you own or control, for your own non-commercial use, under these Terms and Google Play's rules. We keep all rights not expressly granted.
+We grant you a personal, non-exclusive, non-transferable, revocable license to install and use the App on Android devices that you own or control, for your own non-commercial use, under these Terms and Google Play's rules. We keep all rights not expressly granted.
 
 You may not:
 
@@ -31,7 +31,7 @@ You may not:
 - sell, rent, lease, sublicense or redistribute the App;
 - remove or hide any notices, the Picklejot wordmark or branding.
 
-The App may include open-source software, which is licensed under its own licences. See the App's About screen. Those licences apply to that software instead of these Terms where they conflict.
+The App may include open-source software, which is licensed under its own licenses. See the App's About screen. Those licenses apply to that software instead of these Terms where they conflict.
 
 ## 4. Acceptable use
 
@@ -45,7 +45,7 @@ Use the App lawfully and respectfully. Do not:
 
 ## 5. Your Content
 
-**You own Your Content.** We do not claim any ownership of it. Your Content stays on your device, and we do not receive a copy (see the Privacy Policy). Because we do not host it, we do not need a licence to use it, and we do not take one, other than what is technically needed for the App to store and display it on your device and to create the Exports and Share Cards you ask for.
+**You own Your Content.** We do not claim any ownership of it. Your Content stays on your device, and we do not receive a copy (see the Privacy Policy). Because we do not host it, we do not need a license to use it, and we do not take one, other than what is technically needed for the App to store and display it on your device and to create the Exports and Share Cards you ask for.
 
 You are responsible for Your Content. In particular, you promise that you have the right to include it, and that you will respect other people's privacy and rights, for example, when you record other players' names or photos of them, or when you share an Export or Share Card. Get consent where you need it. We are not responsible for what you choose to share with others.
 
@@ -71,7 +71,7 @@ You are responsible for Your Content. In particular, you promise that you have t
 
 ## 8. Intellectual property
 
-The App, including its software, design, text, sounds, the Picklejot name and wordmark, and the yellow duck mascot and related artwork ("Picklejot Brand"), is owned by us or our licensors and is protected by copyright, trademark and other laws. These Terms give you no ownership of or right to use the Picklejot Brand, other than to use the App and to share Share Cards and screenshots as the App allows, for personal, non-commercial purposes. You may not use the Picklejot Brand in a way that suggests we endorse or are affiliated with you, or use it as part of your own name, logo or product, without our written permission.
+The App, including its software, design, text, sounds, the Picklejot name and wordmark, and the duck mascot and related artwork ("Picklejot Brand"), is owned by us or our licensors and is protected by copyright, trademark and other laws. These Terms give you no ownership of or right to use the Picklejot Brand, other than to use the App and to share Share Cards and screenshots as the App allows, for personal, non-commercial purposes. You may not use the Picklejot Brand in a way that suggests we endorse or are affiliated with you, or use it as part of your own name, logo or product, without our written permission.
 
 If you send us feedback or suggestions, we may use them without obligation to you.
 
@@ -93,7 +93,7 @@ The App is provided as an offline-first tool. We may update, change, suspend or 
 
 ## 11. Pickleball is a physical sport; no advice
 
-Pickleball involves physical activity and risk of injury. The App is only a record-keeping and journalling tool. It does not give medical, health, fitness, safety or coaching advice, and statistics or streaks in the App are not a recommendation to play or to keep playing. Use your own judgement, and speak to a qualified professional about health concerns. You play at your own risk.
+Pickleball involves physical activity and risk of injury. The App is only a record-keeping and journaling tool. It does not give medical, health, fitness, safety or coaching advice, and statistics or streaks in the App are not a recommendation to play or to keep playing. Use your own judgement, and speak to a qualified professional about health concerns. You play at your own risk.
 
 ## 12. Disclaimer of warranties
 
@@ -113,7 +113,7 @@ If your use of the App in breach of these Terms, or Your Content that you share 
 
 ## 15. Termination
 
-You may stop using the App at any time by uninstalling it. We may suspend or end your licence to use the App if you seriously or repeatedly breach these Terms, or if we must do so by law or platform rules. When your licence ends, you must stop using the App and delete it. Sections that by their nature should continue (for example intellectual property, disclaimers, limitation of liability, and governing law) continue after termination. Ending the licence does not by itself entitle you to a refund, except as required by law or Google's policies.
+You may stop using the App at any time by uninstalling it. We may suspend or end your license to use the App if you seriously or repeatedly breach these Terms, or if we must do so by law or platform rules. When your license ends, you must stop using the App and delete it. Sections that by their nature should continue (for example intellectual property, disclaimers, limitation of liability, and governing law) continue after termination. Ending the license does not by itself entitle you to a refund, except as required by law or Google's policies.
 
 ## 16. Changes to these Terms
 

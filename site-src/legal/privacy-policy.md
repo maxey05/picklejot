@@ -42,7 +42,7 @@ Everything in this list is stored locally on your device, in the app's private s
 
 **Photos.** Picklejot saves a re-encoded, compressed copy of each photo. Re-encoding is designed not to carry over embedded metadata such as the GPS position stored in the original file, but your original photo in your gallery or camera roll is unaffected and may contain such metadata.
 
-## 3. What we do NOT collect or do
+## 3. What we do not collect or do
 
 - We do not collect your name, email address, phone number, address, or any account details.
 - We do not collect your device location or GPS data.
@@ -93,7 +93,7 @@ Google's use of your information is governed by [Google's Privacy Policy](https:
 | Permission | When it is used | Can I say no? |
 | --- | --- | --- |
 | Camera | Only when you tap "Take photo" on a match. The app asks at that moment | Yes. Everything else works. You can add photos from your gallery instead |
-| Notifications | Only if you turn on the streak reminder | Yes. Reminders simply stay off |
+| Notifications | Only if you turn on the streak reminder | Yes. Reminders stay off |
 
 Gallery photos are added through the Android photo picker, which shares only the photos you choose and needs no storage permission. You can withdraw any permission at any time in your Android system settings.
 
@@ -112,7 +112,7 @@ We keep nothing. On your device, your data stays until you remove it.
 | Action | Result |
 | --- | --- |
 | Delete a match in the app | That match is removed from the app |
-| **Erase all data** (Settings) | Permanently deletes your matches, photos and name from the device. This cannot be undone. Your Pro purchase is kept |
+| Erase all data (Settings) | Permanently deletes your matches, photos and name from the device. This cannot be undone. Your Pro purchase is kept |
 | Uninstall the app | Removes the app's local data from your device |
 | Backups in your Google Account | Separate from the app. Delete them through your Google Account or Android backup settings |
 | Exports and shared cards | Copies you made remain wherever you sent them until you delete them there |
