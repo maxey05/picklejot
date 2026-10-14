@@ -9,16 +9,21 @@ import com.maxeydev.picklejot.domain.photo.PhotoImportState
 import com.maxeydev.picklejot.domain.photo.PhotoSource
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import java.io.File
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
+
+/** Full-size decodes are memory heavy, so only this many run at once; the rest wait in the queue. */
+const val MAX_CONCURRENT_DECODES = 2
 
 class QueuedPhotoImporter(
     private val scope: CoroutineScope,
@@ -36,6 +41,7 @@ class QueuedPhotoImporter(
 
     private val imports = mutableMapOf<String, Import>()
     private val lock = Any()
+    private val decodePermits = Semaphore(MAX_CONCURRENT_DECODES)
 
     override fun ensureStarted(
         key: String,
@@ -50,8 +56,9 @@ class QueuedPhotoImporter(
                         .also { imports[key] = it }
                 }
             } ?: return
+        // ATOMIC: a discard that lands before the job first runs must still reach importFrom's cleanup.
         started.job =
-            scope.launch(ioDispatcher) {
+            scope.launch(ioDispatcher, start = CoroutineStart.ATOMIC) {
                 started.state.value = importFrom(source, started.relativePath)
             }
     }
@@ -97,28 +104,27 @@ class QueuedPhotoImporter(
     private suspend fun importFrom(
         source: PhotoSource,
         relativePath: String,
-    ): PhotoImportState =
-        withContext(ioDispatcher) {
-            val target: File = photoStore.resolve(relativePath)
-            val completed =
-                try {
-                    compressor.compress(source.uri, target)
-                } finally {
-                    if (source.isTemporaryCapture) {
-                        deleteTemporaryCapture(source.uri)
-                    }
+    ): PhotoImportState {
+        val target: File = photoStore.resolve(relativePath)
+        val completed =
+            try {
+                decodePermits.withPermit { compressor.compress(source.uri, target) }
+            } finally {
+                if (source.isTemporaryCapture) {
+                    deleteTemporaryCapture(source.uri)
                 }
-            when (completed) {
-                is CompressionResult.Compressed ->
-                    PhotoImportState.Ready(
-                        ImportedPhoto(
-                            relativePath = relativePath,
-                            width = completed.width,
-                            height = completed.height,
-                            byteSize = completed.byteSize,
-                        ),
-                    )
-                CompressionResult.Unreadable -> PhotoImportState.Failed
             }
+        return when (completed) {
+            is CompressionResult.Compressed ->
+                PhotoImportState.Ready(
+                    ImportedPhoto(
+                        relativePath = relativePath,
+                        width = completed.width,
+                        height = completed.height,
+                        byteSize = completed.byteSize,
+                    ),
+                )
+            CompressionResult.Unreadable -> PhotoImportState.Failed
         }
+    }
 }
