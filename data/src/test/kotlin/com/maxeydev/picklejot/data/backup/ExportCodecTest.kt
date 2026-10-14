@@ -25,6 +25,42 @@ class ExportCodecTest {
     }
 
     @Test
+    fun `a byte order mark in front of the export is skipped`() {
+        val (_, file) = ExportFixtures.simple()
+        val bytes = byteArrayOf(0xEF.toByte(), 0xBB.toByte(), 0xBF.toByte()) + ExportFixtures.text(file).toByteArray()
+
+        assertTrue(ExportCodec.decode { bytes.inputStream() } is DecodeResult.Valid)
+    }
+
+    @Test
+    fun `a stream that fails mid-read surfaces the IOException instead of a verdict`() {
+        val (_, file) = ExportFixtures.simple()
+        val bytes = ExportFixtures.text(file).toByteArray()
+        val failing =
+            object : java.io.InputStream() {
+                private var served = 0
+
+                override fun read(): Int {
+                    if (served == bytes.size / 2) throw java.io.IOException("disk gone")
+                    return bytes[served++].toInt() and 0xFF
+                }
+            }
+
+        val thrown = runCatching { ExportCodec.decode { failing } }.exceptionOrNull()
+
+        assertTrue("expected an IOException but got $thrown", thrown is java.io.IOException)
+    }
+
+    @Test
+    fun `a truncated export is not readable while a non-object root is not a picklejot export`() {
+        val (_, file) = ExportFixtures.simple()
+        val text = ExportFixtures.text(file)
+
+        assertEquals(ImportProblem.NOT_READABLE, problemOf(text.take(text.length / 2)))
+        assertEquals(ImportProblem.NOT_A_PICKLEJOT_EXPORT, problemOf("[1, 2]"))
+    }
+
+    @Test
     fun `an export carries its format name and a schema version from the first release`() {
         val (_, file) = ExportFixtures.simple()
 
