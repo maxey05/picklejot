@@ -18,10 +18,37 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import java.io.FileNotFoundException
+import java.io.FilterInputStream
+import java.io.IOException
+import java.io.InputStream
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 private class ImportAborted : RuntimeException()
+
+private class ImportTooLargeException : IOException()
+
+private class BoundedInputStream(
+    source: InputStream,
+) : FilterInputStream(source) {
+    private var total = 0L
+
+    override fun read(): Int = super.read().also { if (it >= 0) count(1) }
+
+    override fun read(
+        buffer: ByteArray,
+        offset: Int,
+        length: Int,
+    ): Int = super.read(buffer, offset, length).also { if (it > 0) count(it) }
+
+    private fun count(bytes: Int) {
+        total += bytes
+        if (total > MAX_IMPORT_BYTES) {
+            throw ImportTooLargeException()
+        }
+    }
+}
 
 internal class JsonImporter(
     private val database: PicklejotDatabase,
@@ -32,9 +59,9 @@ internal class JsonImporter(
     private val matchDao = database.matchDao()
     private val personDao = database.personDao()
 
-    suspend fun import(text: String): ImportOutcome {
+    suspend fun import(open: () -> InputStream?): ImportOutcome {
         val parsed =
-            when (val decoded = ExportCodec.decode(text)) {
+            when (val decoded = withContext(ioDispatcher) { decodeBounded(open) }) {
                 is DecodeResult.Invalid -> return ImportOutcome.Rejected(decoded.problem)
                 is DecodeResult.Valid -> decoded.export
             }
@@ -52,6 +79,18 @@ internal class JsonImporter(
             }
         }
     }
+
+    // Reads and parses in one streamed pass off the caller's thread, refusing sources past MAX_IMPORT_BYTES.
+    private fun decodeBounded(open: () -> InputStream?): DecodeResult =
+        try {
+            ExportCodec.decode { BoundedInputStream(open() ?: throw FileNotFoundException()) }
+        } catch (tooLarge: ImportTooLargeException) {
+            DecodeResult.Invalid(ImportProblem.TOO_LARGE)
+        } catch (unreadable: IOException) {
+            DecodeResult.Invalid(ImportProblem.NOT_READABLE)
+        } catch (denied: SecurityException) {
+            DecodeResult.Invalid(ImportProblem.NOT_READABLE)
+        }
 
     private suspend fun merge(
         parsed: ParsedExport,
