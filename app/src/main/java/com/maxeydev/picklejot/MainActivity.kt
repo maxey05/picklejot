@@ -20,6 +20,7 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.maxeydev.picklejot.domain.settings.AppSettings
 import com.maxeydev.picklejot.ui.navigation.PicklejotNavHost
 import com.maxeydev.picklejot.ui.notification.StreakNotification
@@ -31,7 +32,10 @@ private val DARK_NAVIGATION_SCRIM = Color.argb(0x80, 0x1B, 0x1B, 0x1B)
 class MainActivity : ComponentActivity() {
     private var openLogging by mutableStateOf(false)
 
+    private var contentReady by mutableStateOf(false)
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen().setKeepOnScreenCondition { !contentReady }
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         openLogging = StreakNotification.wantsLogging(intent)
@@ -65,6 +69,7 @@ class MainActivity : ComponentActivity() {
                             PicklejotNavHost(
                                 dependencies = ready,
                                 openLogging = openLogging,
+                                onReady = { contentReady = true },
                                 onOpenLoggingHandled = {
                                     openLogging = false
                                     intent.removeExtra(StreakNotification.EXTRA_OPEN_LOGGING)

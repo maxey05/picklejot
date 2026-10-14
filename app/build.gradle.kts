@@ -112,6 +112,7 @@ dependencies {
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core)
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.datetime)
 

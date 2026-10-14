@@ -2,4 +2,10 @@
 
 <resources>
     <style name="Theme.Picklejot" parent="android:Theme.Material.NoActionBar" />
+
+    <style name="Theme.Picklejot.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/ic_launcher_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.Picklejot</item>
+    </style>
 </resources>

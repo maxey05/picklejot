@@ -19,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 private const val LOG_TAG = "Picklejot"
@@ -58,6 +59,11 @@ class PicklejotApplication :
                     ) {
                         foregroundActivity.current
                     }
+                // The first screen waits on these reads; start them now so they overlap each other and
+                // the AppContainer construction below instead of running one after another on first composition.
+                applicationScope.launch { dataLayer.appSettingsStore.observe().first() }
+                applicationScope.launch { dataLayer.profileRepository.observeProfile().first() }
+                applicationScope.launch { dataLayer.matchRepository.observeMatchCount().first() }
                 applicationScope.launch { dataLayer.sweepOrphanPhotos(System.currentTimeMillis()) }
                 dataLayer.billingStartupCheck.start()
                 scheduleExportPrompts(dataLayer)

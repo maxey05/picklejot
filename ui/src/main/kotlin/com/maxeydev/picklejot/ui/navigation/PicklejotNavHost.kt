@@ -95,11 +95,13 @@ fun PicklejotNavHost(
     navController: NavHostController = rememberNavController(),
     openLogging: Boolean = false,
     onOpenLoggingHandled: () -> Unit = {},
+    onReady: () -> Unit = {},
 ) {
     val requiresOnboarding by produceState<Boolean?>(initialValue = null, dependencies) {
         value = dependencies.onboarding.isRequired()
     }
     requiresOnboarding?.let { required ->
+        LaunchedEffect(Unit) { onReady() }
         CompositionLocalProvider(LocalSoundEffects provides dependencies.soundEffects) {
             PicklejotNavGraph(
                 dependencies = dependencies,

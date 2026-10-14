@@ -85,6 +85,7 @@ jobs:
           target: ${{ matrix.api-level == '26' && 'default' || 'google_apis' }}
           arch: x86_64
           profile: pixel_6
+          disk-size: 6000M
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: bash .github/scripts/launch-check.sh ${{ matrix.api-level }}
@@ -140,6 +141,7 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_6
+          disk-size: 6000M
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: ./gradlew :app:connectedDebugAndroidTest :data:connectedDebugAndroidTest :ui:connectedDebugAndroidTest --continue --stacktrace
