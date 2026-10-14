@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const ASSETS = ["style.css", "favicon.svg"];
+const ASSETS = ["style.css", "favicon.svg", "baloo2-extrabold.woff2"];
 const RESERVED_IDS = new Set(["top", "content", "toc", "main"]);
 const PAGE_ALIASES = {
   "privacy-policy.html": "privacy.html",
@@ -358,55 +358,75 @@ function convertMarkdown(source) {
   return { body, headings, title, lastUpdated };
 }
 
-function buildToc(headings) {
-  const entries = headings.filter((h) => h.level <= 3);
-  if (entries.length < 2) return "";
-  let out = "";
-  let depth = 0;
-  for (const entry of entries) {
-    const level = entry.level === 2 ? 1 : 2;
-    if (level > depth) {
-      out += "<ul>";
-      depth = level;
-    } else if (level < depth) {
-      out += "</li></ul></li>";
-      depth = level;
-    } else {
-      out += "</li>";
-    }
-    out += `<li><a href="#${entry.id}">${escapeHtml(entry.text)}</a>`;
-  }
-  out += "</li>";
-  if (depth === 2) out += "</ul></li>";
-  out += "</ul>";
-  return `<details class="toc"><summary>On this page</summary><nav aria-label="Table of contents">${out}</nav></details>`;
+const DEV_NAME = "Matthew Gabriel D. Reyes";
+const DEV_PLACE = "Parañaque City, Philippines";
+const DEV_EMAIL = "emgireyes.dev@gmail.com";
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+const DUCK_INNER = "<defs><linearGradient id=\"pj-duck\" x1=\"0\" y1=\"38\" x2=\"0\" y2=\"170\" gradientUnits=\"userSpaceOnUse\"><stop offset=\"0.35\" stop-color=\"#FEF4E0\"></stop><stop offset=\"1\" stop-color=\"#F8DFB8\"></stop></linearGradient></defs><path d=\"M92 42 C88 28 92 18 100 13 C99 22 102 28 106 32 C108 24 115 19 124 19 C117 25 115 33 114 42 Z\" fill=\"#FEF4E0\" stroke=\"#14231C\" stroke-width=\"3.5\" stroke-linejoin=\"round\"></path><ellipse cx=\"100\" cy=\"104\" rx=\"78\" ry=\"66\" fill=\"url(#pj-duck)\"></ellipse><path d=\"M31.8 72 L168.2 72 L175.7 88 L24.3 88 Z\" fill=\"#008148\"></path><path d=\"M29.5 77 L170.5 77\" stroke=\"#FFFFFF\" stroke-width=\"2.6\"></path><path d=\"M27 83 L173 83\" stroke=\"#CDEBD4\" stroke-width=\"2.6\"></path><path d=\"M31.8 72 L168.2 72 M24.3 88 L175.7 88\" stroke=\"#14231C\" stroke-width=\"3.5\"></path><ellipse cx=\"100\" cy=\"104\" rx=\"78\" ry=\"66\" fill=\"none\" stroke=\"#14231C\" stroke-width=\"6\"></ellipse><circle cx=\"100\" cy=\"80\" r=\"10\" fill=\"#E2F23F\" stroke=\"#14231C\" stroke-width=\"3.5\"></circle><circle cx=\"96\" cy=\"77.5\" r=\"1.9\" fill=\"#A9BA22\"></circle><circle cx=\"104\" cy=\"78\" r=\"1.9\" fill=\"#A9BA22\"></circle><circle cx=\"100\" cy=\"84\" r=\"1.9\" fill=\"#A9BA22\"></circle><ellipse cx=\"52\" cy=\"126\" rx=\"13\" ry=\"8\" fill=\"#FF9D96\" opacity=\"0.85\"></ellipse><ellipse cx=\"148\" cy=\"126\" rx=\"13\" ry=\"8\" fill=\"#FF9D96\" opacity=\"0.85\"></ellipse><ellipse cx=\"78\" cy=\"108\" rx=\"6.5\" ry=\"8.5\" fill=\"#14231C\"></ellipse><circle cx=\"76\" cy=\"105\" r=\"2.4\" fill=\"#FFFFFF\"></circle><ellipse cx=\"122\" cy=\"108\" rx=\"6.5\" ry=\"8.5\" fill=\"#14231C\"></ellipse><circle cx=\"120\" cy=\"105\" r=\"2.4\" fill=\"#FFFFFF\"></circle><path d=\"M86 131 Q100 156 114 131 Z\" fill=\"#9B2C1F\" stroke=\"#14231C\" stroke-width=\"3.5\" stroke-linejoin=\"round\"></path><ellipse cx=\"100\" cy=\"140\" rx=\"5.5\" ry=\"2.8\" fill=\"#FF8A8F\"></ellipse><rect x=\"74\" y=\"118\" width=\"52\" height=\"17\" rx=\"8.5\" fill=\"#FE9A2E\" stroke=\"#14231C\" stroke-width=\"3.5\"></rect><path d=\"M82 123 L95 123\" stroke=\"#FFC680\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path>";
+const ICON_TICK = "<svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M5 12.5l4.5 4.5L19 7.5\"></path></svg>";
+const ICON_CHEV_DOWN = "<svg class=\"chev\" viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M6 9l6 6 6-6\"></path></svg>";
+const ICON_CHEV_RIGHT = "<svg viewBox=\"0 0 24 24\" width=\"24\" height=\"24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M9 6l6 6-6 6\"></path></svg>".replace("<svg", '<svg class="row-chev"');
+const ICON_SHIELD = "<svg viewBox=\"0 0 24 24\" width=\"24\" height=\"24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6l7-3z\"></path><path d=\"M9 12l2 2 4-4\"></path></svg>";
+const ICON_DOC = "<svg viewBox=\"0 0 24 24\" width=\"24\" height=\"24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M7 3h7l5 5v13H7z\"></path><path d=\"M14 3v5h5\"></path><path d=\"M10 13h6M10 17h6\"></path></svg>";
+const ICON_MAIL = "<svg viewBox=\"0 0 24 24\" width=\"24\" height=\"24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"2\"></rect><path d=\"M3 7l9 6 9-6\"></path></svg>";
+
+function duck(id, width, height) {
+  const inner = DUCK_INNER.replaceAll("pj-duck", id);
+  return `<svg viewBox="0 0 200 184" width="${width}" height="${height}" aria-hidden="true" focusable="false">${inner}</svg>`;
 }
 
-const DUCK_SVG =
-  '<svg viewBox="0 0 64 64" width="32" height="32" aria-hidden="true" focusable="false">' +
-  '<circle cx="31" cy="33" r="26" fill="#ffd23f"/>' +
-  '<ellipse cx="22" cy="39" rx="11" ry="7.5" fill="#f2b705"/>' +
-  '<path d="M52 30c7 0 11 2.5 11 5.5S59 41 52 41z" fill="#f28c28"/>' +
-  '<circle cx="40" cy="25" r="3.2" fill="#12281c"/></svg>';
+function longDate(value) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return escapeHtml(value);
+  const text = `${Number(match[3])} ${MONTHS[Number(match[2]) - 1]} ${match[1]}`;
+  return `<time datetime="${value}">${text}</time>`;
+}
 
-function layout({ title, description, current, main }) {
+function tocList(entries) {
+  const items = entries.map((entry) => `<li><a href="#${entry.id}">${escapeHtml(entry.text)}</a></li>`).join("");
+  return `<details><summary>On this page${ICON_CHEV_DOWN}</summary><ol>${items}</ol></details>`;
+}
+
+function buildToc(headings) {
+  const entries = headings.filter((h) => h.level === 2);
+  if (entries.length < 2) return "";
+  const wide = tocList(entries).replace("<details>", "<details open>");
+  const compact = tocList(entries);
+  return `<nav class="toc toc--wide" aria-label="On this page">${wide}</nav>
+<nav class="toc toc--compact" aria-label="On this page">${compact}</nav>`;
+}
+
+function decorateBody(body) {
+  let out = body.replace(
+    /<h2 id="([^"]+)">(\d+)\.\s+([\s\S]*?)<\/h2>/g,
+    '<h2 id="$1"><span class="n">$2</span><span>$3</span></h2>',
+  );
+  out = out.replace(/(<h2 id="at-a-glance">[\s\S]*?<\/h2>\s*)<ul>([\s\S]*?)<\/ul>/, (_, head, items) => {
+    const rows = items.replace(/<li>([\s\S]*?)<\/li>/g, `<li><span class="tick">${ICON_TICK}</span><span>$1</span></li>`);
+    return `${head}<ul class="glance">${rows}</ul>`;
+  });
+  return out;
+}
+
+function layout({ title, description, current, hero, main, mainClass, docPage }) {
   const nav = [
-    ["index.html", "Home", "home"],
     ["privacy.html", "Privacy", "privacy"],
     ["terms.html", "Terms", "terms"],
   ]
     .map(([href, label, key]) => {
       const aria = key === current ? ' aria-current="page"' : "";
-      return `<li><a href="${href}"${aria}>${label}</a></li>`;
+      return `<li><a class="chip-link" href="${href}"${aria}>${label}</a></li>`;
     })
     .join("");
+  const year = new Date().getFullYear();
 
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="color-scheme" content="light dark">
 <title>${escapeHtml(title)}</title>
@@ -416,31 +436,27 @@ function layout({ title, description, current, main }) {
 </head>
 <body>
 <a class="skip-link" href="#content">Skip to content</a>
-<header class="site-header">
-<div class="wrap">
-<a class="brand" href="index.html">${DUCK_SVG}<span>Picklejot</span></a>
-<nav class="site-nav" aria-label="Site"><ul>${nav}</ul></nav>
+<header class="hd${docPage ? " hd--doc" : ""}">
+<div class="hd-inner">
+<div class="topbar">
+<a class="brand" href="index.html" aria-label="Picklejot home">${duck("pj-duck-brand", 44, 40)}<span>Picklejot</span></a>
+<nav aria-label="Site"><ul class="chips">${nav}</ul></nav>
+</div>
+${hero}
 </div>
 </header>
-<main id="content" tabindex="-1">
-<div class="wrap">
+<main id="content" tabindex="-1" class="${mainClass}">
 ${main}
-</div>
 </main>
 <footer class="site-footer">
-<div class="wrap">
-<ul><li><a href="index.html">Home</a></li><li><a href="privacy.html">Privacy policy</a></li><li><a href="terms.html">Terms of service</a></li></ul>
-<p>Picklejot is a pickleball match log for Android. This site uses no cookies, no analytics and no external requests.</p>
+<div class="site-footer-inner">
+<span>© ${year} ${DEV_NAME} · ${DEV_PLACE}</span>
+<nav aria-label="Footer"><ul><li><a href="index.html">Home</a></li><li><a href="privacy.html">Privacy policy</a></li><li><a href="terms.html">Terms of service</a></li><li><a href="mailto:${DEV_EMAIL}">Contact</a></li></ul></nav>
 </div>
 </footer>
 </body>
 </html>
 `;
-}
-
-function formatUpdated(value) {
-  const iso = /^\d{4}-\d{2}-\d{2}$/.test(value);
-  return iso ? `<time datetime="${value}">${value}</time>` : escapeHtml(value);
 }
 
 function readSource(path, label) {
@@ -456,7 +472,7 @@ function readSource(path, label) {
   return text;
 }
 
-function buildDocument({ path, label, fallbackTitle, current, description }) {
+function buildDocument({ path, label, fallbackTitle, heading, lede, current, description }) {
   const source = readSource(path, label);
   const result = convertMarkdown(source);
   const title = result.title || fallbackTitle;
@@ -467,54 +483,66 @@ function buildDocument({ path, label, fallbackTitle, current, description }) {
   }
   if (result.headings.length === 0) console.warn(`No section headings found in ${path}.`);
 
-  const main = [
-    `<h1>${escapeHtml(title)}</h1>`,
-    `<p class="page-meta">Last updated: ${formatUpdated(updated)}</p>`,
-    buildToc(result.headings),
-    `<article>`,
-    result.body,
-    `</article>`,
-  ]
+  const hero = `<div class="doc-head">
+<h1 class="hero-title">${escapeHtml(heading)}</h1>
+<p class="lede">${escapeHtml(lede)}</p>
+<ul class="chip-row"><li class="chip">Last updated ${longDate(updated)}</li></ul>
+</div>`;
+
+  const main = [buildToc(result.headings), `<article class="doc">`, decorateBody(result.body), `</article>`]
     .filter(Boolean)
     .join("\n");
 
   const placeholders = [...new Set(source.match(/\[[A-Z][A-Z0-9 \/_.-]{2,}\]/g) ?? [])];
   return {
-    html: layout({ title: /picklejot/i.test(title) ? title : `${title} - Picklejot`, description, current, main }),
+    html: layout({
+      title: /picklejot/i.test(title) ? title : `${title} - Picklejot`,
+      description,
+      current,
+      hero,
+      main,
+      mainClass: "doc-main",
+      docPage: true,
+    }),
     placeholders,
   };
 }
 
+function row({ href, icon, title, sub }) {
+  return `<li><a class="row" href="${href}"><span class="row-icon">${icon}</span><span class="row-text"><span class="row-title">${title}</span><span class="row-sub">${sub}</span></span>${ICON_CHEV_RIGHT}</a></li>`;
+}
+
 function buildIndex() {
   const store = playUrl
-    ? `<p><a class="cta" href="${escapeHtml(playUrl)}" rel="noopener noreferrer">Get Picklejot on Google Play</a></p>`
+    ? `<a class="cta" href="${escapeHtml(playUrl)}" rel="noopener noreferrer">Get Picklejot on Google Play</a>`
     : "";
-  const main = `<section class="hero" aria-labelledby="hero-title">
-${DUCK_SVG.replace('width="32" height="32"', 'width="80" height="80"')}
-<div>
-<h1 id="hero-title">Picklejot</h1>
-<p>A simple pickleball match log for Android. Your matches stay on your phone.</p>
+  const hero = `<div class="hero">
+${duck("pj-duck-hero", 152, 140)}
+<div class="hero-text">
+<h1 class="hero-title">Picklejot</h1>
+<p class="lede">A pickleball match journal for Android. Log a match in seconds, keep your streak going, and keep every match on your own phone.</p>
+<ul class="chip-row"><li class="chip">No account</li><li class="chip">No ads</li><li class="chip">Works offline</li></ul>
 ${store}
 </div>
-</section>
-<h2>Legal</h2>
-<ul class="card-grid">
-<li><a class="card" href="privacy.html"><strong>Privacy policy</strong><span>What Picklejot stores, what it shares, and your choices.</span></a></li>
-<li><a class="card" href="terms.html"><strong>Terms of service</strong><span>The rules for using the app, Pro purchases and refunds.</span></a></li>
+</div>`;
+  const main = `<h2 class="label label--first">Legal</h2>
+<ul class="list">
+${row({ href: "privacy.html", icon: ICON_SHIELD, title: "Privacy policy", sub: "What Picklejot stores on your phone, and what it never collects" })}
+${row({ href: "terms.html", icon: ICON_DOC, title: "Terms of service", sub: "The rules for using the app and the one-time Pro purchase" })}
 </ul>
-<h2>In short</h2>
-<ul class="promises">
-<li>No account, no sign-in and no developer server.</li>
-<li>No ads, no analytics and no tracking.</li>
-<li>Your matches, scores and photos are stored on your device.</li>
-<li>Purchases are handled by Google Play.</li>
+<h2 class="label label--gap">Contact</h2>
+<ul class="list">
+${row({ href: `mailto:${DEV_EMAIL}`, icon: ICON_MAIL, title: "Email the developer", sub: DEV_EMAIL })}
 </ul>
-<p>The privacy policy is the complete and authoritative description. Contact details are listed there.</p>`;
+<p class="note">Picklejot is an Android app made by one developer in ${DEV_PLACE}.</p>`;
   return layout({
     title: "Picklejot - Pickleball match log",
     description: "Picklejot is a simple, private pickleball match log for Android. Read the privacy policy and terms of service.",
     current: "home",
+    hero,
     main,
+    mainClass: "home-main",
+    docPage: false,
   });
 }
 
@@ -522,6 +550,8 @@ const privacy = buildDocument({
   path: privacyPath,
   label: "privacy policy",
   fallbackTitle: "Privacy Policy",
+  heading: "Privacy policy",
+  lede: "How Picklejot, an Android app for logging your pickleball matches, handles information.",
   current: "privacy",
   description: "Picklejot privacy policy: what the app stores on your device, what it shares, and your rights.",
 });
@@ -529,6 +559,8 @@ const terms = buildDocument({
   path: termsPath,
   label: "terms of service",
   fallbackTitle: "Terms of Service",
+  heading: "Terms of service",
+  lede: "The agreement between you and the developer about using Picklejot for Android. By installing or using the app, you agree to these terms.",
   current: "terms",
   description: "Picklejot terms of service: licence, Pro purchase and refunds, your data, and legal terms.",
 });

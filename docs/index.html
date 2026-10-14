@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="color-scheme" content="light dark">
 <title>Picklejot - Pickleball match log</title>
@@ -13,41 +13,39 @@
 </head>
 <body>
 <a class="skip-link" href="#content">Skip to content</a>
-<header class="site-header">
-<div class="wrap">
-<a class="brand" href="index.html"><svg viewBox="0 0 64 64" width="32" height="32" aria-hidden="true" focusable="false"><circle cx="31" cy="33" r="26" fill="#ffd23f"/><ellipse cx="22" cy="39" rx="11" ry="7.5" fill="#f2b705"/><path d="M52 30c7 0 11 2.5 11 5.5S59 41 52 41z" fill="#f28c28"/><circle cx="40" cy="25" r="3.2" fill="#12281c"/></svg><span>Picklejot</span></a>
-<nav class="site-nav" aria-label="Site"><ul><li><a href="index.html" aria-current="page">Home</a></li><li><a href="privacy.html">Privacy</a></li><li><a href="terms.html">Terms</a></li></ul></nav>
+<header class="hd">
+<div class="hd-inner">
+<div class="topbar">
+<a class="brand" href="index.html" aria-label="Picklejot home"><svg viewBox="0 0 200 184" width="44" height="40" aria-hidden="true" focusable="false"><defs><linearGradient id="pj-duck-brand" x1="0" y1="38" x2="0" y2="170" gradientUnits="userSpaceOnUse"><stop offset="0.35" stop-color="#FEF4E0"></stop><stop offset="1" stop-color="#F8DFB8"></stop></linearGradient></defs><path d="M92 42 C88 28 92 18 100 13 C99 22 102 28 106 32 C108 24 115 19 124 19 C117 25 115 33 114 42 Z" fill="#FEF4E0" stroke="#14231C" stroke-width="3.5" stroke-linejoin="round"></path><ellipse cx="100" cy="104" rx="78" ry="66" fill="url(#pj-duck-brand)"></ellipse><path d="M31.8 72 L168.2 72 L175.7 88 L24.3 88 Z" fill="#008148"></path><path d="M29.5 77 L170.5 77" stroke="#FFFFFF" stroke-width="2.6"></path><path d="M27 83 L173 83" stroke="#CDEBD4" stroke-width="2.6"></path><path d="M31.8 72 L168.2 72 M24.3 88 L175.7 88" stroke="#14231C" stroke-width="3.5"></path><ellipse cx="100" cy="104" rx="78" ry="66" fill="none" stroke="#14231C" stroke-width="6"></ellipse><circle cx="100" cy="80" r="10" fill="#E2F23F" stroke="#14231C" stroke-width="3.5"></circle><circle cx="96" cy="77.5" r="1.9" fill="#A9BA22"></circle><circle cx="104" cy="78" r="1.9" fill="#A9BA22"></circle><circle cx="100" cy="84" r="1.9" fill="#A9BA22"></circle><ellipse cx="52" cy="126" rx="13" ry="8" fill="#FF9D96" opacity="0.85"></ellipse><ellipse cx="148" cy="126" rx="13" ry="8" fill="#FF9D96" opacity="0.85"></ellipse><ellipse cx="78" cy="108" rx="6.5" ry="8.5" fill="#14231C"></ellipse><circle cx="76" cy="105" r="2.4" fill="#FFFFFF"></circle><ellipse cx="122" cy="108" rx="6.5" ry="8.5" fill="#14231C"></ellipse><circle cx="120" cy="105" r="2.4" fill="#FFFFFF"></circle><path d="M86 131 Q100 156 114 131 Z" fill="#9B2C1F" stroke="#14231C" stroke-width="3.5" stroke-linejoin="round"></path><ellipse cx="100" cy="140" rx="5.5" ry="2.8" fill="#FF8A8F"></ellipse><rect x="74" y="118" width="52" height="17" rx="8.5" fill="#FE9A2E" stroke="#14231C" stroke-width="3.5"></rect><path d="M82 123 L95 123" stroke="#FFC680" stroke-width="2.5" stroke-linecap="round"></path></svg><span>Picklejot</span></a>
+<nav aria-label="Site"><ul class="chips"><li><a class="chip-link" href="privacy.html">Privacy</a></li><li><a class="chip-link" href="terms.html">Terms</a></li></ul></nav>
 </div>
-</header>
-<main id="content" tabindex="-1">
-<div class="wrap">
-<section class="hero" aria-labelledby="hero-title">
-<svg viewBox="0 0 64 64" width="80" height="80" aria-hidden="true" focusable="false"><circle cx="31" cy="33" r="26" fill="#ffd23f"/><ellipse cx="22" cy="39" rx="11" ry="7.5" fill="#f2b705"/><path d="M52 30c7 0 11 2.5 11 5.5S59 41 52 41z" fill="#f28c28"/><circle cx="40" cy="25" r="3.2" fill="#12281c"/></svg>
-<div>
-<h1 id="hero-title">Picklejot</h1>
-<p>A simple pickleball match log for Android. Your matches stay on your phone.</p>
+<div class="hero">
+<svg viewBox="0 0 200 184" width="152" height="140" aria-hidden="true" focusable="false"><defs><linearGradient id="pj-duck-hero" x1="0" y1="38" x2="0" y2="170" gradientUnits="userSpaceOnUse"><stop offset="0.35" stop-color="#FEF4E0"></stop><stop offset="1" stop-color="#F8DFB8"></stop></linearGradient></defs><path d="M92 42 C88 28 92 18 100 13 C99 22 102 28 106 32 C108 24 115 19 124 19 C117 25 115 33 114 42 Z" fill="#FEF4E0" stroke="#14231C" stroke-width="3.5" stroke-linejoin="round"></path><ellipse cx="100" cy="104" rx="78" ry="66" fill="url(#pj-duck-hero)"></ellipse><path d="M31.8 72 L168.2 72 L175.7 88 L24.3 88 Z" fill="#008148"></path><path d="M29.5 77 L170.5 77" stroke="#FFFFFF" stroke-width="2.6"></path><path d="M27 83 L173 83" stroke="#CDEBD4" stroke-width="2.6"></path><path d="M31.8 72 L168.2 72 M24.3 88 L175.7 88" stroke="#14231C" stroke-width="3.5"></path><ellipse cx="100" cy="104" rx="78" ry="66" fill="none" stroke="#14231C" stroke-width="6"></ellipse><circle cx="100" cy="80" r="10" fill="#E2F23F" stroke="#14231C" stroke-width="3.5"></circle><circle cx="96" cy="77.5" r="1.9" fill="#A9BA22"></circle><circle cx="104" cy="78" r="1.9" fill="#A9BA22"></circle><circle cx="100" cy="84" r="1.9" fill="#A9BA22"></circle><ellipse cx="52" cy="126" rx="13" ry="8" fill="#FF9D96" opacity="0.85"></ellipse><ellipse cx="148" cy="126" rx="13" ry="8" fill="#FF9D96" opacity="0.85"></ellipse><ellipse cx="78" cy="108" rx="6.5" ry="8.5" fill="#14231C"></ellipse><circle cx="76" cy="105" r="2.4" fill="#FFFFFF"></circle><ellipse cx="122" cy="108" rx="6.5" ry="8.5" fill="#14231C"></ellipse><circle cx="120" cy="105" r="2.4" fill="#FFFFFF"></circle><path d="M86 131 Q100 156 114 131 Z" fill="#9B2C1F" stroke="#14231C" stroke-width="3.5" stroke-linejoin="round"></path><ellipse cx="100" cy="140" rx="5.5" ry="2.8" fill="#FF8A8F"></ellipse><rect x="74" y="118" width="52" height="17" rx="8.5" fill="#FE9A2E" stroke="#14231C" stroke-width="3.5"></rect><path d="M82 123 L95 123" stroke="#FFC680" stroke-width="2.5" stroke-linecap="round"></path></svg>
+<div class="hero-text">
+<h1 class="hero-title">Picklejot</h1>
+<p class="lede">A pickleball match journal for Android. Log a match in seconds, keep your streak going, and keep every match on your own phone.</p>
+<ul class="chip-row"><li class="chip">No account</li><li class="chip">No ads</li><li class="chip">Works offline</li></ul>
 
 </div>
-</section>
-<h2>Legal</h2>
-<ul class="card-grid">
-<li><a class="card" href="privacy.html"><strong>Privacy policy</strong><span>What Picklejot stores, what it shares, and your choices.</span></a></li>
-<li><a class="card" href="terms.html"><strong>Terms of service</strong><span>The rules for using the app, Pro purchases and refunds.</span></a></li>
-</ul>
-<h2>In short</h2>
-<ul class="promises">
-<li>No account, no sign-in and no developer server.</li>
-<li>No ads, no analytics and no tracking.</li>
-<li>Your matches, scores and photos are stored on your device.</li>
-<li>Purchases are handled by Google Play.</li>
-</ul>
-<p>The privacy policy is the complete and authoritative description. Contact details are listed there.</p>
 </div>
+</div>
+</header>
+<main id="content" tabindex="-1" class="home-main">
+<h2 class="label label--first">Legal</h2>
+<ul class="list">
+<li><a class="row" href="privacy.html"><span class="row-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6l7-3z"></path><path d="M9 12l2 2 4-4"></path></svg></span><span class="row-text"><span class="row-title">Privacy policy</span><span class="row-sub">What Picklejot stores on your phone, and what it never collects</span></span><svg class="row-chev" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 6l6 6-6 6"></path></svg></a></li>
+<li><a class="row" href="terms.html"><span class="row-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 3h7l5 5v13H7z"></path><path d="M14 3v5h5"></path><path d="M10 13h6M10 17h6"></path></svg></span><span class="row-text"><span class="row-title">Terms of service</span><span class="row-sub">The rules for using the app and the one-time Pro purchase</span></span><svg class="row-chev" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 6l6 6-6 6"></path></svg></a></li>
+</ul>
+<h2 class="label label--gap">Contact</h2>
+<ul class="list">
+<li><a class="row" href="mailto:emgireyes.dev@gmail.com"><span class="row-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg></span><span class="row-text"><span class="row-title">Email the developer</span><span class="row-sub">emgireyes.dev@gmail.com</span></span><svg class="row-chev" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 6l6 6-6 6"></path></svg></a></li>
+</ul>
+<p class="note">Picklejot is an Android app made by one developer in Parañaque City, Philippines.</p>
 </main>
 <footer class="site-footer">
-<div class="wrap">
-<ul><li><a href="index.html">Home</a></li><li><a href="privacy.html">Privacy policy</a></li><li><a href="terms.html">Terms of service</a></li></ul>
-<p>Picklejot is a pickleball match log for Android. This site uses no cookies, no analytics and no external requests.</p>
+<div class="site-footer-inner">
+<span>© 2026 Matthew Gabriel D. Reyes · Parañaque City, Philippines</span>
+<nav aria-label="Footer"><ul><li><a href="index.html">Home</a></li><li><a href="privacy.html">Privacy policy</a></li><li><a href="terms.html">Terms of service</a></li><li><a href="mailto:emgireyes.dev@gmail.com">Contact</a></li></ul></nav>
 </div>
 </footer>
 </body>
