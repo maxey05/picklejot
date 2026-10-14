@@ -4,6 +4,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.maxeydev.picklejot.data.db.PICKLEJOT_DB_NAME
 import com.maxeydev.picklejot.data.photo.PHOTO_DIRECTORY
+import com.maxeydev.picklejot.data.profile.USER_PROFILE_FILE_NAME
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -66,6 +67,14 @@ class BackupRulesTest {
     fun both_rules_files_are_packaged_and_declared() {
         assertTrue(rulesIn("data_extraction_rules").isNotEmpty())
         assertTrue(rulesIn("full_backup_content").isNotEmpty())
+    }
+
+    @Test
+    fun the_entitlement_never_travels_by_backup_or_transfer() {
+        val extraction = rulesIn("data_extraction_rules")
+        assertTrue(extraction.excludes("cloud-backup", "file", USER_PROFILE_FILE_NAME))
+        assertTrue(extraction.excludes("device-transfer", "file", USER_PROFILE_FILE_NAME))
+        assertTrue(rulesIn("full_backup_content").excludes("full-backup-content", "file", USER_PROFILE_FILE_NAME))
     }
 
     @Test
