@@ -7,9 +7,12 @@ import com.maxeydev.picklejot.data.backup.DataStoreExportPromptStore
 import com.maxeydev.picklejot.data.backup.RoomBackupRepository
 import com.maxeydev.picklejot.data.billing.BillingClientWrapper
 import com.maxeydev.picklejot.data.billing.BillingStartupCheck
+import com.maxeydev.picklejot.data.billing.LicenseServerConfig
 import com.maxeydev.picklejot.data.billing.PlayEntitlementRepository
+import com.maxeydev.picklejot.data.billing.PlayIntegrityTokenProvider
 import com.maxeydev.picklejot.data.billing.PlayProStore
 import com.maxeydev.picklejot.data.billing.PurchaseAcknowledger
+import com.maxeydev.picklejot.data.billing.ServerPurchaseValidator
 import com.maxeydev.picklejot.data.db.DB_BACKUP_DIRECTORY
 import com.maxeydev.picklejot.data.db.createPicklejotDatabase
 import com.maxeydev.picklejot.data.erase.RoomLocalDataEraser
@@ -87,6 +90,7 @@ suspend fun createDataLayer(
     context: Context,
     applicationScope: CoroutineScope,
     ioDispatcher: CoroutineDispatcher,
+    licenseServer: LicenseServerConfig,
     currentActivity: () -> Activity?,
 ): DataLayer {
     val appContext = context.applicationContext
@@ -104,6 +108,12 @@ suspend fun createDataLayer(
             local = DataStoreEntitlementRepository(profileStore),
             gateway = billing,
             acknowledger = PurchaseAcknowledger(billing),
+            validator =
+                ServerPurchaseValidator(
+                    config = licenseServer,
+                    packageName = appContext.packageName,
+                    integrity = PlayIntegrityTokenProvider(appContext),
+                ),
             clock = Clock.System,
         )
     val resolver = appContext.contentResolver
