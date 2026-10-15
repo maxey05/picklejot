@@ -5,17 +5,24 @@ returns a signed "granted" for the exact purchase and attempt (`data/billing/Ser
 
 ## What it checks
 
-1. **Play Integrity** — decodes the app's integrity token with Google and requires: our package, a nonce equal
-   to `base64url(sha256(purchaseToken + "\n" + clientNonce))`, a token under 2 minutes old,
-   `PLAY_RECOGNIZED` (genuine, Play-distributed APK) and `MEETS_DEVICE_INTEGRITY`.
-2. **Purchase** — asks the Play Developer API whether `purchaseToken` is a real purchase of `picklejot_pro`.
-3. **Answer** — returns `{payload, sig}`: the verdict plus the client's nonce, signed ECDSA P-256. The app checks
+1. **Purchase** — asks the Play Developer API whether `purchaseToken` is a real purchase of `picklejot_pro`.
+   This is the only thing that decides a grant: purchased = `granted`, canceled/refunded = `refunded`,
+   pending/unknown = rejected.
+2. **Play Integrity (warning only)** — if the app sent an integrity token, decodes it with Google and compares: our
+   package, nonce equal to `base64url(sha256(purchaseToken + "
+" + clientNonce))`, token under 2 minutes old,
+   `PLAY_RECOGNIZED` and `MEETS_DEVICE_INTEGRITY`. The result is reported as `integrity` in the signed payload and
+   logged, and **never blocks a grant** (custom ROMs, uncertified devices and old Play Services still get Pro).
+   Values: `ok`, `failed` (bad token or weak verdict), `missing` (no token sent), `unverifiable` (Google could not be asked).
+3. **Answer** — returns `{payload, sig}`: the verdict (`status`, `integrity`, ...) plus the client's nonce, signed ECDSA P-256. The app checks
    the signature against the public key baked into the build, so a fake server or a replayed answer fails.
 
 | HTTP | Meaning | App does |
 |---|---|---|
 | 200 | signed `granted` / `refunded` | grants / records the refund |
-| 4xx | integrity failed, or Google does not know the token | grants nothing, changes nothing |
+| 429 | rate limited (`RATE_LIMITER`, 10 requests / 60 s per IP, `Retry-After: 60`) | **could not check**: changes nothing, retries later. Never a rejection |
+| 413 | body over 40 KB (the app never sends that) | grants nothing, changes nothing |
+| other 4xx | Google does not confirm the purchase (unknown, pending), or malformed request | grants nothing, changes nothing |
 | 5xx | our trouble or Google's | changes nothing, retried on the next launch (R58) |
 
 ## One-time setup (you do these; they need your accounts)
@@ -36,21 +43,29 @@ returns a signed "granted" for the exact purchase and attempt (`data/billing/Ser
    ```
 5. **App**: in `gradle.properties` (or `~/.gradle/gradle.properties`) set
    `licenseServerUrl=https://<your-worker>.workers.dev` and `licenseServerPublicKey=<public key from step 3>`.
-   Blank = the app grants no new Pro purchases (fails closed; existing Pro is untouched).
+   Release builds (and the release-derived benchmark build) refuse blank or malformed values: `verifyReleaseLicenseServer`
+   requires a lowercase `https://` origin (no path) and the standard-base64 X.509 P-256 public key, and runs on every build.
+   `-PallowUnverifiedRelease=true` downgrades the failure to a warning, for CI and builds that are never published. Such a
+   build cannot grant Pro: the app treats an unusable config as unreachable, and `PlayEntitlementRepository` still
+   acknowledges the purchase, so a buyer would be charged with no Pro and no automatic refund. Existing Pro is untouched.
 
 `npm test` runs the worker against mocked Google endpoints. No network, no credentials.
 
 ## Testing on a device
 
-Integrity requires an install Google Play recognises. Sideloaded debug builds are rejected by design. Use the
-**internal testing track** (or an app bundle installed from Play) with a licensed tester account.
+A purchase needs a licensed tester account. Sideloaded debug builds still get Pro but report `integrity: failed`;
+use the **internal testing track** to see `ok`.
 
 ## Known limits
 
-- A rooted device can patch the APK to skip the check. This stops fake-purchase tools and forged Billing
-  responses, not a repackaged app (which Play Integrity's `PLAY_RECOGNIZED` makes unable to *obtain* a grant).
+- Integrity is advisory, so a repackaged app on a rooted device can still obtain a grant for a purchase Google
+  confirms. Fake-purchase tools and forged Billing responses still fail: Google must confirm the token.
 - A purchase token that leaks can be verified by a second genuine device. Closing that needs accounts.
 - Classic Play Integrity quota is 10,000 requests/day. The app verifies a token once, then trusts the cached
   entitlement, so this is spent per *purchase/restore*, not per launch.
-- No rate limiting here; put Cloudflare rate-limit rules on `/v1/verify` if abused.
+- Rate limiting is the Workers Rate Limiting binding `RATE_LIMITER` (`[[ratelimits]]` in `wrangler.toml`, 10 requests / 60 s
+  per `CF-Connecting-IP`), checked before any body parsing or Google call. The binding is optional in code, so
+  tests and `wrangler dev` without it are unlimited. Counters are per Cloudflare location, so it is approximate.
+  IPv6 is keyed on the /64. A second binding, `TOKEN_LIMITER` (5 / 60 s per SHA-256 of the purchase token), runs after body
+  validation and before any Google call. Both fail open if the binding errors. Bodies over 40 KB get 413 before parsing.
 - Play Data Safety: the purchase token and integrity token are sent to this server. Declare it.
