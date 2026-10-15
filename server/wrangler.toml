@@ -10,3 +10,17 @@ PRODUCT_ID = "picklejot_pro"
 #   wrangler secret put GOOGLE_CLIENT_EMAIL
 #   wrangler secret put GOOGLE_PRIVATE_KEY
 #   wrangler secret put SIGNING_PRIVATE_KEY
+
+# Per-IP rate limit on /v1/verify (Workers Rate Limiting binding). A genuine client verifies once per
+# purchase/restore, so 10 requests / 60 s is generous. period must be 10 or 60. Over the limit = 429,
+# which the app treats as "could not check", never as a rejection.
+[[ratelimits]]
+name = "RATE_LIMITER"
+namespace_id = "1701"
+simple = { limit = 10, period = 60 }
+
+# Per purchase token (hashed): a genuine client verifies a token once, a few retries at most.
+[[ratelimits]]
+name = "TOKEN_LIMITER"
+namespace_id = "1702"
+simple = { limit = 5, period = 60 }
