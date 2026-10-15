@@ -15,18 +15,25 @@ fun interface IntegrityTokenProvider {
 class PlayIntegrityTokenProvider(
     context: Context,
 ) : IntegrityTokenProvider {
-    private val manager = IntegrityManagerFactory.create(context.applicationContext)
+    private val appContext = context.applicationContext
 
     // The timeout matters: this runs under PlayEntitlementRepository's mutex, so a Task that never
     // completes would hang every later purchase and restore.
     override suspend fun token(nonce: String): String? =
         withTimeoutOrNull(TIMEOUT_MILLIS) {
             suspendCancellableCoroutine { continuation ->
-                manager
-                    .requestIntegrityToken(IntegrityTokenRequest.builder().setNonce(nonce).build())
-                    .addOnSuccessListener { if (continuation.isActive) continuation.resume(it.token()) }
-                    .addOnFailureListener { if (continuation.isActive) continuation.resume(null) }
-                    .addOnCanceledListener { if (continuation.isActive) continuation.resume(null) }
+                // Integrity is a signal only: outdated or missing Play Services can throw here, and that
+                // must come back as "no token", never as a failed purchase.
+                try {
+                    IntegrityManagerFactory
+                        .create(appContext)
+                        .requestIntegrityToken(IntegrityTokenRequest.builder().setNonce(nonce).build())
+                        .addOnSuccessListener { if (continuation.isActive) continuation.resume(it.token()) }
+                        .addOnFailureListener { if (continuation.isActive) continuation.resume(null) }
+                        .addOnCanceledListener { if (continuation.isActive) continuation.resume(null) }
+                } catch (failure: Exception) {
+                    if (continuation.isActive) continuation.resume(null)
+                }
             }
         }
 
