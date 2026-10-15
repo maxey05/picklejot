@@ -1,3 +1,7 @@
+import java.security.KeyFactory
+import java.security.interfaces.ECPublicKey
+import java.security.spec.X509EncodedKeySpec
+import java.util.Base64
 import java.util.Properties
 
 plugins {
@@ -18,22 +22,57 @@ val uploadKeystore =
         ?.let { rootProject.file(it) }
         ?.takeIf { it.exists() }
 
-// A release without the verifier configured builds fine and then can never sell Pro, so refuse to build it.
-// CI has no verifier and never ships, so it opts out with -PallowUnverifiedRelease=true.
-val verifierConfigured =
-    listOf("licenseServerUrl", "licenseServerPublicKey").none { findProperty(it)?.toString().isNullOrBlank() }
-val allowUnverifiedRelease = findProperty("allowUnverifiedRelease") == "true"
-if (!verifierConfigured) {
-    logger.warn("picklejot: licenseServerUrl/licenseServerPublicKey blank - this build grants NO new Pro purchases.")
-}
-tasks.matching { it.name == "generateReleaseBuildConfig" }.configureEach {
-    doFirst {
-        check(verifierConfigured || allowUnverifiedRelease) {
-            "Release build refused: set licenseServerUrl and licenseServerPublicKey (see server/README.md). " +
-                "Pass -PallowUnverifiedRelease=true only for builds that will never be published."
+// A release without a working verifier builds fine and then can never sell Pro (the app reports UNREACHABLE, the
+// purchase is acknowledged and the buyer is charged with no Pro), so refuse to build it. CI has no verifier and never
+// ships, so it opts out with -PallowUnverifiedRelease=true, which only downgrades the failure to a warning.
+// A dedicated task always runs: a doFirst on generateReleaseBuildConfig is skipped when that task is UP-TO-DATE or
+// FROM-CACHE. The same strings it validates are the ones written to BuildConfig. Formats are what the app and
+// server/ accept: an https origin (lowercase host, optional port) and a standard-base64 X.509 ECDSA P-256 key.
+val licenseServerUrl = providers.gradleProperty("licenseServerUrl").getOrElse("")
+val licenseServerPublicKey = providers.gradleProperty("licenseServerPublicKey").getOrElse("")
+val allowUnverifiedRelease = providers.gradleProperty("allowUnverifiedRelease").map { it == "true" }.getOrElse(false)
+val verifyReleaseLicenseServer =
+    tasks.register("verifyReleaseLicenseServer") {
+        description = "Fails a release build whose licenseServerUrl / licenseServerPublicKey are blank or malformed."
+        inputs.property("allowUnverifiedRelease", allowUnverifiedRelease)
+        outputs.upToDateWhen { false }
+        doLast {
+            val label = "[a-z0-9]([a-z0-9-]*[a-z0-9])?"
+            val urlOk =
+                Regex("""https://$label(\.$label)+(:\d{1,5})?/?""").matches(licenseServerUrl) &&
+                    !Regex("""(^|[/.])(example|invalid|localhost)([.:/]|$)|\.\d+(:\d+)?/?$""").containsMatchIn(licenseServerUrl)
+            val keyOk =
+                licenseServerPublicKey.startsWith("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE") &&
+                    Regex("[A-Za-z0-9+/]{122}==").matches(licenseServerPublicKey) &&
+                    runCatching {
+                        val spec = X509EncodedKeySpec(Base64.getDecoder().decode(licenseServerPublicKey))
+                        (KeyFactory.getInstance("EC").generatePublic(spec) as ECPublicKey).params.curve.field.fieldSize == 256
+                    }.getOrDefault(false)
+            val problems =
+                listOfNotNull(
+                    "licenseServerUrl must be a lowercase https origin such as https://<your-worker>.workers.dev (no whitespace, quotes, path, query, userinfo, IP or example/localhost host)"
+                        .takeUnless { urlOk },
+                    "licenseServerPublicKey must be the standard-base64 X.509 ECDSA P-256 public key from `npm run gen-key` (not the private key, no whitespace)"
+                        .takeUnless { keyOk },
+                )
+            if (problems.isEmpty()) return@doLast
+            if (allowUnverifiedRelease) {
+                logger.warn("picklejot: unverified release allowed. ${problems.joinToString(" ")} This build grants NO new Pro purchases.")
+            } else {
+                throw GradleException(
+                    "Release build refused. ${problems.joinToString(" ")} (see server/README.md). " +
+                        "Pass -PallowUnverifiedRelease=true only for builds that will never be published.",
+                )
+            }
         }
     }
+// Hook the release and (release-derived) benchmark builds. named() throws if AGP ever renames a target.
+afterEvaluate {
+    listOf("generateReleaseBuildConfig", "generateBenchmarkBuildConfig").forEach { tasks.named(it) { dependsOn(verifyReleaseLicenseServer) } }
 }
+
+// Property values are interpolated into generated Java source, so escape them.
+fun String.javaLiteral() = "\"" + replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\n").replace("\r", "\r") + "\""
 
 android {
     namespace = "com.maxeydev.picklejot"
@@ -47,9 +86,9 @@ android {
         versionName = libs.versions.appVersionName.get()
 
         // Purchase verifier (server/). Both are public, not secrets. Set them in gradle.properties or
-        // ~/.gradle/gradle.properties. Left blank the app grants no new Pro purchases (fail closed).
-        buildConfigField("String", "LICENSE_SERVER_URL", "\"${findProperty("licenseServerUrl") ?: ""}\"")
-        buildConfigField("String", "LICENSE_SERVER_PUBLIC_KEY", "\"${findProperty("licenseServerPublicKey") ?: ""}\"")
+        // ~/.gradle/gradle.properties. Release builds refuse blank/malformed values (verifyReleaseLicenseServer).
+        buildConfigField("String", "LICENSE_SERVER_URL", licenseServerUrl.javaLiteral())
+        buildConfigField("String", "LICENSE_SERVER_PUBLIC_KEY", licenseServerPublicKey.javaLiteral())
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
