@@ -82,7 +82,7 @@ If you believe something in the App infringes your rights, tell us at emgireyes.
 The App relies on third-party services that we do not control:
 
 - **Google Play** (distribution, Billing, updates, ratings and reviews) and **Android** (backup, photo picker, camera, notifications, sharing).
-- **Our purchase verification service**, hosted by Cloudflare, and **Google Play Integrity**, which check that a Pro purchase is genuine.
+- **Our purchase verification service**, hosted by Cloudflare, and **Google Play**, which confirm that a Pro purchase is genuine. **Google Play Integrity** is used only as an advisory device signal and is not required to unlock Pro.
 - **Apps you choose to share with** through the Android share sheet, such as social media, messaging or storage apps.
 
 Their own terms and privacy policies apply to your use of them. We are not responsible for their availability, content or actions.
