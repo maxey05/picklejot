@@ -1050,7 +1050,7 @@ Authorized, non-destructive checks on your own devices only. "Verified" means th
 
 | ID | Scenario | Pri | Type | Pre / Data | Steps | Expected | Actual | Status | Evidence | Bug |
 |---|---|---|---|---|---|---|---|---|---|---|
-| SEC-01 🔴 | No unexpected network traffic | P0 | SEC | ENV-B, release build; run `adb shell dumpsys netstats detail` or a proxy (mitmproxy) | 1. Use every feature except the paywall for 10 min 2. Open paywall | No connections at all until the paywall/billing check; then only Google Play endpoints. No analytics/ads SDK traffic. | | Not Tested | | |
+| SEC-01 🔴 | No unexpected network traffic | P0 | SEC | ENV-B, release build; run `adb shell dumpsys netstats detail` or a proxy (mitmproxy) | 1. Use every feature except the paywall for 10 min 2. Open paywall | No connections at all until the paywall/billing check; then only Google Play endpoints and the purchase-verification worker (purchase token + Play Integrity token only). No analytics/ads SDK traffic. | | Not Tested | | |
 | SEC-02 🔴 | Runtime permissions are minimal | P0 | SEC | Release | `adb shell dumpsys package com.maxeydev.picklelog \| Select-String "permission"` | Runtime: only `CAMERA` and `POST_NOTIFICATIONS`, neither granted until used. No `READ_MEDIA_IMAGES`, `READ_EXTERNAL_STORAGE`, location, contacts. (Also `ManifestPermissionsTest`.) | | Not Tested | | |
 | SEC-03 | Exported components | P1 | SEC | Release APK | `adb shell dumpsys package com.maxeydev.picklelog \| Select-String -Pattern "exported"` or inspect merged manifest | Only `MainActivity` (launcher) is exported. FileProvider `…fileprovider` not exported, grants per-URI only. | | Not Tested | | |
 | SEC-04 | FileProvider scope | P1 | SEC | — | Inspect `file_paths.xml`; share a card and an export; try `adb shell content read --uri content://com.maxeydev.picklelog.fileprovider/cards/<name>` from shell | Only `cache/camera`, `cache/cards`, `cache/exports` are exposed; database, DataStore and `files/photos` are not reachable; shell access without a grant is denied. | | Not Tested | | |
@@ -1065,7 +1065,7 @@ Authorized, non-destructive checks on your own devices only. "Verified" means th
 | SEC-13 | Backup contents | P1 | SEC | BAK-28/29 | — | Photos excluded from cloud; the profile with the entitlement **is** included (see BAK-31, §13 R-08). | | Not Tested | | |
 | SEC-14 | Erase completeness | P1 | SEC | ERS-03 | `adb shell run-as com.maxeydev.picklelog ls -R files cache no_backup databases` | No matches in DB, no photos, no exports, no DB pre-migration backups; only entitlement + app settings remain. | | Not Tested | | |
 | SEC-15 | Privacy policy matches behaviour | P1 | SEC | SET-14 vs SEC-01/02/13 | Compare each claim | Every claim is true (no servers, no analytics, camera/notifications only when used, Google Play + Android backup disclosed). | | Not Tested | | |
-| SEC-16 | Play Data Safety form consistency | P1 | SEC | Play Console draft | Compare with SEC-01/02 | "No data collected/shared" is consistent with the code. | | Not Tested | | |
+| SEC-16 | Play Data Safety form consistency | P1 | SEC | Play Console draft | Compare with SEC-01/02 | Data Safety declares the purchase token (purchase history) and Play Integrity token (device or app integrity) sent to the verification worker and Google, used only for purchase verification, and nothing else. Must match the privacy policy section 16. | | Not Tested | | |
 
 Not applicable (no accounts/server): authentication, sessions, cookies, CSRF, IDOR across users, rate limiting, password policy.
 
