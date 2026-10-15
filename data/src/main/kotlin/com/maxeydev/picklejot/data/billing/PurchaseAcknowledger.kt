@@ -8,6 +8,8 @@ class PurchaseAcknowledger(
         if (purchase.isAcknowledged || !PurchaseVerifier.isVerifiedPro(purchase)) {
             return BillingResponse.OK
         }
-        return backoff.retryingResponse { gateway.acknowledge(purchase.purchaseToken) }
+        val response = backoff.retryingResponse { gateway.acknowledge(purchase.purchaseToken) }
+        // Already acknowledged elsewhere (another process or a retry that landed late) is the goal state.
+        return if (response == BillingResponse.ITEM_ALREADY_OWNED) BillingResponse.OK else response
     }
 }
