@@ -21,7 +21,10 @@ class BillingStartupCheck(
     private suspend fun syncUntilAcknowledged() {
         var outcome = repository.syncWithPlay()
         for (pause in acknowledgementRetryDelaysMillis) {
-            if (outcome !is SyncOutcome.Granted || outcome.isAcknowledged) {
+            // Also retry while the verifier or Play could not be reached, so verification (and the
+            // acknowledgement, which a down server must not block) is attempted again later.
+            val done = if (outcome is SyncOutcome.Granted) outcome.isAcknowledged else outcome !is SyncOutcome.CouldNotCheck
+            if (done) {
                 return
             }
             delay(pause)
