@@ -1,13 +1,18 @@
 // Purchase verifier for Picklejot Pro. One endpoint: POST /v1/verify.
 //
-// The app sends a Play purchase token plus a Play Integrity token whose nonce is bound to that
-// purchase token and a fresh client nonce. This worker (1) decodes the integrity verdict with
-// Google, (2) asks the Play Developer API whether the purchase is real, and (3) answers with an
-// ECDSA-signed statement that echoes the client nonce, so a recorded answer cannot be replayed.
+// The app sends a Play purchase token plus (optionally) a Play Integrity token whose nonce is bound
+// to that purchase token and a fresh client nonce. This worker (1) asks the Play Developer API
+// whether the purchase is real, (2) decodes the integrity verdict with Google as a WARNING signal
+// only, and (3) answers with an ECDSA-signed statement that echoes the client nonce, so a recorded
+// answer cannot be replayed.
 //
-// Status codes are the contract the app relies on: 200 = signed answer, other 4xx = rejected
-// (the app grants nothing), 5xx = could not check (the app changes nothing — Pro is never
-// revoked by a failure, R58).
+// Google's purchase confirmation is the only thing that decides a grant. Device integrity never
+// blocks it: custom ROMs, uncertified devices and old Play Services still get what they paid for.
+// The verdict is reported as `integrity` in the signed payload and logged.
+//
+// Status codes are the contract the app relies on: 200 = signed answer, 429 = rate limited and
+// 5xx = could not check (the app changes nothing and retries later — Pro is never revoked by a
+// failure, R58; a 429 is never a rejection), other 4xx = rejected (the app grants nothing).
 
 export interface Env {
   PACKAGE_NAME: string;
@@ -15,9 +20,12 @@ export interface Env {
   GOOGLE_CLIENT_EMAIL: string;
   GOOGLE_PRIVATE_KEY: string; // service-account key, PKCS#8 PEM
   SIGNING_PRIVATE_KEY: string; // base64 PKCS#8, ECDSA P-256 (see scripts/gen-signing-key.mjs)
+  RATE_LIMITER?: RateLimit; // per client IP; wrangler.toml [[ratelimits]]; absent = unlimited
+  TOKEN_LIMITER?: RateLimit; // per purchase token, so one leaked token can't burn the Play Integrity quota
 }
 
 type Fetch = typeof fetch;
+type RateLimit = { limit(o: { key: string }): Promise<{ success: boolean }> };
 
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const SCOPES =
@@ -78,7 +86,7 @@ interface IntegrityPayload {
   deviceIntegrity?: { deviceRecognitionVerdict?: string[] };
 }
 
-// null = Google says the token itself is bad (malformed, expired, wrong app) -> reject.
+// null = Google says the token itself is bad (malformed, expired, wrong app).
 async function decodeIntegrity(env: Env, f: Fetch, auth: string, token: string): Promise<IntegrityPayload | null> {
   const res = await f(`https://playintegrity.googleapis.com/v1/${env.PACKAGE_NAME}:decodeIntegrityToken`, {
     method: "POST",
@@ -102,6 +110,24 @@ function integrityOk(p: IntegrityPayload, env: Env, nonce: string, nowMs: number
     p.appIntegrity?.packageName === env.PACKAGE_NAME &&
     (p.deviceIntegrity?.deviceRecognitionVerdict ?? []).includes("MEETS_DEVICE_INTEGRITY")
   );
+}
+
+// Warning signal only, never a gate. ok = fully recognised; failed = token bad or verdict weak;
+// missing = app sent no token; unverifiable = Google could not be asked.
+export type Integrity = "ok" | "failed" | "missing" | "unverifiable";
+
+async function checkIntegrity(
+  env: Env, f: Fetch, auth: string, token: unknown, purchaseToken: string, clientNonce: string, nowMs: number,
+): Promise<Integrity> {
+  if (token === undefined || token === null || token === "") return "missing";
+  if (typeof token !== "string" || token.length > 32768 || token.split(".").length !== 5) return "failed"; // junk never reaches Google
+  try {
+    const verdict = await decodeIntegrity(env, f, auth, token);
+    const nonce = await sha256Nonce(purchaseToken, clientNonce);
+    return verdict && integrityOk(verdict, env, nonce, nowMs) ? "ok" : "failed";
+  } catch {
+    return "unverifiable";
+  }
 }
 
 // purchaseState: 0 purchased, 1 canceled/refunded, 2 pending. null = Google does not know this token.
@@ -142,36 +168,96 @@ async function signed(env: Env, claims: object): Promise<Response> {
   return json({ payload, sig: b64url(p1363ToDer(raw)) });
 }
 
+// Key on the /64 for IPv6 (one host owns 2^64 addresses); IPv4 as-is.
+export function ipKey(ip: string): string {
+  if (!ip.includes(":")) return ip;
+  const [head, tail] = ip.toLowerCase().split("::");
+  const h = head ? head.split(":") : [];
+  const t = tail ? tail.split(":") : [];
+  const groups = ip.includes("::") ? [...h, ...Array(Math.max(0, 8 - h.length - t.length)).fill("0"), ...t] : h;
+  return groups.slice(0, 4).map((g) => g.replace(/^0+(?=.)/, "")).join(":");
+}
+
+// Cost control, not authorization: if the binding errors, fail open (the 502/Play checks still guard grants).
+async function withinRateLimit(limiter: RateLimit | undefined, key: string): Promise<boolean> {
+  if (!limiter) return true;
+  try {
+    return (await limiter.limit({ key })).success;
+  } catch (e) {
+    console.warn("verify: rate limiter failed, allowing", e);
+    return true;
+  }
+}
+
+const MAX_BODY_BYTES = 40_000; // purchaseToken <= 2048 chars + integrityToken <= 32 KB, plus JSON framing
+
+// Reads the body but stops (null) once it passes the cap, so an oversized upload never fills the isolate's memory.
+async function readCapped(req: Request): Promise<string | null> {
+  if (Number(req.headers.get("content-length")) > MAX_BODY_BYTES) return null;
+  const reader = req.body?.getReader();
+  if (!reader) return "";
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for (let r = await reader.read(); !r.done; r = await reader.read()) {
+    size += r.value.length;
+    if (size > MAX_BODY_BYTES) {
+      await reader.cancel();
+      return null;
+    }
+    chunks.push(r.value);
+  }
+  const all = new Uint8Array(size);
+  let at = 0;
+  for (const c of chunks) (all.set(c, at), (at += c.length));
+  return new TextDecoder().decode(all);
+}
+
+const rateLimited = () => {
+  const res = json({ error: "rate_limited" }, 429);
+  res.headers.set("Retry-After", "60");
+  return res;
+};
+
 export async function handle(req: Request, env: Env, f: Fetch = fetch, nowMs = Date.now()): Promise<Response> {
   if (req.method !== "POST" || new URL(req.url).pathname !== "/v1/verify") return json({ error: "not_found" }, 404);
 
-  let body: { purchaseToken?: unknown; clientNonce?: unknown; integrityToken?: unknown };
+  // Before any body parsing, Google call or signing: those are the quota-burning paths.
+  if (!(await withinRateLimit(env.RATE_LIMITER, ipKey(req.headers.get("CF-Connecting-IP") ?? "unknown")))) {
+    return rateLimited();
+  }
+
+  const raw = await readCapped(req);
+  if (raw === null) return json({ error: "too_large" }, 413);
+  let body: { purchaseToken?: unknown; clientNonce?: unknown; integrityToken?: unknown } | null;
   try {
-    body = await req.json();
+    body = JSON.parse(raw);
   } catch {
     return json({ error: "bad_request" }, 400);
   }
-  const { purchaseToken, clientNonce, integrityToken } = body;
+  const { purchaseToken, clientNonce, integrityToken } = body ?? {};
   if (
     typeof purchaseToken !== "string" || purchaseToken.length < 1 || purchaseToken.length > 2048 ||
-    typeof clientNonce !== "string" || !/^[A-Za-z0-9_-]{16,128}$/.test(clientNonce) ||
-    typeof integrityToken !== "string" || integrityToken.length > 32768 || integrityToken.split(".").length !== 5
+    typeof clientNonce !== "string" || !/^[A-Za-z0-9_-]{16,128}$/.test(clientNonce)
   ) {
     return json({ error: "bad_request" }, 400);
+  }
+  // After validation, before any Google call: caps repeat verification of a single (possibly leaked) token.
+  if (!(await withinRateLimit(env.TOKEN_LIMITER, b64url(new Uint8Array(await crypto.subtle.digest("SHA-256", enc(purchaseToken))))))) {
+    return rateLimited();
   }
 
   try {
     const auth = await googleAccessToken(env, f, nowMs);
-    // Cheapest check first: random tokens must not be able to burn the Play Integrity quota.
+    // Purchase first: random tokens must not be able to burn the Play Integrity quota.
     const state = await purchaseState(env, f, auth, purchaseToken);
     if (state !== 0 && state !== 1) return json({ error: "not_purchased" }, 403);
 
-    const verdict = await decodeIntegrity(env, f, auth, integrityToken);
-    const nonce = await sha256Nonce(purchaseToken, clientNonce);
-    if (!verdict || !integrityOk(verdict, env, nonce, nowMs)) return json({ error: "integrity" }, 403);
+    const integrity = await checkIntegrity(env, f, auth, integrityToken, purchaseToken, clientNonce, nowMs);
+    if (integrity !== "ok") console.warn(`verify: integrity=${integrity} state=${state} (not blocking)`);
 
     return await signed(env, {
       status: state === 0 ? "granted" : "refunded",
+      integrity,
       purchaseToken,
       clientNonce,
       productId: env.PRODUCT_ID,
