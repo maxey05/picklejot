@@ -527,7 +527,7 @@ ${store}
 </div>`;
   const main = `<h2 class="label label--first">Legal</h2>
 <ul class="list">
-${row({ href: "privacy.html", icon: ICON_SHIELD, title: "Privacy policy", sub: "What Picklejot stores on your phone, and what it never collects" })}
+${row({ href: "privacy.html", icon: ICON_SHIELD, title: "Privacy policy", sub: "What Picklejot stores on your phone, and the one purchase check it sends" })}
 ${row({ href: "terms.html", icon: ICON_DOC, title: "Terms of service", sub: "The rules for using the app and the one-time Pro purchase" })}
 </ul>
 <h2 class="label label--gap">Contact</h2>
