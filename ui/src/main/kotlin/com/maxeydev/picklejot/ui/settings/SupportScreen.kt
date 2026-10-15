@@ -129,13 +129,6 @@ fun SupportScreen(
                             .clickable(role = Role.Button, onClick = onShareApp)
                             .testTag(SupportTestTags.SHARE),
                 )
-                SettingsRow(
-                    icon = R.drawable.ic_heart,
-                    label = stringResource(R.string.support_donate_title),
-                    iconTint = MaterialTheme.colorScheme.primary,
-                    showDivider = true,
-                    modifier = Modifier.testTag(SupportTestTags.DONATE),
-                )
             }
         }
     }
