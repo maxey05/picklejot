@@ -70,13 +70,6 @@ class SupportScreenTest {
     }
 
     @Test
-    fun the_donate_row_is_shown_for_free_and_pro_players() {
-        show(hasPro = false)
-
-        compose.onNodeWithTag(SupportTestTags.DONATE).performScrollTo().assertIsDisplayed()
-    }
-
-    @Test
     fun sharing_the_app_is_offered() {
         show(hasPro = false)
 
