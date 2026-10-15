@@ -4,7 +4,7 @@ import android.app.Activity
 
 class FakeBillingGateway : BillingGateway {
     var purchasesResults: MutableList<GatewayResult<List<PlayPurchase>>> = mutableListOf()
-    var acknowledgeResponses: MutableList<BillingResponse> = mutableListOf()
+    var acknowledgeResponses: MutableList<BillingResponse> = mutableListOf(BillingResponse.OK)
     var price: GatewayResult<String> = GatewayResult.Success("$6.99")
     val acknowledged = mutableListOf<String>()
     var queries = 0
