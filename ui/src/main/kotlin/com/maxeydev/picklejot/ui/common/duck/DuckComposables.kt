@@ -19,9 +19,11 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.InfiniteAnimationPolicy
 import com.maxeydev.picklejot.ui.dashboard.motionScale
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.coroutines.coroutineContext
 
 private const val HELLO_DELAY_MILLIS = 250L
 private const val SMASH_DELAY_MILLIS = 450L
@@ -34,6 +36,13 @@ internal class DuckClock {
     var frozen by mutableStateOf(false)
 }
 
+// Compose tests install an InfiniteAnimationPolicy that cancels endless frame loops; a bare
+// withFrameNanos loop would keep waitForIdle from ever returning.
+private suspend fun withLoopFrameNanos(onFrame: (Long) -> Unit) {
+    val policy = coroutineContext[InfiniteAnimationPolicy]
+    if (policy == null) withFrameNanos(onFrame) else policy.onInfiniteOperation { withFrameNanos(onFrame) }
+}
+
 @Composable
 internal fun rememberDuckClock(): DuckClock {
     val clock = remember { DuckClock() }
@@ -41,7 +50,7 @@ internal fun rememberDuckClock(): DuckClock {
         if (motionScale() > 0f) {
             val origin = withFrameNanos { it }
             while (true) {
-                withFrameNanos { clock.millis = (it - origin) / NANOS_PER_MILLI }
+                withLoopFrameNanos { clock.millis = (it - origin) / NANOS_PER_MILLI }
             }
         } else {
             clock.frozen = true
