@@ -31,7 +31,8 @@ private fun claimsJson(
     nonce: String,
     product: String = PRO_PRODUCT_ID,
     pkg: String = PACKAGE,
-) = """{"status":"$status","purchaseToken":"$token","clientNonce":"$nonce",""" +
+    integrity: String = "ok",
+) = """{"status":"$status","integrity":"$integrity","purchaseToken":"$token","clientNonce":"$nonce",""" +
     """"productId":"$product","packageName":"$pkg"}"""
 
 private fun envelope(
@@ -58,6 +59,8 @@ class ServerPurchaseValidatorTest {
     private var sentNonce: String? = null
     private var integrityNonce: String? = null
     private var integrityToken: String? = "integrity-token"
+    private var integrityFailure: Exception? = null
+    private var sentIntegrityToken: String? = "unset"
     private var posts = 0
     private var computeDispatcher: CoroutineDispatcher = Dispatchers.Default
 
@@ -71,6 +74,7 @@ class ServerPurchaseValidatorTest {
         integrity =
             IntegrityTokenProvider { nonce ->
                 integrityNonce = nonce
+                integrityFailure?.let { throw it }
                 integrityToken
             },
         post = { _, body ->
@@ -79,7 +83,7 @@ class ServerPurchaseValidatorTest {
             val nonce = request.getValue("clientNonce").jsonPrimitive.content
             sentNonce = nonce
             assertEquals("token-1", request.getValue("purchaseToken").jsonPrimitive.content)
-            assertEquals("integrity-token", request.getValue("integrityToken").jsonPrimitive.content)
+            sentIntegrityToken = request["integrityToken"]?.jsonPrimitive?.content
             reply(nonce)
         },
         computeDispatcher = computeDispatcher,
@@ -92,9 +96,11 @@ class ServerPurchaseValidatorTest {
         pkg: String = PACKAGE,
         nonceOverride: String? = null,
         signer: KeyPair = serverKeys,
+        integrity: String = "ok",
     ): (String) -> HttpReply =
         { nonce ->
-            HttpReply(200, envelope(claimsJson(status, token, nonceOverride ?: nonce, product, pkg), signer = signer))
+            val claims = claimsJson(status, token, nonceOverride ?: nonce, product, pkg, integrity)
+            HttpReply(200, envelope(claims, signer = signer))
         }
 
     @Test
@@ -240,12 +246,78 @@ class ServerPurchaseValidatorTest {
         }
 
     @Test
-    fun `without an integrity token nothing is sent`() =
+    fun `the integrity token is sent along when Play issued one`() =
+        runTest {
+            assertEquals(ValidationResult.VALID, validator(reply = ok()).validate(purchase))
+            assertEquals("integrity-token", sentIntegrityToken)
+        }
+
+    @Test
+    fun `without an integrity token the purchase is still verified and granted`() =
         runTest {
             integrityToken = null
 
-            assertEquals(ValidationResult.UNREACHABLE, validator(reply = ok()).validate(purchase))
-            assertEquals(0, posts)
+            assertEquals(ValidationResult.VALID, validator(reply = ok()).validate(purchase))
+            assertEquals(1, posts)
+            assertNull(sentIntegrityToken)
+        }
+
+    @Test
+    fun `a throwing integrity provider does not stop verification`() =
+        runTest {
+            integrityFailure = IllegalStateException("Play Services outdated")
+
+            assertEquals(ValidationResult.VALID, validator(reply = ok()).validate(purchase))
+            assertEquals(1, posts)
+            assertNull(sentIntegrityToken)
+        }
+
+    @Test
+    fun `without an integrity token the server's refusal or trouble still decides`() =
+        runTest {
+            integrityToken = null
+
+            assertEquals(ValidationResult.REJECTED, validator(reply = { HttpReply(403, "{}") }).validate(purchase))
+            assertEquals(ValidationResult.UNREACHABLE, validator(reply = { HttpReply(503, "") }).validate(purchase))
+            assertEquals(ValidationResult.REFUNDED, validator(reply = ok(status = "refunded")).validate(purchase))
+        }
+
+    @Test
+    fun `any integrity verdict in a granted reply still grants`() =
+        runTest {
+            listOf("ok", "failed", "missing", "unverifiable").forEach { verdict ->
+                val result = validator(reply = ok(integrity = verdict)).validate(purchase)
+                assertEquals(verdict, ValidationResult.VALID, result)
+            }
+        }
+
+    @Test
+    fun `a refund is still a refund whatever the integrity verdict`() =
+        runTest {
+            val result = validator(reply = ok(status = "refunded", integrity = "failed")).validate(purchase)
+            assertEquals(ValidationResult.REFUNDED, result)
+        }
+
+    @Test
+    fun `not_purchased is a rejection and upstream trouble is transient`() =
+        runTest {
+            val denied = validator(reply = { HttpReply(403, """{"error":"not_purchased"}""") }).validate(purchase)
+            val upstream = validator(reply = { HttpReply(502, """{"error":"upstream"}""") }).validate(purchase)
+            assertEquals(ValidationResult.REJECTED, denied)
+            assertEquals(ValidationResult.UNREACHABLE, upstream)
+        }
+
+    @Test
+    fun `integrity fields in the signed reply are ignored and a grant still grants`() =
+        runTest {
+            val withIntegrity: (String) -> HttpReply = { nonce ->
+                val claims =
+                    claimsJson("granted", "token-1", nonce).dropLast(1) +
+                        ""","integrity":"failed","integrityVerdict":{"deviceRecognitionVerdict":[]}}"""
+                HttpReply(200, envelope(claims, signer = serverKeys))
+            }
+
+            assertEquals(ValidationResult.VALID, validator(reply = withIntegrity).validate(purchase))
         }
 
     @Test
