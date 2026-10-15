@@ -1,5 +1,6 @@
 package com.maxeydev.picklejot.data.billing
 
+import android.util.Log
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -32,8 +33,12 @@ data class HttpReply(
 
 /**
  * Asks the verifier (server/) whether a purchase is real. The verifier checks the token with the
- * Play Developer API and the device with Play Integrity, then returns an ECDSA-signed statement
- * that echoes a nonce chosen here — so a recorded or forged reply is not accepted.
+ * Play Developer API (and notes the device's Play Integrity verdict as a warning), then returns an
+ * ECDSA-signed statement that echoes a nonce chosen here — so a recorded or forged reply is not accepted.
+ *
+ * Device integrity is a signal only: if no Play Integrity token can be obtained (provider throws, old or
+ * missing Play Services, uncertified device) the request is sent without one and the server decides on
+ * the purchase alone. Google's confirmation of the purchase is what grants Pro, never the device verdict.
  *
  * Fails closed: any doubt about the reply is [ValidationResult.REJECTED]; any doubt about
  * reachability is [ValidationResult.UNREACHABLE]. Neither changes a stored entitlement.
@@ -59,8 +64,7 @@ class ServerPurchaseValidator(
     private suspend fun attempt(purchase: PlayPurchase): ValidationResult {
         if (!config.isUsable) return ValidationResult.UNREACHABLE
         val clientNonce = base64Url(ByteArray(NONCE_BYTES).also(random::nextBytes))
-        val integrityToken =
-            integrity.token(integrityNonce(purchase.purchaseToken, clientNonce)) ?: return ValidationResult.UNREACHABLE
+        val integrityToken = integrityTokenOrNull(integrityNonce(purchase.purchaseToken, clientNonce))
         val request = Json.encodeToString(Request(purchase.purchaseToken, clientNonce, integrityToken))
         val reply =
             try {
@@ -72,8 +76,24 @@ class ServerPurchaseValidator(
             reply.status == HttpURLConnection.HTTP_OK ->
                 withContext(computeDispatcher) { interpret(reply.body, purchase.purchaseToken, clientNonce) }
             reply.status >= 500 || reply.status == 408 || reply.status == 429 -> ValidationResult.UNREACHABLE
-            else -> ValidationResult.REJECTED
+            else -> {
+                warn("verifier refused the purchase with HTTP ${reply.status}")
+                ValidationResult.REJECTED
+            }
         }
+    }
+
+    private suspend fun integrityTokenOrNull(nonce: String): String? {
+        val token =
+            try {
+                integrity.token(nonce)
+            } catch (failure: CancellationException) {
+                throw failure
+            } catch (failure: Exception) {
+                null
+            }
+        if (token == null) warn("no Play Integrity token; verifying the purchase without one")
+        return token
     }
 
     private fun interpret(
@@ -82,14 +102,17 @@ class ServerPurchaseValidator(
         clientNonce: String,
     ): ValidationResult =
         try {
-            val envelope = Json.decodeFromString<Envelope>(body)
+            val envelope = LENIENT.decodeFromString<Envelope>(body)
             if (!signatureHolds(envelope)) return ValidationResult.REJECTED
-            val claims = Json.decodeFromString<Claims>(String(Base64.getUrlDecoder().decode(envelope.payload)))
+            val claims = LENIENT.decodeFromString<Claims>(String(Base64.getUrlDecoder().decode(envelope.payload)))
             val about =
                 claims.purchaseToken == purchaseToken &&
                     claims.clientNonce == clientNonce &&
                     claims.productId == PRO_PRODUCT_ID &&
                     claims.packageName == packageName
+            if (about && claims.integrity != null && claims.integrity != "ok") {
+                warn("device integrity is ${claims.integrity}; the purchase is honored anyway")
+            }
             when {
                 !about -> ValidationResult.REJECTED
                 claims.status == "granted" -> ValidationResult.VALID
@@ -119,7 +142,7 @@ class ServerPurchaseValidator(
     private data class Request(
         val purchaseToken: String,
         val clientNonce: String,
-        val integrityToken: String,
+        val integrityToken: String? = null,
     )
 
     @Serializable
@@ -135,9 +158,14 @@ class ServerPurchaseValidator(
         val clientNonce: String,
         val productId: String,
         val packageName: String,
+        /** "ok", "failed", "missing" or "unverifiable"; a warning signal only, absent on older servers. */
+        val integrity: String? = null,
     )
 
     companion object {
+        // Unknown or absent integrity fields in the server's reply must never break verification.
+        private val LENIENT = Json { ignoreUnknownKeys = true }
+        private const val TAG = "ServerPurchaseValidator"
         private const val VERIFY_PATH = "/v1/verify"
         private const val NONCE_BYTES = 24
         private const val TIMEOUT_MILLIS = 15_000
@@ -147,6 +175,11 @@ class ServerPurchaseValidator(
             purchaseToken: String,
             clientNonce: String,
         ): String = base64Url(MessageDigest.getInstance("SHA-256").digest("$purchaseToken\n$clientNonce".toByteArray()))
+
+        // Log is not available in plain JVM unit tests.
+        private fun warn(message: String) {
+            runCatching { Log.w(TAG, message) }
+        }
 
         private fun base64Url(bytes: ByteArray): String = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
 
