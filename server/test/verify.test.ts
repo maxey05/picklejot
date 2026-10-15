@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createHash, createPublicKey, generateKeyPairSync, verify } from "node:crypto";
-import { handle, type Env } from "../src/index.ts";
+import { handle, ipKey, type Env } from "../src/index.ts";
 
 const NOW = 1_800_000_000_000;
 const PKG = "com.maxeydev.picklejot";
@@ -68,6 +68,7 @@ test("a real purchase on a recognised device gets a signed, nonce-bound grant", 
   assert.ok(ok, "DER ECDSA signature must verify (this is the format Java expects)");
   assert.deepEqual(JSON.parse(Buffer.from(payload, "base64url").toString()), {
     status: "granted",
+    integrity: "ok",
     purchaseToken: TOKEN,
     clientNonce: CLIENT_NONCE,
     productId: "picklejot_pro",
@@ -81,7 +82,10 @@ test("a canceled purchase is reported as refunded, still signed", async () => {
   assert.equal(JSON.parse(Buffer.from(payload, "base64url").toString()).status, "refunded");
 });
 
-test("integrity verdicts that must be rejected", async () => {
+const claimsOf = async (res: Response) =>
+  JSON.parse(Buffer.from(((await res.json()) as { payload: string }).payload, "base64url").toString());
+
+test("a Google-confirmed purchase is granted whatever the device integrity says (warning only)", async () => {
   const cases: Record<string, object> = {
     "nonce for a different purchase": { ...goodIntegrity(), requestDetails: { ...goodIntegrity().requestDetails, nonce: nonceFor("other", CLIENT_NONCE) } },
     "stale token": { ...goodIntegrity(), requestDetails: { ...goodIntegrity().requestDetails, timestampMillis: String(NOW - 3 * 60_000) } },
@@ -94,9 +98,32 @@ test("integrity verdicts that must be rejected", async () => {
     "missing timestamp": { ...goodIntegrity(), requestDetails: { ...goodIntegrity().requestDetails, timestampMillis: undefined } },
   };
   for (const [name, integrity] of Object.entries(cases)) {
-    assert.equal((await call({ integrity })).status, 403, name);
+    const res = await call({ integrity });
+    assert.equal(res.status, 200, name);
+    const c = await claimsOf(res);
+    assert.equal(c.status, "granted", name);
+    assert.equal(c.integrity, "failed", name);
   }
-  assert.equal((await call({ integrity: 400 })).status, 403, "google says the token is malformed");
+  const bad = await claimsOf(await call({ integrity: 400 })); // google says the token is malformed
+  assert.deepEqual([bad.status, bad.integrity], ["granted", "failed"]);
+});
+
+test("integrity we could not check or were not sent still grants a confirmed purchase", async () => {
+  for (const integrity of [500, 403, 401]) {
+    const c = await claimsOf(await call({ integrity }));
+    assert.deepEqual([c.status, c.integrity], ["granted", "unverifiable"], String(integrity));
+  }
+  const missing = { purchaseToken: TOKEN, clientNonce: CLIENT_NONCE };
+  for (const body of [missing, { ...missing, integrityToken: null }, { ...missing, integrityToken: "" }]) {
+    const c = await claimsOf(await call({}, body));
+    assert.deepEqual([c.status, c.integrity], ["granted", "missing"], JSON.stringify(body));
+  }
+});
+
+test("integrity never rescues a purchase Google does not confirm", async () => {
+  for (const purchase of [400, 404, 410, { purchaseState: 2 }]) {
+    assert.equal((await call({ purchase, integrity: goodIntegrity() })).status, 403, JSON.stringify(purchase));
+  }
 });
 
 test("a token Google does not know, or a pending one, is rejected", async () => {
@@ -106,7 +133,7 @@ test("a token Google does not know, or a pending one, is rejected", async () => 
 });
 
 test("our own upstream trouble is a 5xx, never a rejection of the buyer", async () => {
-  for (const g of [{ purchase: 500 }, { purchase: 403 }, { purchase: 401 }, { integrity: 500 }, { integrity: 403 }]) {
+  for (const g of [{ purchase: 500 }, { purchase: 403 }, { purchase: 401 }]) {
     assert.equal((await call(g)).status, 502, JSON.stringify(g));
   }
 });
@@ -121,7 +148,6 @@ test("malformed requests never reach Google", async () => {
     { purchaseToken: TOKEN, clientNonce: "short", integrityToken: IT },
     { purchaseToken: TOKEN, clientNonce: "has spaces not allowed!!", integrityToken: IT },
     { purchaseToken: "x".repeat(3000), clientNonce: CLIENT_NONCE, integrityToken: IT },
-    { purchaseToken: TOKEN, clientNonce: CLIENT_NONCE },
   ];
   for (const body of bad) {
     const res = await handle(new Request("https://v/v1/verify", { method: "POST", body: JSON.stringify(body) }), env, never, NOW);
@@ -139,6 +165,85 @@ test("an unknown purchase never reaches the integrity quota, and junk integrity 
 
   calls.length = 0;
   const res = await call({}, { purchaseToken: TOKEN, clientNonce: CLIENT_NONCE, integrityToken: "not-a-jwe" });
-  assert.equal(res.status, 400);
-  assert.equal(calls.length, 0);
+  assert.equal(res.status, 200);
+  assert.equal((await claimsOf(res)).integrity, "failed");
+  assert.ok(!calls.some((u) => u.includes("decodeIntegrityToken")), "junk integrity token reached Google");
+});
+
+const limited = (success: boolean, keys: string[] = []): Env => ({
+  ...env,
+  RATE_LIMITER: { limit: async ({ key }) => (keys.push(key), { success }) },
+});
+const tokenLimited = (success: boolean, keys: string[] = []): Env => ({
+  ...env,
+  TOKEN_LIMITER: { limit: async ({ key }) => (keys.push(key), { success }) },
+});
+const post = (e: Env, f: typeof fetch, headers: Record<string, string> = {}) =>
+  handle(
+    new Request("https://v/v1/verify", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ purchaseToken: TOKEN, clientNonce: CLIENT_NONCE, integrityToken: IT }),
+    }),
+    e, f, NOW,
+  );
+
+test("rate limiter: allowed requests take the normal flow, keyed by client IP", async () => {
+  const keys: string[] = [];
+  assert.equal((await post(limited(true, keys), fakeGoogle(), { "CF-Connecting-IP": "1.2.3.4" })).status, 200);
+  assert.equal((await post(limited(true, keys), fakeGoogle())).status, 200);
+  assert.deepEqual(keys, ["1.2.3.4", "unknown"]);
+});
+
+test("rate limiter: a denied request is a 429 with Retry-After and touches nothing upstream", async () => {
+  calls.length = 0;
+  const res = await post(limited(false), fakeGoogle());
+  assert.equal(res.status, 429);
+  assert.equal(res.headers.get("Retry-After"), "60");
+  assert.deepEqual(await res.json(), { error: "rate_limited" });
+  assert.deepEqual(calls, []);
+  // 404s are answered before the limiter, so they never spend quota
+  const keys: string[] = [];
+  assert.equal((await handle(new Request("https://v/other", { method: "POST" }), limited(false, keys), fakeGoogle(), NOW)).status, 404);
+  assert.deepEqual(keys, []);
+});
+
+test("rate limiter: no binding means no limiting", async () => {
+  assert.equal(env.RATE_LIMITER, undefined);
+  assert.equal((await post(env, fakeGoogle())).status, 200);
+});
+
+test("rate limiter: IPv6 keys on the /64, and a throwing binding fails open", async () => {
+  assert.equal(ipKey("2001:DB8:0:1::5"), "2001:db8:0:1");
+  assert.equal(ipKey("2001:db8:0:1:ffff:ffff:ffff:ffff"), ipKey("2001:db8::1:0:0:0:1"));
+  assert.equal(ipKey("::1"), "0:0:0:0");
+  assert.equal(ipKey("1.2.3.4"), "1.2.3.4");
+  const boom = { ...env, RATE_LIMITER: { limit: async () => { throw new Error("down"); } } };
+  assert.equal((await post(boom, fakeGoogle())).status, 200);
+});
+
+test("token limiter: keyed on the token hash, denied = 429 with nothing upstream, throwing = fail open", async () => {
+  const keys: string[] = [];
+  assert.equal((await post(tokenLimited(true, keys), fakeGoogle())).status, 200);
+  assert.deepEqual(keys, [createHash("sha256").update(TOKEN).digest("base64url")]);
+  calls.length = 0;
+  assert.equal((await post(tokenLimited(false), fakeGoogle())).status, 429);
+  assert.deepEqual(calls, []);
+  const boom = { ...env, TOKEN_LIMITER: { limit: async () => { throw new Error("down"); } } };
+  assert.equal((await post(boom, fakeGoogle())).status, 200);
+});
+
+test("body cap: oversized bodies get 413 (declared or streamed) before any parsing or Google call", async () => {
+  calls.length = 0;
+  const big = "x".repeat(50_000);
+  const declared = new Request("https://v/v1/verify", { method: "POST", body: big });
+  assert.equal((await handle(declared, env, fakeGoogle(), NOW)).status, 413);
+  const streamed = new Request("https://v/v1/verify", {
+    method: "POST",
+    body: new ReadableStream({ start: (c) => (c.enqueue(new TextEncoder().encode(big)), c.close()) }),
+    duplex: "half",
+  } as RequestInit);
+  assert.equal((await handle(streamed, env, fakeGoogle(), NOW)).status, 413);
+  assert.deepEqual(calls, []);
+  assert.equal((await post(env, fakeGoogle())).status, 200);
 });
