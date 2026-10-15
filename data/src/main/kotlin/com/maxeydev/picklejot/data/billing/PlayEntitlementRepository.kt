@@ -59,6 +59,13 @@ class PlayEntitlementRepository(
             results.filterValues { it == ValidationResult.REFUNDED }.keys.forEach {
                 record(EntitlementSignal.RefundConfirmed(it.purchaseToken))
             }
+            // A verifier we could not reach says nothing about the purchase, and Play auto-refunds an
+            // unacknowledged one after 3 days: acknowledge it now (PURCHASED only; the acknowledger skips
+            // PENDING). Never on REJECTED: that device gets no Pro and should keep the auto-refund.
+            // This records nothing; only a VALID verdict unlocks Pro, and the startup check retries the verify.
+            results.filterValues { it == ValidationResult.UNREACHABLE }.keys.forEach {
+                acknowledger.acknowledgeIfNeeded(it)
+            }
             when {
                 verified.isNotEmpty() -> {
                     var allAcknowledged = true
