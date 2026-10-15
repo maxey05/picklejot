@@ -32,6 +32,68 @@ class PlayEntitlementRepositoryTest {
         PlayEntitlementRepository(local, gateway, PurchaseAcknowledger(gateway, Backoff(emptyList())), validator, clock)
 
     @Test
+    fun `a purchase Google confirms is granted and acknowledged even when no integrity token can be obtained`() =
+        runTest {
+            val local = InMemoryEntitlementRepository()
+            val keys = java.security.KeyPairGenerator.getInstance("EC").apply { initialize(256) }.generateKeyPair()
+            val server =
+                ServerPurchaseValidator(
+                    config =
+                        LicenseServerConfig(
+                            "https://verify.example",
+                            java.util.Base64.getEncoder().encodeToString(keys.public.encoded),
+                        ),
+                    packageName = "com.maxeydev.picklejot",
+                    integrity = IntegrityTokenProvider { throw IllegalStateException("Play Services outdated") },
+                    post = { _, body ->
+                        val nonce =
+                            kotlinx.serialization.json.Json
+                                .parseToJsonElement(body)
+                                .let { it as kotlinx.serialization.json.JsonObject }
+                                .getValue("clientNonce")
+                                .let { (it as kotlinx.serialization.json.JsonPrimitive).content }
+                        val claims =
+                            """{"status":"granted","purchaseToken":"token-1","clientNonce":"$nonce",""" +
+                                """"productId":"$PRO_PRODUCT_ID","packageName":"com.maxeydev.picklejot"}"""
+                        val payload = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(claims.toByteArray())
+                        val sig =
+                            java.security.Signature.getInstance("SHA256withECDSA").run {
+                                initSign(keys.private)
+                                update(payload.toByteArray())
+                                sign()
+                            }
+                        val sigText = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(sig)
+                        HttpReply(200, """{"payload":"$payload","sig":"$sigText"}""")
+                    },
+                )
+            val repository =
+                PlayEntitlementRepository(
+                    local,
+                    gateway,
+                    PurchaseAcknowledger(gateway, Backoff(emptyList())),
+                    server,
+                    clock,
+                )
+            gateway.purchasesResults = mutableListOf(GatewayResult.Success(listOf(proPurchase())))
+
+            assertEquals(SyncOutcome.Granted(isAcknowledged = true), repository.syncWithPlay())
+            assertTrue(local.current.isPro)
+            assertEquals(listOf("token-1"), gateway.acknowledged)
+        }
+
+    @Test
+    fun `a purchase the verifier does not confirm is not granted or acknowledged`() =
+        runTest {
+            val local = InMemoryEntitlementRepository()
+            validator.result = ValidationResult.REJECTED
+            gateway.purchasesResults = mutableListOf(GatewayResult.Success(listOf(proPurchase())))
+
+            assertEquals(SyncOutcome.Rejected, repository(local).syncWithPlay())
+            assertFalse(local.current.isPro)
+            assertTrue(gateway.acknowledged.isEmpty())
+        }
+
+    @Test
     fun `no failed purchase query of any kind revokes pro`() =
         runTest {
             BillingResponse.entries.filter { it != BillingResponse.OK }.forEach { response ->
@@ -166,16 +228,33 @@ class PlayEntitlementRepositoryTest {
         }
 
     @Test
-    fun `an unreachable verifier grants nothing yet is reported as a check problem not as not-purchased`() =
+    fun `a pending purchase with an unreachable verifier is not acknowledged`() =
         runTest {
             val local = InMemoryEntitlementRepository()
             validator.result = ValidationResult.UNREACHABLE
+            gateway.purchasesResults =
+                mutableListOf(GatewayResult.Success(listOf(proPurchase(state = PlayPurchaseState.PENDING))))
+
+            assertEquals(SyncOutcome.Pending, repository(local).syncWithPlay())
+            assertTrue(gateway.acknowledged.isEmpty())
+        }
+
+    @Test
+    fun `an unreachable verifier grants nothing but the purchase is acknowledged and a later verification unlocks pro`() =
+        runTest {
+            val local = InMemoryEntitlementRepository()
+            val repository = repository(local)
+            validator.result = ValidationResult.UNREACHABLE
             gateway.purchasesResults = mutableListOf(GatewayResult.Success(listOf(proPurchase())))
 
-            assertEquals(SyncOutcome.CouldNotCheck(BillingResponse.NETWORK_ERROR), repository(local).syncWithPlay())
+            assertEquals(SyncOutcome.CouldNotCheck(BillingResponse.NETWORK_ERROR), repository.syncWithPlay())
             assertFalse(local.current.isPro)
-            assertTrue(gateway.acknowledged.isEmpty())
+            assertEquals(listOf("token-1"), gateway.acknowledged)
             assertEquals(EntitlementSignal.CheckUnavailable, local.signals.single())
+
+            validator.result = ValidationResult.VALID
+            assertEquals(SyncOutcome.Granted(isAcknowledged = true), repository.syncWithPlay())
+            assertTrue(local.current.isPro)
         }
 
     @Test
