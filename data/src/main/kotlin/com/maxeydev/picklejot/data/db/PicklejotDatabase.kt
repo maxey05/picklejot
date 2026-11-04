@@ -1,6 +1,7 @@
 package com.maxeydev.picklejot.data.db
 
 import android.content.Context
+import android.util.Log
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -12,7 +13,10 @@ import com.maxeydev.picklejot.data.match.MatchPersonEntity
 import com.maxeydev.picklejot.data.person.PersonDao
 import com.maxeydev.picklejot.data.person.PersonEntity
 import com.maxeydev.picklejot.data.photo.PhotoEntity
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
+
+private const val LOG_TAG = "Picklejot"
 
 const val PICKLEJOT_DB_NAME = "picklejot.db"
 
@@ -40,7 +44,14 @@ suspend fun createPicklejotDatabase(
     context: Context,
     ioDispatcher: CoroutineDispatcher,
 ): PicklejotDatabase {
-    DatabaseBackup(context, ioDispatcher).backupIfMigrationPending(PICKLEJOT_DB_VERSION)
+    // The safety copy is best-effort: a failed copy must not stop the app from opening.
+    try {
+        DatabaseBackup(context, ioDispatcher).backupIfMigrationPending(PICKLEJOT_DB_VERSION)
+    } catch (failure: CancellationException) {
+        throw failure
+    } catch (failure: Exception) {
+        Log.w(LOG_TAG, "The pre-migration backup failed: ${failure.javaClass.simpleName}")
+    }
     return Room
         .databaseBuilder(
             context.applicationContext,

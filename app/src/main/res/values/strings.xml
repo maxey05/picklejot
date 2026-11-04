@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Picklejot</string>
+    <string name="startup_failed">Picklejot couldn't open your data. Restart the app; if this keeps happening, contact support.</string>
 </resources>
