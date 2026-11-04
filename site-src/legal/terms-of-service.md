@@ -121,7 +121,7 @@ We may update these Terms, for example when we add features or when the law chan
 
 ## 17. Governing law and disputes
 
-These Terms are governed by the laws of the Republic of the Philippines, without regard to conflict of law rules. Please contact us first at emgireyes.dev@gmail.com and give us a chance to fix the problem informally. If it cannot be resolved, disputes will be brought to the courts of Parañaque City, Philippines (the venue to be confirmed by the Developer), unless the law gives you the right to bring proceedings in another place.
+These Terms are governed by the laws of the Republic of the Philippines, without regard to conflict of law rules. Please contact us first at emgireyes.dev@gmail.com and give us a chance to fix the problem informally. If it cannot be resolved, disputes will be brought to the courts of Parañaque City, Philippines, unless the law gives you the right to bring proceedings in another place.
 
 If you are a consumer living elsewhere, such as in the EEA, the UK or another place with mandatory consumer protection laws, you keep the benefit of any mandatory protections of the country where you live, and you may bring a claim in the courts of that country.
 
