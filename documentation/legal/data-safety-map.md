@@ -1,6 +1,6 @@
 # Google Play Data safety walkthrough for Picklejot
 
-Prepared from the repo `maxey05/picklelog` (package `com.maxeydev.picklejot`, targetSdk 36) and the draft policy in `legal/privacy-policy.md`. This is a map from each Play Console question to an answer and the code behind it. It is not legal advice, and Google does not verify your answers: you are responsible for them.
+Prepared from the repo `maxey05/picklelog` (package `com.maxeydev.picklejot`, targetSdk 37) and the draft policy in `legal/privacy-policy.md`. This is a map from each Play Console question to an answer and the code behind it. It is not legal advice, and Google does not verify your answers: you are responsible for them.
 
 Google's own definitions (Play Console Help, "Provide information for Google Play's Data safety section"):
 
@@ -107,7 +107,7 @@ See the table in section 1.
 | Target audience and content | Not directed to children. Choose 13 and over or 18 and over, not Families | Policy section 11. The content rating questionnaire must be consistent. |
 | Financial features | None | An in-app one-time purchase is not a financial feature. |
 | Sensitive permissions | None to declare | `CAMERA` and `POST_NOTIFICATIONS` are not restricted. No SMS, call log, location, `MANAGE_EXTERNAL_STORAGE` or `READ_MEDIA_*`. |
-| In-app purchases | Yes, one-time Pro | Price is shown by Google Play. The free-tier match limit is 50 in code (`domain/.../entitlement/FreeTier.kt`) but older notes said 100. The listing, the screenshots and `strings.xml` must state the number the code enforces. |
+| In-app purchases | Yes, one-time Pro | Price is shown by Google Play. The free tier is capped at 50 matches (`domain/.../entitlement/FreeTier.kt`). The listing, the screenshots and `strings.xml` must say 50. |
 | Government, health, news | No | |
 
 ## 4. If Google pushes back on backup
