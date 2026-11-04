@@ -480,8 +480,10 @@
     <string name="backup_auto_backup_short">Android\'s own backup may not be running</string>
     <string name="paywall_tagline">One-time unlock. No subscription.</string>
     <string name="paywall_table_heading">What you get</string>
-    <string name="paywall_column_free">Free</string>
-    <string name="paywall_column_pro">Pro</string>
+    <string name="paywall_hero_heading">Play without limits</string>
+    <string name="paywall_free_value">Free: %1$s</string>
+    <string name="paywall_pro_only">Pro only</string>
+    <string name="paywall_free_too">Included in Free too</string>
     <string name="paywall_row_matches">Matches</string>
     <string name="paywall_row_photos">Photos per match</string>
     <string name="paywall_row_stats">Advanced stats</string>
