@@ -41,6 +41,7 @@
 
 # --- WorkManager -----------------------------------------------------------
 -keepnames class com.maxeydev.picklejot.data.backup.ExportPromptWorker
+-keepnames class com.maxeydev.picklejot.data.reminder.StreakReminderWorker
 
 # --- Play Billing ----------------------------------------------------------
 # Billing responses are parsed from JSON into library types; keep the surface.
