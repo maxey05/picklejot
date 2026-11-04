@@ -3,6 +3,7 @@ package com.maxeydev.picklejot.data.billing
 import com.maxeydev.picklejot.domain.entitlement.EntitlementSignal
 import com.maxeydev.picklejot.domain.profile.Entitlement
 import com.maxeydev.picklejot.domain.profile.EntitlementRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
@@ -29,22 +30,38 @@ class PlayEntitlementRepository(
         local.record(signal)
     }
 
+    // Both entry points run in fire-and-forget launches: an escaped exception would crash the app, and a
+    // failed check changes nothing (no signal recorded), so report it as could-not-check.
+    private inline fun guarded(block: () -> SyncOutcome): SyncOutcome =
+        try {
+            block()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            SyncOutcome.CouldNotCheck(BillingResponse.ERROR)
+        }
+
     suspend fun syncWithPlay(): SyncOutcome =
-        when (val result = gateway.queryPurchases()) {
-            is GatewayResult.Failure -> {
-                record(
-                    if (result.response == BillingResponse.NETWORK_ERROR) {
-                        EntitlementSignal.CheckUnavailable
-                    } else {
-                        EntitlementSignal.CheckFailed
-                    },
-                )
-                SyncOutcome.CouldNotCheck(result.response)
+        guarded {
+            when (val result = gateway.queryPurchases()) {
+                is GatewayResult.Failure -> {
+                    record(
+                        if (result.response == BillingResponse.NETWORK_ERROR) {
+                            EntitlementSignal.CheckUnavailable
+                        } else {
+                            EntitlementSignal.CheckFailed
+                        },
+                    )
+                    SyncOutcome.CouldNotCheck(result.response)
+                }
+                is GatewayResult.Success -> process(result.value)
             }
-            is GatewayResult.Success -> process(result.value)
         }
 
     suspend fun process(purchases: List<PlayPurchase>): SyncOutcome =
+        guarded { processLocked(purchases) }
+
+    private suspend fun processLocked(purchases: List<PlayPurchase>): SyncOutcome =
         processing.withLock {
             val pro = purchases.filter { it.isPro }
             recheckCachedPurchase()
