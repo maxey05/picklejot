@@ -32,30 +32,34 @@ val uploadKeystore =
 val licenseServerUrl = providers.gradleProperty("licenseServerUrl").getOrElse("")
 val licenseServerPublicKey = providers.gradleProperty("licenseServerPublicKey").getOrElse("")
 val allowUnverifiedRelease = providers.gradleProperty("allowUnverifiedRelease").map { it == "true" }.getOrElse(false)
+val licenseServerProblems: List<String> =
+    run {
+        val label = "[a-z0-9]([a-z0-9-]*[a-z0-9])?"
+        val urlOk =
+            Regex("""https://$label(\.$label)+(:\d{1,5})?/?""").matches(licenseServerUrl) &&
+                !Regex("""(^|[/.])(example|invalid|localhost)([.:/]|$)|\.\d+(:\d+)?/?$""").containsMatchIn(licenseServerUrl)
+        val keyOk =
+            licenseServerPublicKey.startsWith("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE") &&
+                Regex("[A-Za-z0-9+/]{122}==").matches(licenseServerPublicKey) &&
+                runCatching {
+                    val spec = X509EncodedKeySpec(Base64.getDecoder().decode(licenseServerPublicKey))
+                    (KeyFactory.getInstance("EC").generatePublic(spec) as ECPublicKey).params.curve.field.fieldSize == 256
+                }.getOrDefault(false)
+        listOfNotNull(
+            "licenseServerUrl must be a lowercase https origin such as https://<your-worker>.workers.dev (no whitespace, quotes, path, query, userinfo, IP or example/localhost host)"
+                .takeUnless { urlOk },
+            "licenseServerPublicKey must be the standard-base64 X.509 ECDSA P-256 public key from `npm run gen-key` (not the private key, no whitespace)"
+                .takeUnless { keyOk },
+        )
+    }
 val verifyReleaseLicenseServer =
     tasks.register("verifyReleaseLicenseServer") {
         description = "Fails a release build whose licenseServerUrl / licenseServerPublicKey are blank or malformed."
         inputs.property("allowUnverifiedRelease", allowUnverifiedRelease)
+        val problems = licenseServerProblems
+        inputs.property("licenseServerProblems", problems)
         outputs.upToDateWhen { false }
         doLast {
-            val label = "[a-z0-9]([a-z0-9-]*[a-z0-9])?"
-            val urlOk =
-                Regex("""https://$label(\.$label)+(:\d{1,5})?/?""").matches(licenseServerUrl) &&
-                    !Regex("""(^|[/.])(example|invalid|localhost)([.:/]|$)|\.\d+(:\d+)?/?$""").containsMatchIn(licenseServerUrl)
-            val keyOk =
-                licenseServerPublicKey.startsWith("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE") &&
-                    Regex("[A-Za-z0-9+/]{122}==").matches(licenseServerPublicKey) &&
-                    runCatching {
-                        val spec = X509EncodedKeySpec(Base64.getDecoder().decode(licenseServerPublicKey))
-                        (KeyFactory.getInstance("EC").generatePublic(spec) as ECPublicKey).params.curve.field.fieldSize == 256
-                    }.getOrDefault(false)
-            val problems =
-                listOfNotNull(
-                    "licenseServerUrl must be a lowercase https origin such as https://<your-worker>.workers.dev (no whitespace, quotes, path, query, userinfo, IP or example/localhost host)"
-                        .takeUnless { urlOk },
-                    "licenseServerPublicKey must be the standard-base64 X.509 ECDSA P-256 public key from `npm run gen-key` (not the private key, no whitespace)"
-                        .takeUnless { keyOk },
-                )
             if (problems.isEmpty()) return@doLast
             if (allowUnverifiedRelease) {
                 logger.warn("picklejot: unverified release allowed. ${problems.joinToString(" ")} This build grants NO new Pro purchases.")
@@ -71,11 +75,24 @@ val verifyReleaseLicenseServer =
 // above. Benchmark stays debug-signed on purpose and is not hooked.
 val verifyReleaseSigning =
     tasks.register("verifyReleaseSigning") {
-        description = "Fails a release package build when the upload keystore from ~/picklelog-signing is missing."
+        description = "Fails a release package build with no upload keystore, or an unverified one that the keystore would sign."
+        val hasUploadKeystore = uploadKeystore != null
+        val problems = licenseServerProblems
         inputs.property("allowUnverifiedRelease", allowUnverifiedRelease)
+        inputs.property("hasUploadKeystore", hasUploadKeystore)
+        inputs.property("licenseServerProblems", problems)
         outputs.upToDateWhen { false }
         doLast {
-            if (uploadKeystore != null) return@doLast
+            if (hasUploadKeystore) {
+                if (allowUnverifiedRelease && problems.isNotEmpty()) {
+                    throw GradleException(
+                        "Release build refused. An unverified build must not be signed with the upload key: it would be uploadable " +
+                            "to Play but can never grant Pro. ${problems.joinToString(" ")} " +
+                            "Remove -PallowUnverifiedRelease or fix licenseServerUrl/licenseServerPublicKey.",
+                    )
+                }
+                return@doLast
+            }
             if (allowUnverifiedRelease) {
                 logger.warn("picklejot: unverified release allowed. The release is debug-signed and NOT uploadable to Play.")
             } else {
