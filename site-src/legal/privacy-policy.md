@@ -1,6 +1,6 @@
 # Picklejot Privacy Policy
 
-**Last updated:** 2026-10-15
+**Last updated:** 2026-10-30
 
 This policy explains how Picklejot, an Android app for logging your pickleball matches, handles information. It is written in plain English.
 
@@ -11,7 +11,7 @@ This policy explains how Picklejot, an Android app for logging your pickleball m
 - **No ads, no analytics, no crash reporting, no tracking.** Picklejot contains no advertising or analytics software and no third-party software that collects your data for its own purposes.
 - **Your data lives on your phone.** Your match log is stored on your device.
 - **One network feature: the Pro purchase.** The only network activity is buying, restoring and verifying the optional one-time "Pro" purchase. Google handles the payment, and Picklejot never sees your card details. A small verification service we run checks the purchase with Google (section 6).
-- **Android may back up your data to your Google Account.** This is Android's own feature, not ours. We cannot access those backups. Photos are not included in cloud backup.
+- **Android may back up your data to your Google Account.** This is Android's own feature, not ours. We cannot access those backups. Photos, your display name, and your Pro status and purchase token are not included in cloud backup.
 - **Delete anytime.** Use "Erase all data" in Settings to delete your log from your device, or uninstall the app.
 - **Nothing is sold or shared** by us. The purchase token and Play Integrity token go to our verification service and on to Google, only to check the purchase.
 
@@ -35,7 +35,7 @@ Everything in this list is stored locally on your device, in the app's private s
 | Photos that you add to a match | Attached to the match. Stored as compressed copies in the app's private storage, separate from your original photo |
 | Your display name | Shown in the app and on share cards |
 | Reminder settings | To schedule the optional streak reminder |
-| Pro entitlement and Google Play purchase token | So the app knows Pro is unlocked, including offline. The token is a code issued by Google Play that proves a purchase. It is also sent to our verification service when you buy or restore Pro (section 6) |
+| Pro entitlement and Google Play purchase token | So the app knows Pro is unlocked, including offline. The token is a code issued by Google Play that proves a purchase. It is also sent to our verification service when you buy or restore Pro, at app start while a purchase is unverified, and about every 30 days to check for a refund (section 6) |
 | App preferences | For example, settings you choose in the app |
 
 **Other people's names.** If you type the names of other players, you are recording information about them. Please keep that in mind if you share exports or share cards. Names in your own private log kept for personal purposes are usually outside the scope of privacy laws, but sharing them publicly may not be.
@@ -54,7 +54,7 @@ Everything in this list is stored locally on your device, in the app's private s
 - We do not use your data to train AI models.
 - We do not knowingly receive any copy of your match log.
 
-The only information that reaches us is the purchase-check request described in section 6: your Google Play purchase token, a random one-time code and, when available, a Play Integrity token. It is sent only when you buy or restore Pro.
+The only information that reaches us is the purchase-check request described in section 6: your Google Play purchase token, a random one-time code and, when available, a Play Integrity token. It is sent when you buy or restore Pro, when the app starts while Google Play lists a Pro purchase we have not yet verified (retried after 1, 5 and 30 minutes if the service cannot be reached), and once Pro is unlocked, at app start whenever the last successful check was 30 or more days ago, to catch refunds. It is not sent at other times.
 
 ## 4. Where your data lives
 
@@ -66,12 +66,13 @@ Android has built-in backup features that run outside Picklejot's control. Pickl
 
 | Feature | What is included |
 | --- | --- |
-| Cloud backup to your Google Account (Android Auto Backup) | The app's database and settings files. That means your matches, scores, notes, player names, match locations, your display name, reminder settings and the cached purchase token. **Photos are excluded.** |
-| Device-to-device transfer (when you set up a new phone from an old one) | Everything, **including photos** |
+| Cloud backup to your Google Account (Android Auto Backup) | The app's database and settings files. That means your matches, scores, notes, player names, match locations and reminder settings. **Photos are excluded. Your profile file is also excluded: your display name, Pro status and cached purchase token.** |
+| Device-to-device transfer (when you set up a new phone from an old one) | The database and files, **including photos**. **Your profile file is excluded: your display name, Pro status and cached purchase token.** |
 
 - Backups are stored in your Google Account storage and are governed by your Google settings and [Google's Privacy Policy](https://policies.google.com/privacy). We cannot see, access, restore or delete them.
 - Backups may be paused if your Google storage is full, or if backup is switched off on your device. Do not rely on them as your only copy. See "Exports" below.
 - Because photos are excluded from cloud backup, restoring from a Google backup brings back your match records but not your photos.
+- Because the profile file is excluded from both cloud backup and device transfer, on a restored or new phone you will need to enter your display name again, and Pro is restored through Google Play ("Restore" in the app), which checks the purchase as described in section 6.
 - If you want to stop cloud backup of Picklejot, you can switch off backup in your Android system settings, or delete the backup through your Google Account. Backups of already-deleted data may remain in Google's systems until you delete them there. "Erase all data" in Picklejot does not delete backups in your Google Account.
 
 ## 6. Google Play Billing and purchase verification
@@ -80,9 +81,10 @@ Picklejot offers an optional one-time "Pro" purchase through Google Play Billing
 
 - Google processes the payment and holds payment details. Picklejot never sees your card or payment details.
 - To complete or restore a purchase, the app talks to Google Play services on your device.
-- **Purchase verification.** Before unlocking Pro, the app sends a small verification request over HTTPS to a service we run on Cloudflare. The request contains your Google Play purchase token, a random one-time code and, when your device can provide one, a Play Integrity token (a Google-issued signal about whether the app is the genuine Play version running on a certified device). The integrity token is advisory only: if it is missing or fails, you still get Pro as long as Google confirms your purchase. It contains none of your matches, photos, names or locations.
+- **Purchase verification.** Before unlocking Pro, and again later as described below, the app sends a small verification request over HTTPS to a service we run on Cloudflare. The request contains your Google Play purchase token, a random one-time code and, when your device can provide one, a Play Integrity token (a Google-issued signal about whether the app is the genuine Play version running on a certified device). The integrity token is advisory only: if it is missing or fails, you still get Pro as long as Google confirms your purchase. It contains none of your matches, photos, names or locations.
 - The service passes the purchase token to Google to confirm the purchase is real, and the Play Integrity token (if any) to Google for an advisory device check, then replies with a signed yes or no. It does not store the tokens in a database. Cloudflare, which hosts the service, handles ordinary connection data such as IP addresses under Cloudflare's own privacy policy.
-- If the service cannot be reached, Pro is not unlocked yet and the app tries again later. Anything already unlocked stays unlocked.
+- **How often.** The request is sent when you buy or restore Pro, and at app start while Google Play lists a Pro purchase that has not been verified yet. After Pro is unlocked, the app re-checks the stored purchase at app start once the last successful check is 30 or more days old (at most once per app launch), because Google Play stops listing refunded purchases. Otherwise nothing is sent.
+- If the service cannot be reached, Pro is not unlocked yet and the app tries again after 1, 5 and 30 minutes, and at the next app start. Anything already unlocked stays unlocked.
 - Picklejot stores the resulting Pro status and the Google Play purchase token on your device (see section 2).
 - Google shows developers some purchase details in the Google Play Console, such as order information, the product bought, and the country or region of the purchase. It may include other limited details for tax, refund and support purposes. We use these details only to run the app, handle refund and support requests, keep accounts and meet legal obligations. We do not link them to your match log.
 - Google may separately collect diagnostic and usage information as part of Google Play and Android. It may give developers aggregated reports, such as crash and performance statistics from users who chose to share them with Google. That is Google's data collection under Google's policies. Picklejot's code does not do it.
@@ -185,7 +187,7 @@ This table is a plain-language summary that matches what we declare in the Googl
 
 | Question | Answer |
 | --- | --- |
-| Does the developer collect any user data? | Only for purchase checks. Your match log never leaves your device. The purchase token and, when available, a Play Integrity token are sent to our verification service when you buy or restore Pro |
+| Does the developer collect any user data? | Only for purchase checks. Your match log never leaves your device. The purchase token and, when available, a Play Integrity token are sent to our verification service when you buy or restore Pro, at app start while a purchase is still unverified, and about every 30 days afterwards to check for a refund |
 | Does the developer share any user data with third parties? | Only Google, to confirm a purchase |
 | Is data processed only on the device? | Yes, for matches, scores, notes, names, location text, photos, and settings. Purchase checks go to our verification service and Google |
 | Data encrypted in transit? | Yes. Purchase verification requests use HTTPS, and Google Play traffic uses Google's secure channels |
