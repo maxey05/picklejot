@@ -73,6 +73,9 @@ async function googleAccessToken(env: Env, f: Fetch, nowMs: number): Promise<str
       grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
       assertion: `${header}.${claims}.${b64url(new Uint8Array(sig))}`,
     }),
+    signal: AbortSignal.timeout(8000),
+  }).catch(() => {
+    throw new Upstream("oauth");
   });
   if (!res.ok) throw new Upstream("oauth");
   const { access_token } = (await res.json()) as { access_token: string };
@@ -92,6 +95,7 @@ async function decodeIntegrity(env: Env, f: Fetch, auth: string, token: string):
     method: "POST",
     headers: { authorization: `Bearer ${auth}`, "content-type": "application/json" },
     body: JSON.stringify({ integrity_token: token }),
+    signal: AbortSignal.timeout(8000),
   });
   if (res.status === 400) return null;
   if (!res.ok) throw new Upstream("integrity");
@@ -135,8 +139,10 @@ async function purchaseState(env: Env, f: Fetch, auth: string, token: string): P
   const res = await f(
     `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${env.PACKAGE_NAME}` +
       `/purchases/products/${env.PRODUCT_ID}/tokens/${encodeURIComponent(token)}`,
-    { headers: { authorization: `Bearer ${auth}` } },
-  );
+    { headers: { authorization: `Bearer ${auth}` }, signal: AbortSignal.timeout(8000) },
+  ).catch(() => {
+    throw new Upstream("publisher");
+  });
   if ([400, 404, 410].includes(res.status)) return null;
   if (!res.ok) throw new Upstream("publisher"); // includes 401/403: our own misconfig must not reject buyers
   return ((await res.json()) as { purchaseState: number }).purchaseState;
