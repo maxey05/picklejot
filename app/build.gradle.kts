@@ -10,7 +10,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-val keystorePropertiesFile = rootProject.file("keystore/keystore.properties")
+// Kept outside the repo; storeFile inside is an absolute path. See keystore/README.md.
+val keystorePropertiesFile = File(System.getProperty("user.home"), "picklelog-signing/keystore.properties")
 val keystoreProperties =
     Properties().apply {
         if (keystorePropertiesFile.exists()) {
@@ -116,7 +117,7 @@ android {
                     signingConfigs.getByName("release")
                 } else {
                     logger.warn(
-                        "picklejot: keystore/keystore.properties absent — release build will be " +
+                        "picklejot: ~/picklelog-signing/keystore.properties absent — release build will be " +
                             "debug-signed and is NOT uploadable to Play. See keystore/README.md.",
                     )
                     signingConfigs.getByName("debug")

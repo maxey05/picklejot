@@ -1,8 +1,10 @@
 # keystore/
 
-Holds the Play upload key. Both real files here are `.gitignore`'d (AC-1.11,
-owner decision #6): `upload-keystore.jks` and `keystore.properties`. Only this
-README and `keystore.properties.template` are tracked.
+The Play upload key no longer lives in the repo. `upload-keystore.jks` and
+`keystore.properties` are in `~/picklelog-signing/` (`app/build.gradle.kts`
+reads `keystore.properties` from there; `storeFile` in it is an absolute path).
+The `.gitignore` entries stay as a guard. Only this README and
+`keystore.properties.template` are tracked.
 
 **Gitignoring a file inside the repo is not a backup.** It still lives on
 exactly one disk. If that disk is lost with no other copy, Picklelog can never
