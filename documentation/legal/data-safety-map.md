@@ -26,7 +26,7 @@ Updated 14 October 2026 against the working tree in `C:\emgiStuff\codingProjects
 | Do you provide a way for users to request that their data is deleted? | **Yes**: Erase all data and uninstall for on-device data; email for anything else. The verifier keeps no copy, so there is nothing to delete on the server side |
 | Independent security review badge | Do not claim |
 | Families Policy commitment | Do not claim |
-| Privacy policy URL | `https://maxey05.github.io/picklelog/privacy.html` (confirm after publishing, see `PUBLISHING.md`) |
+| Privacy policy URL | `https://maxey05.github.io/picklejot/privacy.html` (confirm after publishing, see `PUBLISHING.md`) |
 
 Match data, photos, names, notes and location text are still never sent anywhere. The form must say so in the descriptions where it allows free text.
 

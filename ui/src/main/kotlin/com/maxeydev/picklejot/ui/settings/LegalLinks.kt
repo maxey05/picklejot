@@ -6,8 +6,8 @@ import android.content.Intent
 import android.net.Uri
 
 object LegalLinks {
-    const val PRIVACY_URL = "https://maxey05.github.io/picklelog/privacy.html"
-    const val TERMS_URL = "https://maxey05.github.io/picklelog/terms.html"
+    const val PRIVACY_URL = "https://maxey05.github.io/picklejot/privacy.html"
+    const val TERMS_URL = "https://maxey05.github.io/picklejot/terms.html"
 }
 
 fun openExternalLink(

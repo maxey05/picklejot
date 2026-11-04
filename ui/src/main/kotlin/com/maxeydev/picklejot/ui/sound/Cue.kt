@@ -20,10 +20,6 @@ enum class Cue(
     val minGapMillis: Long = DEFAULT_MIN_GAP_MILLIS,
 ) {
     POCK(R.raw.sfx_pock, CueKind.TAP, 100),
-    ONBOARDING_STEP_1(R.raw.sfx_onboarding_step_1, CueKind.TAP, 477),
-    ONBOARDING_STEP_2(R.raw.sfx_onboarding_step_2, CueKind.TAP, 476),
-    ONBOARDING_STEP_3(R.raw.sfx_onboarding_step_3, CueKind.TAP, 476),
-    ONBOARDING_STEP_4(R.raw.sfx_onboarding_step_4, CueKind.TAP, 478),
     NAME_REQUIRED(R.raw.sfx_name_required, CueKind.CONFIRM, 380),
     WELCOME(R.raw.sfx_welcome, CueKind.CELEBRATION, 1359, rank = 1),
     NEW_MATCH(R.raw.sfx_new_match, CueKind.TAP, 226),
@@ -71,9 +67,6 @@ enum class Cue(
     ;
 
     companion object {
-        val ONBOARDING_STEPS: List<Cue> =
-            listOf(ONBOARDING_STEP_1, ONBOARDING_STEP_2, ONBOARDING_STEP_3, ONBOARDING_STEP_4)
-
         val DUCK_PETS: List<Cue> = listOf(DUCK_PET_1, DUCK_PET_2, DUCK_PET_3, DUCK_PET_4)
     }
 }

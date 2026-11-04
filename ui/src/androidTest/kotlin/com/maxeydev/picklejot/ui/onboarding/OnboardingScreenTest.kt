@@ -73,13 +73,6 @@ class OnboardingScreenTest {
     }
 
     @Test
-    fun the_last_page_says_automatic_backup_may_not_be_running() {
-        show(OnboardingUiState(), initialPage = lastPage)
-
-        compose.onNodeWithTag(OnboardingTestTags.BACKUP_NOTE).assertIsDisplayed()
-    }
-
-    @Test
     fun get_started_without_a_name_still_reports_the_tap_so_the_name_can_be_flagged() {
         show(OnboardingUiState(name = ""), initialPage = lastPage)
 

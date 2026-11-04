@@ -340,7 +340,6 @@
     <string name="cap_banner_dismiss">Dismiss</string>
     <string name="paywall_title">Picklejot Pro</string>
     <string name="paywall_close">Close</string>
-    <string name="paywall_retry_price">Try loading the price again</string>
     <string name="paywall_buy_with_price">Unlock Pro · %1$s</string>
     <string name="paywall_buy">Unlock Pro</string>
     <string name="paywall_restore">Restore purchase</string>
@@ -410,7 +409,6 @@
     <string name="onboarding_share_body">Transform your matches into clean, beautiful cards and share your biggest wins directly to social media.</string>
     <string name="onboarding_privacy_title">Yours, and only yours</string>
     <string name="onboarding_privacy_body">No account, no ads, no subscription. Your matches stay on your phone and work fully offline.</string>
-    <string name="onboarding_backup_note">Automatic backup depends on your Google storage and may not always run. You can export your matches anytime from Settings.</string>
     <string name="onboarding_next">Next</string>
     <string name="onboarding_skip">Skip</string>
     <string name="onboarding_page_indicator">Step %1$d of %2$d</string>

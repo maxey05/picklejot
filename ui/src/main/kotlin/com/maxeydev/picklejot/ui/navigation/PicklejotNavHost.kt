@@ -185,13 +185,6 @@ private fun PicklejotNavGraph(
                     settingsViewModel.refreshCacheSize()
                 }
             }
-            var wasClearingCache by remember { mutableStateOf(false) }
-            LaunchedEffect(settingsState.isClearingCache) {
-                if (wasClearingCache && !settingsState.isClearingCache) {
-                    sound.play(Cue.SWEEP)
-                }
-                wasClearingCache = settingsState.isClearingCache
-            }
             val settingsActions =
                 remember(settingsViewModel) {
                     SettingsActions(
@@ -415,7 +408,6 @@ private fun PicklejotNavGraph(
                 state = state,
                 onBuy = viewModel::buy,
                 onRestore = viewModel::restore,
-                onRetryPrice = viewModel::retryPrice,
                 onClose = { navController.popBackStack() },
             )
         }

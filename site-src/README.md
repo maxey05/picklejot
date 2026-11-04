@@ -27,7 +27,7 @@ Then open http://localhost:8080/.
 
 ## Pages URLs
 
-- https://maxey05.github.io/picklelog/privacy.html
-- https://maxey05.github.io/picklelog/terms.html
+- https://maxey05.github.io/picklejot/privacy.html
+- https://maxey05.github.io/picklejot/terms.html
 
 The same URLs are set in `LegalLinks.kt`. GitHub Pages must be enabled (Settings, Pages, Deploy from a branch, `main`, `/docs`) for them to resolve.

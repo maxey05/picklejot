@@ -49,7 +49,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -73,7 +72,6 @@ import com.maxeydev.picklejot.ui.R
 import com.maxeydev.picklejot.ui.common.DisplayNameField
 import com.maxeydev.picklejot.ui.sound.Cue
 import com.maxeydev.picklejot.ui.sound.LocalSoundEffects
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 
 private const val PAGE_SLIDE_MILLIS = 420
@@ -107,12 +105,6 @@ fun OnboardingScreen(
     val pages = IntroPage.entries
     val pagerState = rememberPagerState(initialPage = initialPage) { pages.size }
     val scope = rememberCoroutineScope()
-    val sound = LocalSoundEffects.current
-    LaunchedEffect(pagerState) {
-        snapshotFlow { pagerState.settledPage }.drop(1).collect { page ->
-            Cue.ONBOARDING_STEPS.getOrNull(page)?.let { cue -> sound.play(cue) }
-        }
-    }
     val scrollStates = pages.map { rememberScrollState() }
     val topInset = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val showPage: (Int) -> Unit =
@@ -320,16 +312,6 @@ private fun IntroFooter(
             ) {
                 Text(text = stringResource(R.string.onboarding_continue), fontWeight = FontWeight.Bold)
             }
-            Text(
-                text = stringResource(R.string.onboarding_backup_note),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                modifier =
-                    Modifier
-                        .padding(top = 14.dp)
-                        .testTag(OnboardingTestTags.BACKUP_NOTE),
-            )
         } else {
             Button(
                 onClick = onNext,

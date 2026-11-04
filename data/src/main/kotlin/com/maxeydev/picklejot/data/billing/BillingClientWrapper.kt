@@ -2,6 +2,7 @@ package com.maxeydev.picklejot.data.billing
 
 import android.app.Activity
 import android.content.Context
+import android.util.Log
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
@@ -98,7 +99,7 @@ class BillingClientWrapper(
         when (val details = proDetails()) {
             is GatewayResult.Failure -> details
             is GatewayResult.Success ->
-                details.value.oneTimePurchaseOfferDetails?.formattedPrice
+                proOffer(details.value)?.formattedPrice
                     ?.let { GatewayResult.Success(it) }
                     ?: GatewayResult.Failure(BillingResponse.ITEM_UNAVAILABLE)
         }
@@ -134,12 +135,12 @@ class BillingClientWrapper(
 
     private fun flowParams(details: ProductDetails): BillingFlowParams {
         val product = BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(details)
-        details.oneTimePurchaseOfferDetailsList
-            ?.firstOrNull()
-            ?.offerToken
-            ?.let { product.setOfferToken(it) }
+        proOffer(details)?.offerToken?.let { product.setOfferToken(it) }
         return BillingFlowParams.newBuilder().setProductDetailsParamsList(listOf(product.build())).build()
     }
+
+    private fun proOffer(details: ProductDetails): ProductDetails.OneTimePurchaseOfferDetails? =
+        details.oneTimePurchaseOfferDetailsList?.firstOrNull() ?: details.oneTimePurchaseOfferDetails
 
     private suspend fun proDetails(): GatewayResult<ProductDetails> {
         cachedDetails?.let { return GatewayResult.Success(it) }
@@ -156,9 +157,16 @@ class BillingClientWrapper(
                     client.queryProductDetailsAsync(params) { result, productDetails ->
                         val response = BillingResponse.fromCode(result.responseCode)
                         val details = productDetails.productDetailsList.firstOrNull { it.productId == PRO_PRODUCT_ID }
+                        if (response == BillingResponse.OK && details == null) {
+                            val unfetched = productDetails.unfetchedProductList.joinToString { "${it.productId}=${it.statusCode}" }
+                            runCatching { Log.w(TAG, "Play returned no details for $PRO_PRODUCT_ID; unfetched: [$unfetched]") }
+                        }
                         continuation.deliver(
                             when {
-                                response != BillingResponse.OK -> GatewayResult.Failure(response)
+                                response != BillingResponse.OK -> {
+                                    runCatching { Log.w(TAG, "Product details query for $PRO_PRODUCT_ID failed: $response ${result.debugMessage}") }
+                                    GatewayResult.Failure(response)
+                                }
                                 details == null -> GatewayResult.Failure(BillingResponse.ITEM_UNAVAILABLE)
                                 else -> GatewayResult.Success(details)
                             },
@@ -211,6 +219,10 @@ class BillingClientWrapper(
             isAcknowledged = purchase.isAcknowledged,
             purchasedAtMillis = purchase.purchaseTime,
         )
+
+    private companion object {
+        const val TAG = "BillingClientWrapper"
+    }
 }
 
 private fun <T> CancellableContinuation<T>.deliver(value: T) {

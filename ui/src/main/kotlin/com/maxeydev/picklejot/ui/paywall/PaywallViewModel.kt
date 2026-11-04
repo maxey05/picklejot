@@ -71,13 +71,6 @@ class PaywallViewModel(
         }
     }
 
-    fun retryPrice() {
-        if (mutableUiState.value.isLoadingPrice) {
-            return
-        }
-        viewModelScope.launch { loadPrice() }
-    }
-
     private suspend fun loadPrice() {
         mutableUiState.update { it.copy(isLoadingPrice = true) }
         when (val price = proStore.loadPrice()) {

@@ -46,7 +46,7 @@ A single-user, **offline, account-less** Android app for logging pickleball matc
 | `:app` | `MainActivity`, `PicklelogApplication`, DI container, manifest, backup rules, **debug-only `DebugToolsProvider`** | Instrumented (5 classes) |
 | `:benchmark` | Macrobenchmark `MatchListScrollBenchmark` | — |
 
-Platform: `minSdk 26` (Android 8.0) · `targetSdk 37` · `compileSdk 37` · Kotlin 2.3.21 · AGP 9.4.0 · Compose BOM 2026.09.00 · Play Billing 9.1.0 · product id `picklelog_pro`.
+Platform: `minSdk 26` (Android 8.0) · `targetSdk 37` · `compileSdk 37` · Kotlin 2.3.21 · AGP 9.4.0 · Compose BOM 2026.09.00 · Play Billing 9.1.0 · product id `picklejot_pro`.
 
 ### 1.2 Screens and routes (from `ui/navigation/Routes.kt` + `PicklelogNavHost.kt`)
 
@@ -142,7 +142,7 @@ Airplane mode · Developer options → **Don't keep activities** · Font size **
 | Need | Setup |
 |---|---|
 | Play Console license tester | Add the tester's Google account under Play Console → Settings → License testing |
-| In-app product | `picklelog_pro`, one-time, **active**, on a testing track the tester has joined |
+| In-app product | `picklejot_pro`, one-time, **active**, on a testing track the tester has joined |
 | Test cards | Use Play's tester cards ("Test card, always approves", "…always declines", "Slow test card, approves after a few minutes", "Slow test card, declines after a few minutes"). **Never use a real payment method.** |
 | Refunds | Play Console → Order management → Refund (for PAY-20 only) |
 | Google backup | ENV-C/ENV-D on the same Google account, Backup on, Wi-Fi |
@@ -1422,7 +1422,7 @@ Release readiness is decided from **recorded** results in §11 and open bugs —
 - [ ] Signed with the upload key (not debug); `keystore/` not committed (`checkRules`)
 - [ ] Release AAB has R8 + resource shrinking; no `DebugToolsProvider` (SEC-08)
 - [ ] `targetSdk` meets Play's current requirement (37 in code)
-- [ ] In-app product `picklelog_pro` active with correct price per country
+- [ ] In-app product `picklejot_pro` active with correct price per country
 - [ ] Privacy policy in-app (SET-14) matches the hosted URL in the listing and the Data Safety form (SEC-15/16)
 - [ ] Store listing screenshots match the current UI (dark green header, duck)
 - [ ] Closed test with ≥ 12 testers for 14 days completed if the developer account requires it

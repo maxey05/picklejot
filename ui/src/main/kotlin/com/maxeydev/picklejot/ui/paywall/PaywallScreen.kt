@@ -73,7 +73,6 @@ fun PaywallScreen(
     state: PaywallUiState,
     onBuy: () -> Unit,
     onRestore: () -> Unit,
-    onRetryPrice: () -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -81,7 +80,7 @@ fun PaywallScreen(
     Scaffold(
         modifier = modifier.testTag(PaywallTestTags.PAYWALL),
         bottomBar = {
-            PurchaseActions(state = state, onBuy = onBuy, onRestore = onRestore, onRetryPrice = onRetryPrice)
+            PurchaseActions(state = state, onBuy = onBuy, onRestore = onRestore)
         },
     ) { innerPadding ->
         Column(
@@ -337,7 +336,6 @@ private fun PurchaseActions(
     state: PaywallUiState,
     onBuy: () -> Unit,
     onRestore: () -> Unit,
-    onRetryPrice: () -> Unit,
 ) {
     Column(
         modifier =
@@ -380,14 +378,6 @@ private fun PurchaseActions(
                 state.price?.let { stringResource(R.string.paywall_buy_with_price, it) }
                     ?: stringResource(R.string.paywall_buy),
             )
-        }
-        if (state.price == null && !state.isLoadingPrice) {
-            TextButton(
-                onClick = onRetryPrice,
-                modifier = Modifier.heightIn(min = MINIMUM_TOUCH_TARGET).testTag(PaywallTestTags.PAYWALL_PRICE_TERMS),
-            ) {
-                Text(stringResource(R.string.paywall_retry_price))
-            }
         }
         TextButton(
             onClick = onRestore,
