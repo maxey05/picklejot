@@ -67,9 +67,30 @@ val verifyReleaseLicenseServer =
             }
         }
     }
+// Without the upload keystore the release is debug-signed, which Play rejects, so refuse to package it. Same escape hatch as
+// above. Benchmark stays debug-signed on purpose and is not hooked.
+val verifyReleaseSigning =
+    tasks.register("verifyReleaseSigning") {
+        description = "Fails a release package build when the upload keystore from ~/picklelog-signing is missing."
+        inputs.property("allowUnverifiedRelease", allowUnverifiedRelease)
+        outputs.upToDateWhen { false }
+        doLast {
+            if (uploadKeystore != null) return@doLast
+            if (allowUnverifiedRelease) {
+                logger.warn("picklejot: unverified release allowed. The release is debug-signed and NOT uploadable to Play.")
+            } else {
+                throw GradleException(
+                    "Release build refused. ~/picklelog-signing/keystore.properties is missing or its storeFile does not exist, " +
+                        "so the release would be debug-signed (see keystore/README.md). " +
+                        "Pass -PallowUnverifiedRelease=true only for builds that will never be published.",
+                )
+            }
+        }
+    }
 // Hook the release and (release-derived) benchmark builds. named() throws if AGP ever renames a target.
 afterEvaluate {
     listOf("generateReleaseBuildConfig", "generateBenchmarkBuildConfig").forEach { tasks.named(it) { dependsOn(verifyReleaseLicenseServer) } }
+    listOf("packageRelease", "bundleRelease").forEach { tasks.named(it) { dependsOn(verifyReleaseSigning) } }
 }
 
 // Property values are interpolated into generated Java source, so escape them.
