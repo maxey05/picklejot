@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -45,33 +48,49 @@ import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.maxeydev.picklejot.domain.entitlement.FreeTier
 import com.maxeydev.picklejot.domain.entitlement.ProTier
 import com.maxeydev.picklejot.ui.R
 import com.maxeydev.picklejot.ui.settings.SettingsCard
-import com.maxeydev.picklejot.ui.settings.SettingsRow
+import com.maxeydev.picklejot.ui.theme.PicklejotSpacing
 import com.maxeydev.picklejot.ui.theme.PicklejotTheme
 
 private val MINIMUM_TOUCH_TARGET = 48.dp
 private val HERO_SHAPE = RoundedCornerShape(20.dp)
 private val HERO_BADGE_SHAPE = RoundedCornerShape(18.dp)
+private val FREE_COLUMN_WIDTH = 64.dp
+private val PRO_COLUMN_WIDTH = 104.dp
+private val ROW_MIN_HEIGHT = 56.dp
+private val HEADER_MIN_HEIGHT = 48.dp
+private val ROW_ICON_SIZE = 24.dp
+private val ROW_DIVIDER_INSET = 56.dp
+private val PRO_BADGE_ICON_SIZE = 14.dp
+private val DASH_ICON_SIZE = 20.dp
+private val CHECK_ICON_SIZE = 22.dp
 
-private sealed interface Benefit {
+private sealed interface ValueCell {
+    data class Plain(
+        val text: String,
+    ) : ValueCell
+
     data class Pill(
         val text: String,
-    ) : Benefit
+    ) : ValueCell
 
-    data object ProOnly : Benefit
+    data object Included : ValueCell
 
-    data object Both : Benefit
+    data object IncludedMuted : ValueCell
+
+    data object NotIncluded : ValueCell
 }
 
 private class BenefitRow(
     val icon: Int,
     val label: String,
-    val supporting: String,
-    val benefit: Benefit,
+    val free: ValueCell,
+    val pro: ValueCell,
     val freeSpoken: String,
     val proSpoken: String,
 )
@@ -223,8 +242,6 @@ private fun benefitRows(): List<BenefitRow> {
     val unlimited = stringResource(R.string.paywall_value_unlimited)
     val included = stringResource(R.string.paywall_included)
     val notIncluded = stringResource(R.string.paywall_not_included)
-    val proOnly = stringResource(R.string.paywall_pro_only)
-    val freeToo = stringResource(R.string.paywall_free_too)
     val freeMatches = FreeTier.MATCH_LIMIT.toString()
     val freePhotos = FreeTier.PHOTOS_PER_MATCH.toString()
     val proPhotos = ProTier.PHOTOS_PER_MATCH.toString()
@@ -232,48 +249,48 @@ private fun benefitRows(): List<BenefitRow> {
         BenefitRow(
             R.drawable.ic_scoreboard,
             stringResource(R.string.paywall_row_matches),
-            stringResource(R.string.paywall_free_value, freeMatches),
-            Benefit.Pill(unlimited),
+            ValueCell.Plain(freeMatches),
+            ValueCell.Pill(unlimited),
             freeMatches,
             unlimited,
         ),
         BenefitRow(
             R.drawable.ic_photo_camera,
             stringResource(R.string.paywall_row_photos),
-            stringResource(R.string.paywall_free_value, freePhotos),
-            Benefit.Pill(proPhotos),
+            ValueCell.Plain(freePhotos),
+            ValueCell.Pill(proPhotos),
             freePhotos,
             proPhotos,
         ),
         BenefitRow(
             R.drawable.ic_trophy,
             stringResource(R.string.paywall_row_stats),
-            proOnly,
-            Benefit.ProOnly,
+            ValueCell.NotIncluded,
+            ValueCell.Included,
             notIncluded,
             included,
         ),
         BenefitRow(
             R.drawable.ic_shield,
             stringResource(R.string.paywall_row_insurance),
-            proOnly,
-            Benefit.ProOnly,
+            ValueCell.NotIncluded,
+            ValueCell.Included,
             notIncluded,
             included,
         ),
         BenefitRow(
             R.drawable.ic_star,
             stringResource(R.string.paywall_row_card_styles),
-            proOnly,
-            Benefit.ProOnly,
+            ValueCell.NotIncluded,
+            ValueCell.Included,
             notIncluded,
             included,
         ),
         BenefitRow(
             R.drawable.ic_download,
             stringResource(R.string.paywall_row_export),
-            freeToo,
-            Benefit.Both,
+            ValueCell.IncludedMuted,
+            ValueCell.Included,
             included,
             included,
         ),
@@ -284,46 +301,172 @@ private fun benefitRows(): List<BenefitRow> {
 private fun BenefitsCard() {
     val rows = benefitRows()
     SettingsCard {
-        rows.forEachIndexed { index, row ->
-            val description =
-                stringResource(R.string.paywall_row_description, row.label, row.freeSpoken, row.proSpoken)
-            SettingsRow(
-                icon = row.icon,
-                label = row.label,
-                supporting = row.supporting,
-                showDivider = index > 0,
-                modifier = Modifier.clearAndSetSemantics { contentDescription = description },
-                trailing = { BenefitMark(row.benefit) },
-            )
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Row(modifier = Modifier.matchParentSize()) {
+                Spacer(modifier = Modifier.weight(1f))
+                Box(
+                    modifier =
+                        Modifier
+                            .width(PRO_COLUMN_WIDTH)
+                            .fillMaxHeight()
+                            .background(MaterialTheme.colorScheme.primaryContainer),
+                )
+            }
+            Column(modifier = Modifier.fillMaxWidth()) {
+                ComparisonHeader()
+                rows.forEach { row -> ComparisonRow(row) }
+            }
         }
     }
 }
 
 @Composable
-private fun BenefitMark(benefit: Benefit) {
-    when (benefit) {
-        is Benefit.Pill ->
+private fun ComparisonHeader() {
+    val colors = MaterialTheme.colorScheme
+    Row(
+        modifier = Modifier.fillMaxWidth().heightIn(min = HEADER_MIN_HEIGHT),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(R.string.paywall_col_feature),
+            style = MaterialTheme.typography.labelSmall,
+            color = colors.onSurfaceVariant,
+            modifier = Modifier.weight(1f).padding(start = PicklejotSpacing.lg),
+        )
+        ValueSlot(width = FREE_COLUMN_WIDTH) {
+            Text(
+                text = stringResource(R.string.paywall_col_free),
+                style = MaterialTheme.typography.titleSmall,
+                color = colors.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+        }
+        ValueSlot(width = PRO_COLUMN_WIDTH) {
+            Row(
+                modifier =
+                    Modifier
+                        .clip(CircleShape)
+                        .background(colors.primary)
+                        .padding(horizontal = PicklejotSpacing.md, vertical = PicklejotSpacing.xs),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(PicklejotSpacing.xs),
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_crown),
+                    contentDescription = null,
+                    tint = colors.onPrimary,
+                    modifier = Modifier.size(PRO_BADGE_ICON_SIZE),
+                )
+                Text(
+                    text = stringResource(R.string.paywall_col_pro),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = colors.onPrimary,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ComparisonRow(row: BenefitRow) {
+    val description =
+        stringResource(R.string.paywall_row_description, row.label, row.freeSpoken, row.proSpoken)
+    val dividerColor = PicklejotTheme.colors.cardBorder
+    Column(
+        modifier = Modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = description },
+    ) {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            HorizontalDivider(
+                color = dividerColor,
+                modifier = Modifier.weight(1f).padding(start = ROW_DIVIDER_INSET),
+            )
+            HorizontalDivider(
+                color = dividerColor,
+                modifier = Modifier.width(FREE_COLUMN_WIDTH + PRO_COLUMN_WIDTH),
+            )
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth().heightIn(min = ROW_MIN_HEIGHT),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Row(
+                modifier = Modifier.weight(1f).padding(horizontal = PicklejotSpacing.lg),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(PicklejotSpacing.lg),
+            ) {
+                Icon(
+                    painter = painterResource(row.icon),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(ROW_ICON_SIZE),
+                )
+                Text(
+                    text = row.label,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f).padding(vertical = PicklejotSpacing.sm),
+                )
+            }
+            ValueSlot(width = FREE_COLUMN_WIDTH) { ValueMark(row.free) }
+            ValueSlot(width = PRO_COLUMN_WIDTH) { ValueMark(row.pro) }
+        }
+    }
+}
+
+@Composable
+private fun ValueSlot(
+    width: Dp,
+    content: @Composable () -> Unit,
+) {
+    Box(
+        modifier = Modifier.width(width).padding(horizontal = PicklejotSpacing.xs),
+        contentAlignment = Alignment.Center,
+    ) {
+        content()
+    }
+}
+
+@Composable
+private fun ValueMark(cell: ValueCell) {
+    val colors = MaterialTheme.colorScheme
+    when (cell) {
+        is ValueCell.Plain ->
+            Text(
+                text = cell.text,
+                style = MaterialTheme.typography.bodyMedium,
+                color = colors.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+        is ValueCell.Pill ->
             Surface(shape = CircleShape, color = PicklejotTheme.colors.countBadge) {
                 Text(
-                    text = benefit.text,
+                    text = cell.text,
                     style = MaterialTheme.typography.labelMedium,
                     color = PicklejotTheme.colors.onCountBadge,
+                    textAlign = TextAlign.Center,
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                 )
             }
-        Benefit.ProOnly ->
+        ValueCell.Included ->
             Icon(
                 painter = painterResource(R.drawable.ic_check),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp),
+                tint = colors.primary,
+                modifier = Modifier.size(CHECK_ICON_SIZE),
             )
-        Benefit.Both ->
+        ValueCell.IncludedMuted ->
             Icon(
                 painter = painterResource(R.drawable.ic_check),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(20.dp),
+                tint = colors.onSurfaceVariant,
+                modifier = Modifier.size(CHECK_ICON_SIZE),
+            )
+        ValueCell.NotIncluded ->
+            Icon(
+                painter = painterResource(R.drawable.ic_remove),
+                contentDescription = null,
+                tint = colors.onSurfaceVariant,
+                modifier = Modifier.size(DASH_ICON_SIZE),
             )
     }
 }
