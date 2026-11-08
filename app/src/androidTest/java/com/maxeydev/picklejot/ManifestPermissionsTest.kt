@@ -39,13 +39,13 @@ class ManifestPermissionsTest {
     }
 
     @Test
-    fun the_only_runtime_permissions_are_camera_and_notifications() {
-        val allowed = setOf(Manifest.permission.CAMERA, "android.permission.POST_NOTIFICATIONS")
+    fun the_only_runtime_permission_is_notifications() {
+        val allowed = setOf("android.permission.POST_NOTIFICATIONS")
 
         val runtime = requested.filter(::isRuntimePermission)
 
         assertTrue("unexpected runtime permissions: ${runtime - allowed}", allowed.containsAll(runtime))
-        assertTrue(runtime.contains(Manifest.permission.CAMERA))
+        assertFalse(requested.contains(Manifest.permission.CAMERA))
     }
 
     @Test

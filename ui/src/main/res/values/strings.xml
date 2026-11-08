@@ -280,10 +280,6 @@
     <string name="photo_viewer_next">Next photo</string>
     <string name="photo_unreadable">Couldn\'t read that photo — it may be damaged or no longer available. The match can still be saved without it.</string>
     <string name="photo_error_dismiss">OK</string>
-    <string name="camera_rationale_title">Use your camera?</string>
-    <string name="camera_rationale_body">Picklejot needs camera access only to take this photo. The photo stays on your phone. You can always add photos from your gallery without giving this permission.</string>
-    <string name="camera_settings_title">Camera access is off</string>
-    <string name="camera_settings_body">Camera access was turned off for Picklejot. To take photos here, allow it in Settings. Adding photos from your gallery still works without it.</string>
     <string name="permission_continue">Continue</string>
     <string name="permission_not_now">Not now</string>
     <string name="permission_open_settings">Open settings</string>
@@ -458,7 +454,7 @@
     <string name="about_privacy_point_device">Your matches, photos and name stay on this device.</string>
     <string name="about_privacy_point_tracking">No analytics and no ads.</string>
     <string name="about_privacy_point_network">The only network activity is verifying your Pro purchase. Your matches are never sent.</string>
-    <string name="about_privacy_point_permissions">The camera and notifications are used only if you turn them on.</string>
+    <string name="about_privacy_point_permissions">Notifications are used only if you turn them on.</string>
     <string name="about_licences_heading">Open-source software</string>
     <string name="settings_close">Close settings</string>
     <string name="settings_pro_row_free">Free · %1$d of %2$d matches</string>

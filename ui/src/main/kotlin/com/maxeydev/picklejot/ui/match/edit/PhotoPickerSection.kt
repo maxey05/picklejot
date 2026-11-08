@@ -1,6 +1,5 @@
 package com.maxeydev.picklejot.ui.match.edit
 
-import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -47,11 +46,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.maxeydev.picklejot.ui.R
-import com.maxeydev.picklejot.ui.common.PermissionPrompt
-import com.maxeydev.picklejot.ui.common.PermissionRationale
-import com.maxeydev.picklejot.ui.common.PermissionSettingsRedirect
 import com.maxeydev.picklejot.ui.common.dashedBorder
-import com.maxeydev.picklejot.ui.common.rememberPermissionState
 import java.io.File
 
 private val TILE_WIDTH = 144.dp
@@ -94,12 +89,6 @@ fun PhotoPickerSection(
                 latestActions.onPhotoCaptured(captured)
             }
         }
-    val (cameraPermission, prompt) =
-        rememberPermissionState(Manifest.permission.CAMERA) {
-            val uri = latestActions.newCaptureUri()
-            pendingCapture = uri
-            camera.launch(Uri.parse(uri))
-        }
 
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         if (photos.isNotEmpty()) {
@@ -134,29 +123,15 @@ fun PhotoPickerSection(
                 PhotoActionButton(
                     icon = R.drawable.ic_photo_camera,
                     label = stringResource(R.string.photos_take),
-                    onClick = cameraPermission::request,
+                    onClick = {
+                        val uri = latestActions.newCaptureUri()
+                        pendingCapture = uri
+                        camera.launch(Uri.parse(uri))
+                    },
                     modifier = Modifier.weight(1f).testTag(MatchEditTestTags.TAKE_PHOTO),
                 )
             }
         }
-    }
-
-    when (prompt) {
-        PermissionPrompt.RATIONALE ->
-            PermissionRationale(
-                title = stringResource(R.string.camera_rationale_title),
-                body = stringResource(R.string.camera_rationale_body),
-                onContinue = cameraPermission::continueFromRationale,
-                onDismiss = cameraPermission::dismiss,
-            )
-        PermissionPrompt.SETTINGS ->
-            PermissionSettingsRedirect(
-                title = stringResource(R.string.camera_settings_title),
-                body = stringResource(R.string.camera_settings_body),
-                onOpenSettings = cameraPermission::openAppSettings,
-                onDismiss = cameraPermission::dismiss,
-            )
-        PermissionPrompt.NONE -> Unit
     }
 }
 
