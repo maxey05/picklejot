@@ -1,6 +1,6 @@
 # Picklejot Privacy Policy
 
-**Last updated:** 2026-10-30
+**Last updated:** 2026-11-08
 
 This policy explains how Picklejot, an Android app for logging your pickleball matches, handles information. It is written in plain English.
 
@@ -54,7 +54,7 @@ Everything in this list is stored locally on your device, in the app's private s
 - We do not use your data to train AI models.
 - We do not knowingly receive any copy of your match log.
 
-The only information that reaches us is the purchase-check request described in section 6: your Google Play purchase token, a random one-time code and, when available, a Play Integrity token. It is sent when you buy or restore Pro, when the app starts while Google Play lists a Pro purchase we have not yet verified (retried after 1, 5 and 30 minutes if the service cannot be reached), and once Pro is unlocked, at app start whenever the last successful check was 30 or more days ago, to catch refunds. It is not sent at other times.
+The only information that reaches us is the purchase-check request described in section 6: your Google Play purchase token, a random one-time code and, when available, a Play Integrity token. It is sent when you buy or restore Pro, when the app starts while Google Play lists a Pro purchase we have not yet verified (retried after 1, 5 and 30 minutes if the service cannot be reached), and once Pro is unlocked, at app start whenever the last successful check was 30 or more days ago, to catch refunds. It is not sent at other times. Like any server, the service also sees the IP address the request comes from, and it uses that address and a hash of the purchase token only for rate limiting, as described in section 6.
 
 ## 4. Where your data lives
 
@@ -82,7 +82,8 @@ Picklejot offers an optional one-time "Pro" purchase through Google Play Billing
 - Google processes the payment and holds payment details. Picklejot never sees your card or payment details.
 - To complete or restore a purchase, the app talks to Google Play services on your device.
 - **Purchase verification.** Before unlocking Pro, and again later as described below, the app sends a small verification request over HTTPS to a service we run on Cloudflare. The request contains your Google Play purchase token, a random one-time code and, when your device can provide one, a Play Integrity token (a Google-issued signal about whether the app is the genuine Play version running on a certified device). The integrity token is advisory only: if it is missing or fails, you still get Pro as long as Google confirms your purchase. It contains none of your matches, photos, names or locations.
-- The service passes the purchase token to Google to confirm the purchase is real, and the Play Integrity token (if any) to Google for an advisory device check, then replies with a signed yes or no. It does not store the tokens in a database. Cloudflare, which hosts the service, handles ordinary connection data such as IP addresses under Cloudflare's own privacy policy.
+- The service passes the purchase token to Google to confirm the purchase is real, and the Play Integrity token (if any) to Google for an advisory device check, then replies with a signed yes or no. It does not store the tokens in a database. Cloudflare, which hosts the service on its Workers platform, acts as our service provider (hosting provider) for it. Because every request travels through Cloudflare, Cloudflare receives the IP address and ordinary request details such as the time, the address of the service and the size of the request, and handles them under its own privacy policy.
+- **Abuse protection (rate limiting).** To stop the service being flooded or used to burn Google's quotas, it limits how many requests it accepts. It uses Cloudflare's rate limiting feature to count requests per IP address (an IPv6 address is grouped by its first 64 bits, so that one network counts as one), allowing 10 requests per minute, and per purchase token, allowing 5 requests per minute. For the second count, the service turns the purchase token into a one-way SHA-256 hash and counts requests under that hash. These counts happen before the service contacts Google. The IP address and the token hash are used only for this counting. We do not write them to a database or link them to you, and the counting window is 60 seconds. A request over the limit is refused, and the app treats that as "could not check", never as a rejection of your purchase. If the rate limiter itself has an error, the service lets the request through.
 - **How often.** The request is sent when you buy or restore Pro, and at app start while Google Play lists a Pro purchase that has not been verified yet. After Pro is unlocked, the app re-checks the stored purchase at app start once the last successful check is 30 or more days old (at most once per app launch), because Google Play stops listing refunded purchases. Otherwise nothing is sent.
 - If the service cannot be reached, Pro is not unlocked yet and the app tries again after 1, 5 and 30 minutes, and at the next app start. Anything already unlocked stays unlocked.
 - Picklejot stores the resulting Pro status and the Google Play purchase token on your device (see section 2).
@@ -96,10 +97,9 @@ Google's use of your information is governed by [Google's Privacy Policy](https:
 
 | Permission | When it is used | Can I say no? |
 | --- | --- | --- |
-| Camera | Only when you tap "Take photo" on a match. The app asks at that moment | Yes. Everything else works. You can add photos from your gallery instead |
 | Notifications | Only if you turn on the streak reminder | Yes. Reminders stay off |
 
-Gallery photos are added through the Android photo picker, which shares only the photos you choose and needs no storage permission. You can withdraw any permission at any time in your Android system settings.
+Picklejot requests no camera permission. When you tap "Take photo", the app hands over to your phone's own camera app, which takes the picture and returns only that photo. Gallery photos are added through the Android photo picker, which shares only the photos you choose and needs no storage permission. You can withdraw the notification permission at any time in your Android system settings.
 
 ## 8. Exports and share cards
 
@@ -111,7 +111,7 @@ Once you share something with another app or person, we cannot recall or control
 
 ## 9. How long we keep data, and deleting it
 
-We do not keep your match data, and the verification service does not store the purchase token or Play Integrity token in a database. It does not keep them after answering the request, apart from ordinary operating logs that record the outcome of a check but not the tokens. On your device, your data stays until you remove it.
+We do not keep your match data, and the verification service does not store the purchase token or Play Integrity token in a database. It does not keep them after answering the request. The service has Cloudflare Workers Logs switched on. The log messages our code writes record only the outcome of a check, such as whether the integrity check passed, or an error reply from Google, and never the tokens. Cloudflare may also record ordinary request details for each call, which can include the IP address, and keeps them under its own retention rules. We have not set up any other log export from the service. On your device, your data stays until you remove it.
 
 | Action | Result |
 | --- | --- |
@@ -121,7 +121,7 @@ We do not keep your match data, and the verification service does not store the 
 | Backups in your Google Account | Separate from the app. Delete them through your Google Account or Android backup settings |
 | Exports and shared cards | Copies you made remain wherever you sent them until you delete them there |
 | Purchase records | Held by Google (and, as transaction records, in the Play Console) under Google's retention rules and legal requirements |
-| Purchase verification requests | Not stored by us in a database. Cloudflare and Google handle them under their own policies |
+| Purchase verification requests | Not stored by us in a database. The IP address and a hash of the purchase token are used only for short-lived rate-limit counting. Cloudflare (hosting and logs) and Google handle requests under their own policies |
 
 If a backup is restored after erasing or reinstalling, deleted data can come back from that backup. Delete the backup as well if you want it gone.
 
@@ -153,7 +153,7 @@ Privacy laws give people rights over their personal data. Most of these rights a
 | Access and portability | Your data is on your device. Use Export to get a copy of your matches in a JSON file |
 | Correction | Edit any match, name or setting in the app |
 | Deletion / erasure | Use Erase all data, delete individual matches, or uninstall |
-| Object, restrict, withdraw consent | Turn off the camera or notification permission in system settings. Switch off reminders in the app |
+| Object, restrict, withdraw consent | Turn off the notification permission in system settings. Switch off reminders in the app |
 | No sale or sharing | Nothing is sold or shared by us |
 | No automated decisions | We do not make any |
 
@@ -161,7 +161,7 @@ If you contact emgireyes.dev@gmail.com with a privacy request, we will reply, te
 
 **Philippines (Data Privacy Act of 2012, RA 10173, and its Implementing Rules).** If you are in the Philippines, you have the rights of a data subject, including to be informed, to access, to object, to correct, to erasure or blocking, to data portability, to damages, and to complain. You may complain to the National Privacy Commission (privacy.gov.ph). The Act's rules apply to the processing of personal information. Because we do not process your match data on any server, this policy explains what is processed on your own device and the limited purchase information described in section 6.
 
-**European Economic Area and United Kingdom (GDPR / UK GDPR).** If you are in the EEA or UK, you have the rights of access, rectification, erasure, restriction, portability and objection, and the right to complain to your local data protection authority (in the UK, the Information Commissioner's Office). Because we hold no copy of your match log, the lawful bases are not engaged for it in the usual way. The limited purchase information described in section 6 is handled on the basis of contract (to deliver your purchase), legal obligation (for example, tax and accounting records) and our legitimate interest in preventing fake purchases. If a legal basis for storing data on your device is needed, it is your own request to use the app (contract) and, for camera and notifications, your consent through the system permission prompt, which you can withdraw at any time.
+**European Economic Area and United Kingdom (GDPR / UK GDPR).** If you are in the EEA or UK, you have the rights of access, rectification, erasure, restriction, portability and objection, and the right to complain to your local data protection authority (in the UK, the Information Commissioner's Office). Because we hold no copy of your match log, the lawful bases are not engaged for it in the usual way. The limited purchase information described in section 6 is handled on the basis of contract (to deliver your purchase), legal obligation (for example, tax and accounting records) and our legitimate interest in preventing fake purchases. If a legal basis for storing data on your device is needed, it is your own request to use the app (contract) and, for notifications, your consent through the system permission prompt, which you can withdraw at any time.
 
 **California (CCPA / CPRA).** We do not sell or share personal information (including for cross-context behavioral advertising), we do not collect sensitive personal information, and we do not use or disclose it for purposes that would trigger the right to limit. California residents have the rights to know, delete, correct, and not be discriminated against for using their rights. As above, we hold no match data to disclose or delete, and the controls are in the app. You may also use an authorized agent. We do not respond to or need a "Do Not Track" signal because we do not track.
 
@@ -188,16 +188,16 @@ This table is a plain-language summary that matches what we declare in the Googl
 | Question | Answer |
 | --- | --- |
 | Does the developer collect any user data? | Only for purchase checks. Your match log never leaves your device. The purchase token and, when available, a Play Integrity token are sent to our verification service when you buy or restore Pro, at app start while a purchase is still unverified, and about every 30 days afterwards to check for a refund |
-| Does the developer share any user data with third parties? | Only Google, to confirm a purchase |
+| Does the developer share any user data with third parties? | Only Google, to confirm a purchase. Cloudflare hosts the verification service and handles its request data as our service provider |
 | Is data processed only on the device? | Yes, for matches, scores, notes, names, location text, photos, and settings. Purchase checks go to our verification service and Google |
 | Data encrypted in transit? | Yes. Purchase verification requests use HTTPS, and Google Play traffic uses Google's secure channels |
 | Can you request data deletion? | Yes. Use Erase all data or uninstall. Backups in your Google Account are deleted through Google |
 | Account required? | No |
 | Ads? | No |
 | Analytics or crash reporting? | None in the app |
-| Data types sent off the device | Purchase history (the Google Play purchase token) and device or app integrity information (a Play Integrity token, when available). Both are used only to verify a Pro purchase. Not used for advertising or analytics, and not linked to your match log |
+| Data types sent off the device | Purchase history (the Google Play purchase token) and device or app integrity information (a Play Integrity token, when available). Both are used only to verify a Pro purchase. The service also sees your IP address and uses it, and a hash of the purchase token, only for short-lived rate limiting. None of this is used for advertising or analytics, and none of it is linked to your match log |
 | Financial info | Payments are processed by Google Play. Picklejot never receives card or payment details |
-| Optional permissions | Camera (only for taking photos) and notifications (only for the streak reminder) |
+| Optional permissions | Notifications only (for the streak reminder). No camera permission: photos are taken with the system camera app or chosen from the gallery |
 | Directed at children? | No |
 | Independent security review? | No |
 
