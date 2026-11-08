@@ -19,7 +19,7 @@ Updated 14 October 2026 against the working tree in `C:\emgiStuff\codingProjects
 | Does your app collect or share any of the required user data types? | **Yes** |
 | Data types | Financial info > **Purchase history** (the Google Play purchase token). Also consider **Device or other IDs** for the Play Integrity token, see 2.2 |
 | Collected or shared | **Collected, not shared** (the Cloudflare Worker and Google act as service providers on your behalf) |
-| Processed ephemerally | **Yes**, only if you confirm that Workers Logs and Logpush are off in the Cloudflare dashboard, see 2.2 |
+| Processed ephemerally | **No, do not tick it.** `server/wrangler.toml` sets `[observability] enabled = true` (Cloudflare Workers Logs is on), so Cloudflare may retain request logs. Logpush is not configured in the repo; check the dashboard, see 2.2 |
 | Required or optional | **Optional** (only when a user buys or restores Pro) |
 | Purposes | App functionality; Fraud prevention, security, and compliance |
 | Is all of the user data collected by your app encrypted in transit? | **Yes**. `LicenseServerConfig.isUsable` requires an `https://` URL |
@@ -49,15 +49,16 @@ What leaves the device, with the code behind it:
 | Google Play purchase token | Your verifier on Cloudflare (`POST /v1/verify`), then to Google's Play Developer API | `ServerPurchaseValidator.attempt` builds `Request(purchaseToken, clientNonce, integrityToken)`; `server/src/index.ts` |
 | Play Integrity token | Same request. The verifier decodes it with Google and requires `PLAY_RECOGNIZED` and `MEETS_DEVICE_INTEGRITY` | `PlayIntegrityTokenProvider`, `server/README.md` |
 | A random one-time nonce | Same request | `ServerPurchaseValidator.attempt` |
-| IP address and connection metadata | Seen by Cloudflare as the host, and by Google when Google Play services runs billing | Normal network behaviour |
+| IP address and connection metadata | Seen by Cloudflare as the host (a service provider), and by Google when Google Play services runs billing. The Worker also uses the IP (`CF-Connecting-IP`, IPv6 grouped by /64) as a rate-limit key, 10 requests / 60 s, and a SHA-256 hash of the purchase token as a second key, 5 requests / 60 s. Both go to Cloudflare's Rate Limiting binding only, before any Google call, and are not written to storage by the Worker | `server/src/index.ts` (`withinRateLimit`, `ipKey`), `server/wrangler.toml` `[[ratelimits]]` |
+| Recheck of the stored purchase | The same request is repeated at app start once the last successful check is 30 or more days old (once per launch), to catch refunds | `PlayEntitlementRepository.recheckCachedPurchase`, `RECHECK_AFTER = 30.days` |
 | Matches, photos, names, notes, location text | **Nowhere** | No other HTTP code exists. `CardWebView` and `LockedDownWebViewClient` still block every non-asset request |
 
 Judgement calls to settle before you submit:
 
 1. **Is the Play Integrity token a "Device or other ID"?** Google's examples do not list Play Integrity. The token carries a verdict about the device and app, not an identifier you can track across apps. The cautious choice is to declare Device or other IDs as collected. Declaring more than you collect is safer than declaring less, and costs little here.
-2. **Ephemeral processing.** `server/src/index.ts` has no database, KV, D1 or log statements, and `wrangler.toml` enables no observability. Cloudflare can still keep request logs if you turn Workers Logs or Logpush on. Check both in the Cloudflare dashboard before ticking "processed ephemerally", and tell me if you turn either on, because the policy says the service "does not store the tokens in a database".
-3. **Purchase history.** The token is also kept on the device (`user-profile.json`) and included in Android backups, as the policy says.
-4. **Android Auto Backup.** `allowBackup="true"` with rules in `app/src/main/res/xml/data_extraction_rules.xml` (cloud backup excludes `photos/`; device transfer includes everything). Google's Data safety help does not address Auto Backup, so re-check the live Console wording. The policy discloses it in section 5.
+2. **Ephemeral processing.** `server/src/index.ts` has no database, KV or D1. It does have `console.warn` and `console.error` lines (integrity verdict and purchase state, and the first 300 to 400 characters of a failing Google reply, never the purchase token), and `wrangler.toml` now sets `[observability] enabled = true`, so Workers Logs keeps them and may keep request metadata such as the IP. Do not tick "processed ephemerally". Check in the Cloudflare dashboard that Logpush is off; this review cannot see it. The policy discloses Workers Logs, the rate limiting and Cloudflare as a service provider in sections 6 and 9.
+3. **Purchase history.** The token is also kept on the device (`user-profile.json`). That file is excluded from cloud backup and from device transfer, as the policy says.
+4. **Android Auto Backup.** `allowBackup="true"` with rules in `app/src/main/res/xml/data_extraction_rules.xml` (cloud backup excludes `photos/` and `user-profile.json`; device transfer includes the database and files, including photos, but excludes `user-profile.json`). Google's Data safety help does not address Auto Backup, so re-check the live Console wording. The policy discloses it in section 5.
 5. **Google Play and Android diagnostics.** Crash and performance data that Google collects through Android vitals for users who opted in is Google's collection, not a library in the app. The policy says so in section 6.
 
 Other claims that still hold:
@@ -106,7 +107,7 @@ See the table in section 1.
 | App access | All functionality available without special access | No account or login. |
 | Target audience and content | Not directed to children. Choose 13 and over or 18 and over, not Families | Policy section 11. The content rating questionnaire must be consistent. |
 | Financial features | None | An in-app one-time purchase is not a financial feature. |
-| Sensitive permissions | None to declare | `CAMERA` and `POST_NOTIFICATIONS` are not restricted. No SMS, call log, location, `MANAGE_EXTERNAL_STORAGE` or `READ_MEDIA_*`. |
+| Sensitive permissions | None to declare | `POST_NOTIFICATIONS` is not restricted. No SMS, call log, location, `MANAGE_EXTERNAL_STORAGE` or `READ_MEDIA_*`. |
 | In-app purchases | Yes, one-time Pro | Price is shown by Google Play. The free tier is capped at 50 matches (`domain/.../entitlement/FreeTier.kt`). The listing, the screenshots and `strings.xml` must say 50. |
 | Government, health, news | No | |
 
@@ -148,7 +149,7 @@ Merged manifest permissions (build a release or bundle first):
 Get-ChildItem app\build\intermediates -Recurse -Filter AndroidManifest.xml | Where-Object { $_.FullName -match 'merged_manifests' -and $_.FullName -match 'release' } | ForEach-Object { Select-String -Path $_.FullName -Pattern 'uses-permission' }
 ```
 
-Expected: `CAMERA`, `POST_NOTIFICATIONS`, `INTERNET` (needed for the verifier), and Billing's `com.android.vending.BILLING`, plus any dynamic receiver permission that AndroidX adds. If `AD_ID` or anything else unexpected appears, remove it with `tools:node="remove"` or answer the Advertising ID question honestly.
+Expected: `POST_NOTIFICATIONS`, `INTERNET` (needed for the verifier), and Billing's `com.android.vending.BILLING`, plus any dynamic receiver permission that AndroidX adds. If `AD_ID` or anything else unexpected appears, remove it with `tools:node="remove"` or answer the Advertising ID question honestly.
 
 Not verified in this review: transitive dependencies, the Cloudflare dashboard logging settings, and the exact wording of the live Play Console form, which Google changes from time to time. The merged release manifest was read from `app/build/intermediates`: it contains `INTERNET`.
 
