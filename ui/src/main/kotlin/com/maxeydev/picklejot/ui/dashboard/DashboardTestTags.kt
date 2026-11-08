@@ -8,6 +8,7 @@ object DashboardTestTags {
     const val STREAK = "dashboard_streak"
     const val FILTER_INDICATOR = "dashboard_filter_indicator"
     const val INFO_BUTTON = "dashboard_info_button"
+    const val ADVANCED_STATS_BUTTON = "dashboard_advanced_stats_button"
     const val INFO_SHEET = "dashboard_info_sheet"
     const val INFO_DISMISS = "dashboard_info_dismiss"
     const val STATS_SCREEN = "stats_screen"

@@ -60,4 +60,5 @@
     <string name="stats_pro_months_legend">Wins above the line, losses below it.</string>
     <string name="stats_pro_month_a11y">%1$s: %2$d wins, %3$d losses</string>
     <string name="stats_pro_month_a11y_gap">%1$s: no matches</string>
+    <string name="dashboard_advanced_stats">See advanced stats</string>
 </resources>

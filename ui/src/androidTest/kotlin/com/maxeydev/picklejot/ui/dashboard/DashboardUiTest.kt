@@ -119,13 +119,14 @@ class DashboardUiTest {
         state: DashboardUiState,
         fontScale: Float = 1f,
         isCollapsed: Boolean = false,
+        onOpenStats: () -> Unit = {},
     ) {
         compose.setContent {
             val density = LocalDensity.current
             CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale)) {
                 MaterialTheme {
                     Box(modifier = Modifier.width(360.dp)) {
-                        DashboardHeader(state = state, isCollapsed = isCollapsed, onOpenStats = {})
+                        DashboardHeader(state = state, isCollapsed = isCollapsed, onOpenStats = onOpenStats)
                     }
                 }
             }
@@ -208,6 +209,25 @@ class DashboardUiTest {
         compose.onNodeWithText("3 wk", useUnmergedTree = true).assertIsDisplayed()
         compose.onNodeWithText("67%", useUnmergedTree = true).assertIsDisplayed()
         compose.onNodeWithText("8W – 4L", useUnmergedTree = true).assertIsDisplayed()
+    }
+
+    @Test
+    fun the_expanded_header_offers_a_see_advanced_stats_button() {
+        showHeader(state())
+
+        compose.onNodeWithTag(DashboardTestTags.ADVANCED_STATS_BUTTON)
+            .assertIsDisplayed()
+            .assert(hasText("See advanced stats"))
+    }
+
+    @Test
+    fun tapping_see_advanced_stats_opens_the_stats_screen() {
+        var opened = 0
+        showHeader(state(), onOpenStats = { opened++ })
+
+        compose.onNodeWithTag(DashboardTestTags.ADVANCED_STATS_BUTTON).performClick()
+
+        assertEquals(1, opened)
     }
 
     @Test

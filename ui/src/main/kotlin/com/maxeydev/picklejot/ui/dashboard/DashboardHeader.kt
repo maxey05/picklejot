@@ -53,6 +53,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -72,6 +73,11 @@ private val DOT_SIZE = 12.dp
 private val DOT_RING_WIDTH = 2.dp
 private val FLAME_SIZE = 16.dp
 private val INFO_ICON_SIZE = 16.dp
+private val ADVANCED_PILL_HEIGHT = 32.dp
+private val ADVANCED_PILL_START_PADDING = 10.dp
+private val ADVANCED_PILL_END_PADDING = 14.dp
+private val ADVANCED_ICON_SIZE = 16.dp
+private val ADVANCED_CONTENT_SPACING = 6.dp
 private val DOT_SPACING = 6.dp
 private val FLAME_CENTER_X = 12.dp + FLAME_SIZE / 2
 private const val FLAME_FLARE_GAIN = 0.5f
@@ -204,14 +210,62 @@ fun DashboardHeader(
             onOpenStats = onOpenStats,
         )
         if (showInfoButton) {
-            InfoButton(
-                onClick = { isInfoOpen = true },
-                modifier = Modifier.align(Alignment.End).collapseVertically(collapseFraction),
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth().collapseVertically(collapseFraction),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                AdvancedStatsButton(onClick = onOpenStats)
+                InfoButton(onClick = { isInfoOpen = true })
+            }
         }
     }
     if (isInfoOpen) {
         HeaderInfoSheet(onDismiss = { isInfoOpen = false })
+    }
+}
+
+@Composable
+private fun AdvancedStatsButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = PicklejotTheme.colors
+    Box(
+        modifier =
+            modifier
+                .minimumInteractiveComponentSize()
+                .clip(CircleShape)
+                .clickable(role = Role.Button, onClick = onClick)
+                .testTag(DashboardTestTags.ADVANCED_STATS_BUTTON),
+        contentAlignment = Alignment.Center,
+    ) {
+        Surface(
+            color = colors.headerAccent,
+            contentColor = colors.headerTop,
+            shape = CircleShape,
+        ) {
+            Row(
+                modifier =
+                    Modifier
+                        .heightIn(min = ADVANCED_PILL_HEIGHT)
+                        .padding(start = ADVANCED_PILL_START_PADDING, end = ADVANCED_PILL_END_PADDING),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(ADVANCED_CONTENT_SPACING),
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_bar_chart),
+                    contentDescription = null,
+                    modifier = Modifier.size(ADVANCED_ICON_SIZE),
+                )
+                Text(
+                    text = stringResource(R.string.dashboard_advanced_stats),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                )
+            }
+        }
     }
 }
 
