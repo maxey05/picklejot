@@ -3,6 +3,7 @@ package com.maxeydev.picklejot.ui.navigation
 import android.annotation.SuppressLint
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -88,6 +90,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import java.io.IOException
 
+private const val SHEET_CLOSE_LABEL = "sheetClose"
+
 @Composable
 fun PicklejotNavHost(
     dependencies: PicklejotDependencies,
@@ -133,10 +137,10 @@ private fun PicklejotNavGraph(
         modifier = modifier,
         enterTransition = { ScreenEnter },
         exitTransition = { ScreenExit },
-        popEnterTransition = { ScreenPopEnter },
-        popExitTransition = { ScreenPopExit },
-        predictivePopEnterTransition = { ScreenPredictivePopEnter },
-        predictivePopExitTransition = { ScreenPredictivePopExit },
+        popEnterTransition = { screenPopEnter() },
+        popExitTransition = { screenPopExit() },
+        predictivePopEnterTransition = { screenPopEnter() },
+        predictivePopExitTransition = { screenPopExit() },
     ) {
         composable<OnboardingRoute> {
             val viewModel: OnboardingViewModel = viewModel(factory = OnboardingViewModel.factory(dependencies))
@@ -155,7 +159,6 @@ private fun PicklejotNavGraph(
         }
         composable<HomeRoute>(
             exitTransition = { stayUnderSheet() },
-            popEnterTransition = { returnFromSheet() },
         ) { backStackEntry ->
             val viewModel: MatchListViewModel =
                 viewModel(factory = MatchListViewModel.factory(dependencies, backStackEntry.savedStateHandle))
@@ -469,21 +472,27 @@ private fun PicklejotNavGraph(
         }
         composable<MatchEditRoute>(
             enterTransition = { SheetEnter },
-            popExitTransition = { SheetExit },
+            popEnterTransition = null,
         ) { backStackEntry ->
             val viewModel: MatchEditViewModel = viewModel(factory = MatchEditViewModel.factory(dependencies))
             val state by viewModel.uiState.collectAsStateWithLifecycle()
             var hasSheetOpened by rememberSaveable { mutableStateOf(false) }
             val sheetProgress = remember { Animatable(if (hasSheetOpened) 1f else 0f) }
+            @SuppressLint("RestrictedApi")
+            val backStack = navController.currentBackStack.collectAsState()
+            val isCovered =
+                backStack.value.let { entries ->
+                    entries.lastOrNull()?.id != backStackEntry.id && entries.any { it.id == backStackEntry.id }
+                }
+            val closeProgress by transition.animateFloat(
+                transitionSpec = { SheetCloseSpec },
+                label = SHEET_CLOSE_LABEL,
+            ) { visibility ->
+                if (visibility == EnterExitState.PostExit && !isCovered) 0f else 1f
+            }
             val isLeaving = transition.targetState == EnterExitState.PostExit
             LaunchedEffect(isLeaving) {
-                if (isLeaving) {
-                    @SuppressLint("RestrictedApi")
-                    val isPopped = navController.currentBackStack.value.none { entry -> entry.id == backStackEntry.id }
-                    if (isPopped) {
-                        sheetProgress.animateTo(0f, SheetCloseSpec)
-                    }
-                } else if (sheetProgress.value < 1f) {
+                if (!isLeaving && sheetProgress.value < 1f) {
                     withTimeoutOrNull(SHEET_READY_TIMEOUT_MILLIS) {
                         snapshotFlow { viewModel.uiState.value.isLoading }.first { isLoading -> !isLoading }
                     }
@@ -598,7 +607,7 @@ private fun PicklejotNavGraph(
                     modifier =
                         Modifier
                             .fillMaxSize()
-                            .graphicsLayer { alpha = SHEET_SCRIM_ALPHA * sheetProgress.value }
+                            .graphicsLayer { alpha = SHEET_SCRIM_ALPHA * sheetProgress.value * closeProgress }
                             .background(Color.Black),
                 )
                 MatchEditScreen(
@@ -606,7 +615,7 @@ private fun PicklejotNavGraph(
                     actions = actions,
                     modifier =
                         Modifier.graphicsLayer {
-                            val remaining = 1f - sheetProgress.value
+                            val remaining = 1f - sheetProgress.value * closeProgress
                             val corner = SHEET_CORNER * remaining
                             translationY = remaining * size.height
                             shape = RoundedCornerShape(topStart = corner, topEnd = corner)
@@ -617,7 +626,6 @@ private fun PicklejotNavGraph(
         }
         composable<MatchDetailRoute>(
             exitTransition = { stayUnderSheet() },
-            popEnterTransition = { returnFromSheet() },
         ) { backStackEntry ->
             val route = backStackEntry.toRoute<MatchDetailRoute>()
             val viewModel: MatchDetailViewModel = viewModel(factory = MatchDetailViewModel.factory(dependencies))

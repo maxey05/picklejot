@@ -1,46 +1,48 @@
 package com.maxeydev.picklejot.ui.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.FiniteAnimationSpec
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.ui.unit.IntOffset
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavDestination.Companion.hasRoute
 
-private const val SCREEN_MOVE_MILLIS = 340
+private const val PUSH_MOVE_MILLIS = 300
+private const val POP_MOVE_MILLIS = 250
 private const val UNDERLAY_SHIFT_DIVISOR = 4
-private const val POP_MOVE_MILLIS = 240
 
 private val ScreenEasing = CubicBezierEasing(0.2f, 0f, 0f, 1f)
-private val PopEasing = CubicBezierEasing(0.4f, 0f, 0.2f, 1f)
 
-private val ScreenSpec: FiniteAnimationSpec<IntOffset> =
-    tween(durationMillis = SCREEN_MOVE_MILLIS, easing = ScreenEasing)
+private val PushSpec: FiniteAnimationSpec<IntOffset> =
+    tween(durationMillis = PUSH_MOVE_MILLIS, easing = ScreenEasing)
 
 private val PopSpec: FiniteAnimationSpec<IntOffset> =
-    tween(durationMillis = POP_MOVE_MILLIS, easing = PopEasing)
+    tween(durationMillis = POP_MOVE_MILLIS, easing = ScreenEasing)
+
+private fun underlayOffset(fullWidth: Int): Int = -fullWidth / UNDERLAY_SHIFT_DIVISOR
 
 internal val ScreenEnter: EnterTransition =
-    slideInHorizontally(animationSpec = ScreenSpec) { fullWidth -> fullWidth }
+    slideInHorizontally(animationSpec = PushSpec) { fullWidth -> fullWidth }
 
 internal val ScreenExit: ExitTransition =
-    slideOutHorizontally(animationSpec = ScreenSpec) { fullWidth -> -fullWidth / UNDERLAY_SHIFT_DIVISOR }
+    slideOutHorizontally(animationSpec = PushSpec, targetOffsetX = ::underlayOffset)
 
-internal val ScreenPopEnter: EnterTransition = EnterTransition.None
+private val ScreenPopEnter: EnterTransition =
+    slideInHorizontally(animationSpec = PopSpec, initialOffsetX = ::underlayOffset)
 
-internal val ScreenPopExit: ExitTransition =
-    slideOutHorizontally(animationSpec = PopSpec) { fullWidth -> fullWidth } +
-        fadeOut(animationSpec = tween(durationMillis = POP_MOVE_MILLIS, easing = PopEasing))
+private val ScreenPopExit: ExitTransition =
+    slideOutHorizontally(animationSpec = PopSpec) { fullWidth -> fullWidth }
 
-private val PredictiveSpec: FiniteAnimationSpec<IntOffset> =
-    tween(durationMillis = SCREEN_MOVE_MILLIS, easing = LinearEasing)
+private fun AnimatedContentTransitionScope<NavBackStackEntry>.isLeavingSheet(): Boolean =
+    initialState.destination.hasRoute<MatchEditRoute>()
 
-internal val ScreenPredictivePopEnter: EnterTransition =
-    slideInHorizontally(animationSpec = PredictiveSpec) { fullWidth -> -fullWidth / UNDERLAY_SHIFT_DIVISOR }
+internal fun AnimatedContentTransitionScope<NavBackStackEntry>.screenPopEnter(): EnterTransition =
+    if (isLeavingSheet()) SheetPopEnter else ScreenPopEnter
 
-internal val ScreenPredictivePopExit: ExitTransition =
-    slideOutHorizontally(animationSpec = PredictiveSpec) { fullWidth -> fullWidth }
+internal fun AnimatedContentTransitionScope<NavBackStackEntry>.screenPopExit(): ExitTransition =
+    if (isLeavingSheet()) SheetExit else ScreenPopExit
