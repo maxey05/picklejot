@@ -133,6 +133,16 @@ fun SettingsDrawer(
                 verticalArrangement = Arrangement.spacedBy(PicklejotSpacing.md),
             ) {
                 ProCard(hasPro = state.hasPro, savedMatches = state.savedMatches, onSeePro = actions.onSeePro)
+                if (!state.hasPro) {
+                    SettingsCard {
+                        ReviewerAccessRow(
+                            state = state,
+                            onCodeChanged = actions.onReviewerCodeChanged,
+                            onRedeem = actions.onRedeemReviewerCode,
+                            onDismiss = actions.onReviewerAccessDismissed,
+                        )
+                    }
+                }
                 SettingsCard {
                     NameRow(
                         displayName = state.displayName,

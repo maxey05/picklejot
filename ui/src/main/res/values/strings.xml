@@ -351,6 +351,13 @@
     <string name="settings_title">Settings</string>
     <string name="settings_open">Settings</string>
     <string name="settings_pro_heading">Picklejot Pro</string>
+    <string name="settings_reviewer_row">Reviewer access</string>
+    <string name="settings_reviewer_title">Reviewer access</string>
+    <string name="settings_reviewer_body">Enter the access code you were given to unlock Pro on this device for review. Everyone else can ignore this.</string>
+    <string name="settings_reviewer_field_label">Access code</string>
+    <string name="settings_reviewer_unlock">Unlock Pro</string>
+    <string name="settings_reviewer_wrong">That code didn\'t work. Check it and try again.</string>
+    <string name="settings_reviewer_unavailable">Couldn\'t reach the server. Check your connection and try again.</string>
 
     <string name="delete_match_title">Delete this match?</string>
     <string name="delete_match_body">The match and its photos will be permanently deleted. This can\'t be undone.</string>

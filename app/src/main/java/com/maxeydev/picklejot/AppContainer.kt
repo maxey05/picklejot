@@ -9,6 +9,7 @@ import com.maxeydev.picklejot.data.reminder.ReminderScheduler
 import com.maxeydev.picklejot.data.settings.DirectoryAppCache
 import com.maxeydev.picklejot.domain.backup.BackupRepository
 import com.maxeydev.picklejot.domain.billing.ProStore
+import com.maxeydev.picklejot.domain.billing.ReviewerAccess
 import com.maxeydev.picklejot.domain.erase.EraseAllData
 import com.maxeydev.picklejot.domain.match.FilterState
 import com.maxeydev.picklejot.domain.match.LastUsedFormatStore
@@ -54,6 +55,7 @@ class AppContainer(
     override val profileRepository: ProfileRepository = dataLayer.profileRepository
     override val entitlementRepository: EntitlementRepository = dataLayer.entitlementRepository
     override val proStore: ProStore = dataLayer.proStore
+    override val reviewerAccess: ReviewerAccess = dataLayer.reviewerAccess
     override val photoImportQueue: PhotoImportQueue = dataLayer.photoImportQueue
     override val cardFormatStore: CardFormatStore = dataLayer.cardFormatStore
     override val backupRepository: BackupRepository = dataLayer.backupRepository

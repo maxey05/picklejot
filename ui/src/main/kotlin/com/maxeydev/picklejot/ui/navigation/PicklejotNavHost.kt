@@ -221,6 +221,9 @@ private fun PicklejotNavGraph(
                         },
                         onEraseConfirmed = settingsViewModel::eraseAll,
                         onEraseFailureDismissed = settingsViewModel::dismissEraseFailure,
+                        onReviewerCodeChanged = settingsViewModel::changeReviewerCode,
+                        onRedeemReviewerCode = settingsViewModel::redeemReviewerCode,
+                        onReviewerAccessDismissed = settingsViewModel::dismissReviewerAccess,
                     )
                 }
             SettingsDrawerHost(

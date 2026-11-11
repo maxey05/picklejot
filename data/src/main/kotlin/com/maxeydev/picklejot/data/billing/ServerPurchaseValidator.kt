@@ -10,12 +10,8 @@ import kotlinx.serialization.json.Json
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
-import java.security.GeneralSecurityException
-import java.security.KeyFactory
 import java.security.MessageDigest
 import java.security.SecureRandom
-import java.security.Signature
-import java.security.spec.X509EncodedKeySpec
 import java.util.Base64
 
 /** [url] is the verifier's base URL (https only); [publicKey] is its base64 X.509 ECDSA P-256 key. */
@@ -126,17 +122,7 @@ class ServerPurchaseValidator(
         }
 
     private fun signatureHolds(envelope: Envelope): Boolean =
-        try {
-            val keySpec = X509EncodedKeySpec(Base64.getDecoder().decode(config.publicKey))
-            val key = KeyFactory.getInstance("EC").generatePublic(keySpec)
-            Signature.getInstance("SHA256withECDSA").run {
-                initVerify(key)
-                update(envelope.payload.toByteArray(Charsets.UTF_8))
-                verify(Base64.getUrlDecoder().decode(envelope.sig))
-            }
-        } catch (failure: GeneralSecurityException) {
-            false
-        }
+        SignedReply.holds(config.publicKey, envelope.payload, envelope.sig)
 
     @Serializable
     private data class Request(
@@ -183,7 +169,7 @@ class ServerPurchaseValidator(
 
         private fun base64Url(bytes: ByteArray): String = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
 
-        private suspend fun httpPost(
+        internal suspend fun httpPost(
             url: String,
             body: String,
         ): HttpReply =

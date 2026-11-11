@@ -18,7 +18,13 @@ data class SettingsUiState(
     val isErasing: Boolean = false,
     val eraseFailed: Boolean = false,
     val isErased: Boolean = false,
+    val reviewerCodeDraft: String = "",
+    val isRedeemingReviewerCode: Boolean = false,
+    val reviewerProblem: ReviewerProblem? = null,
 ) {
     val canSaveName: Boolean
         get() = DisplayName.isValid(nameDraft) && DisplayName.clean(nameDraft) != displayName
+
+    val canRedeemReviewerCode: Boolean
+        get() = reviewerCodeDraft.isNotBlank() && !isRedeemingReviewerCode
 }

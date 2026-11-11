@@ -22,6 +22,7 @@ class FakeDependencies(
     override val profileRepository: FakeProfileRepository = FakeProfileRepository(),
     override val entitlementRepository: FakeEntitlementRepository = FakeEntitlementRepository(),
     override val proStore: FakeProStore = FakeProStore(entitlementRepository),
+    override val reviewerAccess: FakeReviewerAccess = FakeReviewerAccess(entitlementRepository),
     override val photoImportQueue: FakePhotoImportQueue = FakePhotoImportQueue(),
     override val cardRenderer: FakeCardRenderer = FakeCardRenderer(),
     override val cardFormatStore: FakeCardFormatStore = FakeCardFormatStore(),

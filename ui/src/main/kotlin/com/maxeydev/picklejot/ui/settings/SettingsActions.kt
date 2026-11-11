@@ -22,4 +22,7 @@ class SettingsActions(
     val onOpenTerms: () -> Unit = {},
     val onEraseConfirmed: () -> Unit,
     val onEraseFailureDismissed: () -> Unit,
+    val onReviewerCodeChanged: (String) -> Unit = {},
+    val onRedeemReviewerCode: () -> Unit = {},
+    val onReviewerAccessDismissed: () -> Unit = {},
 )

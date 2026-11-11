@@ -20,6 +20,7 @@ export interface Env {
   GOOGLE_CLIENT_EMAIL: string;
   GOOGLE_PRIVATE_KEY: string; // service-account key, PKCS#8 PEM
   SIGNING_PRIVATE_KEY: string; // base64 PKCS#8, ECDSA P-256 (see scripts/gen-signing-key.mjs)
+  REVIEWER_CODE?: string;
   RATE_LIMITER?: RateLimit; // per client IP; wrangler.toml [[ratelimits]]; absent = unlimited
   TOKEN_LIMITER?: RateLimit; // per purchase token, so one leaked token can't burn the Play Integrity quota
 }
@@ -32,6 +33,8 @@ const SCOPES =
   "https://www.googleapis.com/auth/androidpublisher https://www.googleapis.com/auth/playintegrity";
 const MAX_INTEGRITY_AGE_MS = 2 * 60_000;
 const MAX_CLOCK_SKEW_MS = 10_000;
+const MIN_REVIEWER_CODE_LENGTH = 20;
+const MAX_REVIEWER_CODE_LENGTH = 128;
 
 class Upstream extends Error {}
 
@@ -224,8 +227,50 @@ const rateLimited = () => {
   return res;
 };
 
+const sha256 = async (s: string) => new Uint8Array(await crypto.subtle.digest("SHA-256", enc(s)));
+
+async function sameSecret(given: string, expected: string): Promise<boolean> {
+  const [a, b] = await Promise.all([sha256(given), sha256(expected)]);
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
+  return diff === 0;
+}
+
+async function handleReviewer(req: Request, env: Env): Promise<Response> {
+  const expected = env.REVIEWER_CODE;
+  if (!expected || expected.length < MIN_REVIEWER_CODE_LENGTH) return json({ error: "not_found" }, 404);
+  if (!(await withinRateLimit(env.RATE_LIMITER, ipKey(req.headers.get("CF-Connecting-IP") ?? "unknown")))) {
+    return rateLimited();
+  }
+  const raw = await readCapped(req);
+  if (raw === null) return json({ error: "too_large" }, 413);
+  let body: { code?: unknown; clientNonce?: unknown } | null;
+  try {
+    body = JSON.parse(raw);
+  } catch {
+    return json({ error: "bad_request" }, 400);
+  }
+  const { code, clientNonce } = body ?? {};
+  if (
+    typeof code !== "string" || code.length < 1 || code.length > MAX_REVIEWER_CODE_LENGTH ||
+    typeof clientNonce !== "string" || !/^[A-Za-z0-9_-]{16,128}$/.test(clientNonce)
+  ) {
+    return json({ error: "bad_request" }, 400);
+  }
+  if (!(await sameSecret(code, expected))) return json({ error: "wrong_code" }, 403);
+  return signed(env, {
+    status: "granted",
+    kind: "reviewer",
+    clientNonce,
+    productId: env.PRODUCT_ID,
+    packageName: env.PACKAGE_NAME,
+  });
+}
+
 export async function handle(req: Request, env: Env, f: Fetch = fetch, nowMs = Date.now()): Promise<Response> {
-  if (req.method !== "POST" || new URL(req.url).pathname !== "/v1/verify") return json({ error: "not_found" }, 404);
+  const path = new URL(req.url).pathname;
+  if (req.method === "POST" && path === "/v1/reviewer") return handleReviewer(req, env);
+  if (req.method !== "POST" || path !== "/v1/verify") return json({ error: "not_found" }, 404);
 
   // Before any body parsing, Google call or signing: those are the quota-burning paths.
   if (!(await withinRateLimit(env.RATE_LIMITER, ipKey(req.headers.get("CF-Connecting-IP") ?? "unknown")))) {

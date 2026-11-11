@@ -247,3 +247,70 @@ test("body cap: oversized bodies get 413 (declared or streamed) before any parsi
   assert.deepEqual(calls, []);
   assert.equal((await post(env, fakeGoogle())).status, 200);
 });
+
+const REVIEWER_CODE = "reviewer-code-0123456789-abcdef";
+const reviewerEnv: Env = { ...env, REVIEWER_CODE };
+const reviewerCall = (e: Env, body: object | string) =>
+  handle(
+    new Request("https://v/v1/reviewer", { method: "POST", body: typeof body === "string" ? body : JSON.stringify(body) }),
+    e,
+    fakeGoogle(),
+    NOW,
+  );
+
+test("reviewer: the right code gets a signed, nonce-bound grant and never touches Google", async () => {
+  calls.length = 0;
+  const res = await reviewerCall(reviewerEnv, { code: REVIEWER_CODE, clientNonce: CLIENT_NONCE });
+  assert.equal(res.status, 200);
+  const { payload, sig } = (await res.json()) as { payload: string; sig: string };
+  assert.ok(
+    verify(
+      "sha256",
+      Buffer.from(payload),
+      createPublicKey(signing.publicKey.export({ type: "spki", format: "pem" })),
+      Buffer.from(sig, "base64url"),
+    ),
+  );
+  assert.deepEqual(JSON.parse(Buffer.from(payload, "base64url").toString()), {
+    status: "granted",
+    kind: "reviewer",
+    clientNonce: CLIENT_NONCE,
+    productId: "picklejot_pro",
+    packageName: PKG,
+  });
+  assert.deepEqual(calls, []);
+});
+
+test("reviewer: a wrong code is refused with 403 and nothing is signed", async () => {
+  for (const code of ["nope", REVIEWER_CODE + "x", REVIEWER_CODE.slice(1), REVIEWER_CODE.toUpperCase()]) {
+    const res = await reviewerCall(reviewerEnv, { code, clientNonce: CLIENT_NONCE });
+    assert.equal(res.status, 403);
+    assert.deepEqual(await res.json(), { error: "wrong_code" });
+  }
+});
+
+test("reviewer: disabled (404) when no secret is set or the secret is too short to be safe", async () => {
+  const body = { code: REVIEWER_CODE, clientNonce: CLIENT_NONCE };
+  assert.equal((await reviewerCall(env, body)).status, 404);
+  assert.equal((await reviewerCall({ ...env, REVIEWER_CODE: "" }, body)).status, 404);
+  assert.equal((await reviewerCall({ ...env, REVIEWER_CODE: "short" }, { code: "short", clientNonce: CLIENT_NONCE })).status, 404);
+});
+
+test("reviewer: malformed bodies are 400, oversized are 413, other methods and paths are 404", async () => {
+  assert.equal((await reviewerCall(reviewerEnv, "not json")).status, 400);
+  assert.equal((await reviewerCall(reviewerEnv, { code: REVIEWER_CODE })).status, 400);
+  assert.equal((await reviewerCall(reviewerEnv, { code: 7, clientNonce: CLIENT_NONCE })).status, 400);
+  assert.equal((await reviewerCall(reviewerEnv, { code: REVIEWER_CODE, clientNonce: "short" })).status, 400);
+  assert.equal((await reviewerCall(reviewerEnv, { code: "x".repeat(129), clientNonce: CLIENT_NONCE })).status, 400);
+  assert.equal((await reviewerCall(reviewerEnv, "x".repeat(50_000))).status, 413);
+  const get = new Request("https://v/v1/reviewer", { method: "GET" });
+  assert.equal((await handle(get, reviewerEnv, fakeGoogle(), NOW)).status, 404);
+});
+
+test("reviewer: the per-IP limiter applies, and a limiter that errors fails open", async () => {
+  const body = { code: REVIEWER_CODE, clientNonce: CLIENT_NONCE };
+  const blocked = { ...reviewerEnv, RATE_LIMITER: { limit: async () => ({ success: false }) } };
+  assert.equal((await reviewerCall(blocked, body)).status, 429);
+  const boom = { ...reviewerEnv, RATE_LIMITER: { limit: async () => { throw new Error("down"); } } };
+  assert.equal((await reviewerCall(boom, body)).status, 200);
+});

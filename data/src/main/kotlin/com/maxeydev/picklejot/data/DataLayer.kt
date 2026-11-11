@@ -12,6 +12,7 @@ import com.maxeydev.picklejot.data.billing.PlayEntitlementRepository
 import com.maxeydev.picklejot.data.billing.PlayIntegrityTokenProvider
 import com.maxeydev.picklejot.data.billing.PlayProStore
 import com.maxeydev.picklejot.data.billing.PurchaseAcknowledger
+import com.maxeydev.picklejot.data.billing.ReviewerCodeRedeemer
 import com.maxeydev.picklejot.data.billing.ServerPurchaseValidator
 import com.maxeydev.picklejot.data.db.DB_BACKUP_DIRECTORY
 import com.maxeydev.picklejot.data.db.createPicklejotDatabase
@@ -34,6 +35,7 @@ import com.maxeydev.picklejot.data.share.DataStoreCardFormatStore
 import com.maxeydev.picklejot.data.streak.DataStoreStreakNoticeStore
 import com.maxeydev.picklejot.domain.backup.BackupRepository
 import com.maxeydev.picklejot.domain.billing.ProStore
+import com.maxeydev.picklejot.domain.billing.ReviewerAccess
 import com.maxeydev.picklejot.domain.erase.LocalDataEraser
 import com.maxeydev.picklejot.domain.match.LastUsedFormatStore
 import com.maxeydev.picklejot.domain.match.MatchRepository
@@ -66,6 +68,7 @@ class DataLayer(
     val profileRepository: ProfileRepository,
     val entitlementRepository: EntitlementRepository,
     val proStore: ProStore,
+    val reviewerAccess: ReviewerAccess,
     val billingStartupCheck: BillingStartupCheck,
     val photoImportQueue: PhotoImportQueue,
     val cardFormatStore: CardFormatStore,
@@ -146,6 +149,13 @@ suspend fun createDataLayer(
         profileRepository = profileRepository,
         entitlementRepository = entitlements,
         proStore = PlayProStore(billing, entitlements) { currentActivity()?.let { billing.launchProPurchase(it) } },
+        reviewerAccess =
+            ReviewerCodeRedeemer(
+                config = licenseServer,
+                packageName = appContext.packageName,
+                entitlements = entitlements,
+                clock = Clock.System,
+            ),
         billingStartupCheck = BillingStartupCheck(entitlements, billing, applicationScope),
         photoImportQueue = importer,
         cardFormatStore = DataStoreCardFormatStore(preferences),

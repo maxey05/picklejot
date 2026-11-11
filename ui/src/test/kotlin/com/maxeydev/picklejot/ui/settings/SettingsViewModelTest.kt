@@ -17,6 +17,7 @@ import com.maxeydev.picklejot.ui.fakes.FakeProfileRepository
 import com.maxeydev.picklejot.ui.fakes.FakeReminderNotifier
 import com.maxeydev.picklejot.ui.fakes.FakeReminderScheduling
 import com.maxeydev.picklejot.ui.fakes.FakeReminderStore
+import com.maxeydev.picklejot.ui.fakes.FakeReviewerAccess
 import com.maxeydev.picklejot.ui.fakes.FixedClock
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -55,6 +56,7 @@ class SettingsViewModelTest {
     private val profile = FakeProfileRepository()
     private val appSettings = FakeAppSettingsStore()
     private val eraser = FakeLocalDataEraser()
+    private val reviewer = FakeReviewerAccess(entitlements)
     private val eraseAllData = EraseAllData(streakReminder, eraser)
 
     private fun viewModel(entitlementRepository: FakeEntitlementRepository = entitlements) =
@@ -67,6 +69,7 @@ class SettingsViewModelTest {
             appSettings,
             eraseAllData,
             cache,
+            reviewer,
         )
 
     @Before
@@ -116,6 +119,87 @@ class SettingsViewModelTest {
 
         assertEquals("Matthew", viewModel.uiState.value.nameDraft)
         assertFalse(viewModel.uiState.value.canSaveName)
+    }
+
+    @Test
+    fun `the right reviewer code unlocks pro and clears the draft`() {
+        val viewModel = viewModel()
+        viewModel.changeReviewerCode("reviewer-code")
+
+        viewModel.redeemReviewerCode()
+
+        assertTrue(viewModel.uiState.value.hasPro)
+        assertEquals("", viewModel.uiState.value.reviewerCodeDraft)
+        assertNull(viewModel.uiState.value.reviewerProblem)
+        assertFalse(viewModel.uiState.value.isRedeemingReviewerCode)
+    }
+
+    @Test
+    fun `a wrong reviewer code is reported and pro stays locked`() {
+        val viewModel = viewModel()
+        viewModel.changeReviewerCode("nope")
+
+        viewModel.redeemReviewerCode()
+
+        assertFalse(viewModel.uiState.value.hasPro)
+        assertEquals(ReviewerProblem.WRONG_CODE, viewModel.uiState.value.reviewerProblem)
+        assertEquals("nope", viewModel.uiState.value.reviewerCodeDraft)
+        assertFalse(viewModel.uiState.value.isRedeemingReviewerCode)
+    }
+
+    @Test
+    fun `an unreachable verifier is reported as unavailable not as a wrong code`() {
+        reviewer.unavailable = true
+        val viewModel = viewModel()
+        viewModel.changeReviewerCode("reviewer-code")
+
+        viewModel.redeemReviewerCode()
+
+        assertFalse(viewModel.uiState.value.hasPro)
+        assertEquals(ReviewerProblem.UNAVAILABLE, viewModel.uiState.value.reviewerProblem)
+    }
+
+    @Test
+    fun `typing again clears an earlier reviewer problem`() {
+        val viewModel = viewModel()
+        viewModel.changeReviewerCode("nope")
+        viewModel.redeemReviewerCode()
+
+        viewModel.changeReviewerCode("nope2")
+
+        assertNull(viewModel.uiState.value.reviewerProblem)
+    }
+
+    @Test
+    fun `a blank reviewer code is never submitted`() {
+        val viewModel = viewModel()
+        viewModel.changeReviewerCode("   ")
+
+        viewModel.redeemReviewerCode()
+
+        assertFalse(viewModel.uiState.value.canRedeemReviewerCode)
+        assertTrue(reviewer.attempts.isEmpty())
+    }
+
+    @Test
+    fun `closing reviewer access forgets the typed code and any problem`() {
+        val viewModel = viewModel()
+        viewModel.changeReviewerCode("nope")
+        viewModel.redeemReviewerCode()
+
+        viewModel.dismissReviewerAccess()
+
+        assertEquals("", viewModel.uiState.value.reviewerCodeDraft)
+        assertNull(viewModel.uiState.value.reviewerProblem)
+    }
+
+    @Test
+    fun `the reviewer code is capped at 128 characters`() {
+        val viewModel = viewModel()
+
+        viewModel.changeReviewerCode("x".repeat(500))
+
+        assertEquals(128, viewModel.uiState.value.reviewerCodeDraft.length)
     }
 
     @Test

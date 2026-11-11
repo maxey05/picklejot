@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.maxeydev.picklejot.domain.billing.ReviewerAccess
+import com.maxeydev.picklejot.domain.billing.ReviewerOutcome
 import com.maxeydev.picklejot.domain.datetime.AppTime
 import com.maxeydev.picklejot.domain.erase.EraseAllData
 import com.maxeydev.picklejot.domain.match.MatchRepository
@@ -32,6 +34,7 @@ class SettingsViewModel(
     private val appSettingsStore: AppSettingsStore,
     private val eraseAllData: EraseAllData,
     private val appCache: AppCache,
+    private val reviewerAccess: ReviewerAccess,
 ) : ViewModel() {
     private val mutableUiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = mutableUiState.asStateFlow()
@@ -147,6 +150,36 @@ class SettingsViewModel(
         }
     }
 
+    fun changeReviewerCode(raw: String) {
+        val draft = raw.take(REVIEWER_CODE_MAX_LENGTH)
+        mutableUiState.update { it.copy(reviewerCodeDraft = draft, reviewerProblem = null) }
+    }
+
+    fun dismissReviewerAccess() {
+        mutableUiState.update { it.copy(reviewerCodeDraft = "", reviewerProblem = null) }
+    }
+
+    fun redeemReviewerCode() {
+        val code = mutableUiState.value.reviewerCodeDraft
+        if (!mutableUiState.value.canRedeemReviewerCode) {
+            return
+        }
+        mutableUiState.update { it.copy(isRedeemingReviewerCode = true, reviewerProblem = null) }
+        viewModelScope.launch {
+            val outcome = reviewerAccess.redeem(code)
+            mutableUiState.update {
+                when (outcome) {
+                    ReviewerOutcome.Unlocked ->
+                        it.copy(isRedeemingReviewerCode = false, reviewerCodeDraft = "", reviewerProblem = null)
+                    ReviewerOutcome.WrongCode ->
+                        it.copy(isRedeemingReviewerCode = false, reviewerProblem = ReviewerProblem.WRONG_CODE)
+                    ReviewerOutcome.Unavailable ->
+                        it.copy(isRedeemingReviewerCode = false, reviewerProblem = ReviewerProblem.UNAVAILABLE)
+                }
+            }
+        }
+    }
+
     fun dismissEraseFailure() {
         mutableUiState.update { it.copy(eraseFailed = false) }
     }
@@ -156,6 +189,8 @@ class SettingsViewModel(
     }
 
     companion object {
+        private const val REVIEWER_CODE_MAX_LENGTH = 128
+
         fun factory(dependencies: PicklejotDependencies): ViewModelProvider.Factory =
             viewModelFactory {
                 initializer {
@@ -168,6 +203,7 @@ class SettingsViewModel(
                         appSettingsStore = dependencies.appSettingsStore,
                         eraseAllData = dependencies.eraseAllData,
                         appCache = dependencies.appCache,
+                        reviewerAccess = dependencies.reviewerAccess,
                     )
                 }
             }

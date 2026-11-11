@@ -2,6 +2,7 @@ package com.maxeydev.picklejot.ui
 
 import com.maxeydev.picklejot.domain.backup.BackupRepository
 import com.maxeydev.picklejot.domain.billing.ProStore
+import com.maxeydev.picklejot.domain.billing.ReviewerAccess
 import com.maxeydev.picklejot.domain.erase.EraseAllData
 import com.maxeydev.picklejot.domain.match.LastUsedFormatStore
 import com.maxeydev.picklejot.domain.match.MatchRepository
@@ -32,6 +33,7 @@ interface PicklejotDependencies {
     val profileRepository: ProfileRepository
     val entitlementRepository: EntitlementRepository
     val proStore: ProStore
+    val reviewerAccess: ReviewerAccess
     val photoImportQueue: PhotoImportQueue
     val cardRenderer: CardRendering
     val cardFormatStore: CardFormatStore

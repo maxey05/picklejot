@@ -104,7 +104,7 @@ See the table in section 1.
 | --- | --- | --- |
 | Ads | No ads | No ad SDK. In-app text: `onboarding_privacy_body`. |
 | Advertising ID | No | Check the merged manifest has no `com.google.android.gms.permission.AD_ID` (command in section 6). If a library adds it, either remove it with `tools:node="remove"` or answer the Advertising ID question honestly. |
-| App access | All functionality available without special access | No account or login. |
+| App access | Yes, some functionality is restricted | The only restriction is the one-time Pro purchase; there is no account or login. Name the set `No sign-in required`, leave username and password empty, and in "Any other information" say that Settings > Reviewer access unlocks Pro with the code set as `REVIEWER_CODE` on the verifier (see `server/README.md`). Tick the full-access box only once the Worker secret is set and a build containing Reviewer access is the one under review. |
 | Target audience and content | Not directed to children. Choose 13 and over or 18 and over, not Families | Policy section 11. The content rating questionnaire must be consistent. |
 | Financial features | None | An in-app one-time purchase is not a financial feature. |
 | Sensitive permissions | None to declare | `POST_NOTIFICATIONS` is not restricted. No SMS, call log, location, `MANAGE_EXTERNAL_STORAGE` or `READ_MEDIA_*`. |

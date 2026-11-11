@@ -51,6 +51,23 @@ returns a signed "granted" for the exact purchase and attempt (`data/billing/Ser
 
 `npm test` runs the worker against mocked Google endpoints. No network, no credentials.
 
+## Reviewer access (Play app review)
+
+`POST /v1/reviewer` lets Google Play's reviewers unlock Pro without buying it. It is off until you set a secret:
+
+```
+npx wrangler secret put REVIEWER_CODE
+npx wrangler deploy
+```
+
+Use a long random value, at least 20 characters (a shorter one leaves the endpoint disabled). One way to make one:
+`node -e "console.log(require('crypto').randomBytes(24).toString('base64url'))"`.
+
+Put the same value in Play Console under App content, App access, with the instruction "Settings > Reviewer access".
+The code works on any device for as long as the secret is set and never expires on its own. Rotate it by running the
+secret command again with a new value; switch the endpoint off with `npx wrangler secret delete REVIEWER_CODE`.
+The reply is signed with `SIGNING_PRIVATE_KEY` and bound to a nonce, like a purchase, and Google is never called.
+
 ## Testing on a device
 
 A purchase needs a licensed tester account. Sideloaded debug builds still get Pro but report `integrity: failed`;
