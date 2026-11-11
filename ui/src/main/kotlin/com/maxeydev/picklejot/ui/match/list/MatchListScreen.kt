@@ -127,6 +127,15 @@ fun MatchListScreen(
             listState.scrollToItem(0)
         }
     }
+    var scrolledToSavedId by rememberSaveable { mutableStateOf<String?>(null) }
+    val savedMatchIndex = state.matches.indexOfFirst { it.id == state.savedMatchId }
+    LaunchedEffect(state.savedMatchId, savedMatchIndex) {
+        if (state.savedMatchId != null && savedMatchIndex >= 0 && scrolledToSavedId != state.savedMatchId) {
+            scrolledToSavedId = state.savedMatchId
+            isScrolledCollapse = false
+            listState.scrollToItem(savedMatchIndex)
+        }
+    }
 
     Scaffold(
         modifier = modifier.semantics { testTagsAsResourceId = true },
