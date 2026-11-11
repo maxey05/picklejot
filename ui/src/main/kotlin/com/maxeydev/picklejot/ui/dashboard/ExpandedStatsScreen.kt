@@ -1,6 +1,13 @@
 package com.maxeydev.picklejot.ui.dashboard
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -78,6 +85,8 @@ private val BAR_HEIGHT = 8.dp
 private val PERCENT_MIN_WIDTH = 48.dp
 private val EMPTY_ROW_MASCOT_SIZE = 36.dp
 private const val STACKED_FONT_SCALE = 1.3f
+private const val SUPPORTING_EXPAND_MILLIS = 250
+private const val SUPPORTING_FADE_MILLIS = 200
 internal val MIN_ROW_HEIGHT = 64.dp
 private val STREAK_VALUE_STYLE = PicklejotTextStyles.hero.copy(fontSize = 24.sp, lineHeight = 28.sp)
 
@@ -220,6 +229,7 @@ internal fun StatRow(
     testTag: String,
     modifier: Modifier = Modifier,
     supporting: String? = null,
+    supportingVisible: Boolean = true,
     showDivider: Boolean = false,
     @DrawableRes icon: Int? = null,
     iconTint: Color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -267,11 +277,23 @@ internal fun StatRow(
                     labelTrailing?.invoke()
                 }
                 supporting?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    AnimatedVisibility(
+                        visible = supportingVisible,
+                        enter =
+                            expandVertically(
+                                animationSpec = tween(SUPPORTING_EXPAND_MILLIS, easing = FastOutSlowInEasing),
+                            ) + fadeIn(animationSpec = tween(SUPPORTING_FADE_MILLIS)),
+                        exit =
+                            shrinkVertically(
+                                animationSpec = tween(SUPPORTING_EXPAND_MILLIS, easing = FastOutSlowInEasing),
+                            ) + fadeOut(animationSpec = tween(SUPPORTING_FADE_MILLIS)),
+                    ) {
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
             Text(text = value, style = valueStyle)
@@ -413,12 +435,8 @@ private fun StreakSection(state: DashboardUiState) {
                         } else {
                             stringResource(R.string.stats_skips_none)
                         },
-                    supporting =
-                        if (skipsInfoExpanded) {
-                            stringResource(R.string.stats_skips_explainer, StreakInsurance.MAX_HELD)
-                        } else {
-                            null
-                        },
+                    supporting = stringResource(R.string.stats_skips_explainer, StreakInsurance.MAX_HELD),
+                    supportingVisible = skipsInfoExpanded,
                     testTag = DashboardTestTags.STATS_SKIPS_HELD,
                     showDivider = true,
                     icon = R.drawable.ic_shield,
