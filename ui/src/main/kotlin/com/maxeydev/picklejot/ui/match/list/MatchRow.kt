@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,7 +19,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -41,6 +45,8 @@ import java.util.Locale
 
 private val ROW_MIN_HEIGHT = 84.dp
 private val DATE_COLUMN_MIN_WIDTH = 48.dp
+private val LOCATION_ICON_GAP = 4.dp
+private const val LOCATION_ICON_TEXT_RATIO = 0.95f
 
 @Composable
 fun MatchRow(
@@ -146,15 +152,34 @@ private fun MatchRowText(
             )
         }
         if (state.location != null) {
-            Text(
-                text = state.location,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.testTag(MatchListTestTags.LOCATION),
-            )
+            LocationLine(location = state.location)
         }
+    }
+}
+
+@Composable
+private fun LocationLine(location: String) {
+    val style = MaterialTheme.typography.bodyMedium
+    val color = MaterialTheme.colorScheme.onSurfaceVariant
+    val iconSize = with(LocalDensity.current) { (style.fontSize * LOCATION_ICON_TEXT_RATIO).toDp() }
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(LOCATION_ICON_GAP),
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.ic_location),
+            contentDescription = null,
+            tint = color,
+            modifier = Modifier.size(iconSize),
+        )
+        Text(
+            text = location,
+            style = style,
+            color = color,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f, fill = false).testTag(MatchListTestTags.LOCATION),
+        )
     }
 }
 
