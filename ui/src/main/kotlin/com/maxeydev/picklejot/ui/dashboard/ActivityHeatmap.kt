@@ -42,7 +42,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -144,10 +143,6 @@ internal fun ActivityHeatmap(
     val weeks = if (showYear) YEAR_WEEKS else SIX_MONTH_WEEKS
     val columns = remember(insights.today, weeks) { weekStarts(insights.today, weeks) }
     val levels = remember(columns, insights) { levelGrid(columns, insights) }
-    val daysInRange =
-        remember(columns, insights) {
-            insights.matchesByDay.keys.count { it >= columns.first() && it <= insights.today }
-        }
     val totalMillis = columns.size * COLUMN_STEP_MILLIS + POP_MILLIS
     val timeline = remember(weeks) { Animatable(0f) }
     LaunchedEffect(reveal.revealed, weeks) {
@@ -155,16 +150,11 @@ internal fun ActivityHeatmap(
             timeline.animateTo(1f, tween(totalMillis, easing = LinearEasing))
         }
     }
-    val summary =
-        stringResource(
-            R.string.stats_pro_join,
-            pluralStringResource(R.plurals.stats_pro_days_played, daysInRange, daysInRange),
-            pluralStringResource(R.plurals.stats_pro_longest_run, insights.longestDayRun, insights.longestDayRun),
-        )
+    val title = stringResource(R.string.stats_pro_activity_title)
 
     ProCard(reveal = reveal, modifier = modifier.testTag(DashboardTestTags.STATS_PRO_HEATMAP)) {
         ProCardHeader(
-            title = stringResource(R.string.stats_pro_activity_title),
+            title = title,
             trailing = { RangeToggle(showYear = showYear, onChange = { showYear = it }) },
         )
         HeatmapGrid(
@@ -173,9 +163,9 @@ internal fun ActivityHeatmap(
             today = insights.today,
             timeline = timeline,
             totalMillis = totalMillis,
-            description = summary,
+            description = title,
         )
-        HeatmapFooter(summary = summary)
+        HeatmapFooter()
     }
 }
 
@@ -305,19 +295,13 @@ private fun WeekdayLabels(
 }
 
 @Composable
-private fun HeatmapFooter(summary: String) {
+private fun HeatmapFooter() {
     val palette = activityPalette()
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(PicklejotSpacing.sm),
+        horizontalArrangement = Arrangement.End,
     ) {
-        Text(
-            text = summary,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f),
-        )
         Row(
             modifier = Modifier.clearAndSetSemantics {},
             verticalAlignment = Alignment.CenterVertically,

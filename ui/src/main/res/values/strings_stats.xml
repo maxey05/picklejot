@@ -22,11 +22,6 @@
     <string name="stats_pro_range_year">1 yr</string>
     <string name="stats_pro_legend_less">Less</string>
     <string name="stats_pro_legend_more">More</string>
-    <plurals name="stats_pro_days_played">
-        <item quantity="one">%1$d day played</item>
-        <item quantity="other">%1$d days played</item>
-    </plurals>
-    <string name="stats_pro_join">%1$s · %2$s</string>
     <string name="stats_pro_form_title">Form</string>
     <string name="stats_pro_form_subtitle">10-match rolling win rate</string>
     <string name="stats_pro_form_rolling">Rolling</string>
