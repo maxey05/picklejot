@@ -79,7 +79,7 @@ fun SupportScreen(
                     .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            SupportHero()
+            SupportHero(hasPro = hasPro)
             Text(
                 text = stringResource(R.string.support_ways_heading),
                 style = MaterialTheme.typography.titleMedium,
@@ -135,7 +135,7 @@ fun SupportScreen(
 }
 
 @Composable
-private fun SupportHero() {
+private fun SupportHero(hasPro: Boolean) {
     val colors = MaterialTheme.colorScheme
     Surface(
         shape = HERO_SHAPE,
@@ -158,7 +158,10 @@ private fun SupportHero() {
                 modifier = Modifier.semantics { heading() },
             )
             Text(
-                text = stringResource(R.string.support_hero_body),
+                text =
+                    stringResource(
+                        if (hasPro) R.string.support_hero_body_pro else R.string.support_hero_body,
+                    ),
                 style = MaterialTheme.typography.bodyMedium,
                 color = colors.onSurfaceVariant,
                 textAlign = TextAlign.Center,
