@@ -49,19 +49,9 @@ class CardGoldenTest {
         return rendered.bitmap to JSONObject(rendered.diagnostics)
     }
 
-    private fun contrastBehindText(
-        theme: CardTheme,
-        background: Int,
-    ): Double =
-        when (theme) {
-            CardTheme.DARK, CardTheme.COURT, CardTheme.SUNSET -> contrastAgainstWhite(background)
-            CardTheme.LIGHT -> contrastBetween(background, LIGHT_THEME_TEXT)
-        }
-
     private fun assertLegible(
         bitmap: Bitmap,
         diagnostics: JSONObject,
-        theme: CardTheme = CardTheme.DARK,
     ) {
         assertEquals(diagnostics.toString(), 0, diagnostics.getJSONArray("overflowing").length())
         val rects = diagnostics.getJSONObject("rects")
@@ -70,7 +60,7 @@ class CardGoldenTest {
             val top = rect.getDouble("top").toInt().coerceAtLeast(0)
             val bottom = rect.getDouble("bottom").toInt().coerceAtMost(bitmap.height - 1)
             for (y in top..bottom step 4) {
-                val contrast = contrastBehindText(theme, bitmap.getPixel(BACKGROUND_SAMPLE_X, y))
+                val contrast = contrastAgainstWhite(bitmap.getPixel(BACKGROUND_SAMPLE_X, y))
                 assertTrue("contrast $contrast behind '$id' at y=$y; $diagnostics", contrast >= MINIMUM_CONTRAST)
             }
         }
@@ -208,10 +198,7 @@ class CardGoldenTest {
     private fun goldenData(golden: CardGolden): CardData {
         val photo =
             if (golden.layout == CardLayout.PHOTO) {
-                when (golden.theme) {
-                    CardTheme.DARK, CardTheme.COURT, CardTheme.SUNSET -> photoDataUri(base = 245, spread = 10)
-                    CardTheme.LIGHT -> photoDataUri(base = 12, spread = 10)
-                }
+                photoDataUri(base = 245, spread = 10)
             } else {
                 null
             }
@@ -247,7 +234,7 @@ class CardGoldenTest {
             assertEquals(golden.name, golden.ratio.name, diagnostics.getString("ratio"))
             assertEquals(golden.name, golden.theme.name, diagnostics.getString("theme"))
             assertEquals(golden.name, golden.layout == CardLayout.PHOTO, diagnostics.getBoolean("photoShown"))
-            assertLegible(bitmap, diagnostics, golden.theme)
+            assertLegible(bitmap, diagnostics)
             bitmap.recycle()
         }
 
@@ -264,7 +251,7 @@ class CardGoldenTest {
                         render(sampleCard(photo = photoDataUri(base = base, spread = 10), ratio = ratio, theme = theme))
 
                     assertTrue(diagnostics.getBoolean("photoShown"))
-                    assertLegible(bitmap, diagnostics, theme)
+                    assertLegible(bitmap, diagnostics)
                     bitmap.recycle()
                 }
             }
@@ -277,7 +264,7 @@ class CardGoldenTest {
 
         assertFalse(diagnostics.getJSONObject("texts").has("brand"))
         assertTrue(diagnostics.getJSONObject("texts").has("name"))
-        assertLegible(bitmap, diagnostics, CardTheme.COURT)
+        assertLegible(bitmap, diagnostics)
     }
 
     @Test
@@ -297,10 +284,10 @@ class CardGoldenTest {
     }
 
     @Test
-    fun each_pro_theme_paints_its_own_background_not_the_dark_one() {
+    fun each_pro_theme_paints_its_own_background_not_the_classic_one() {
         val court = render(sampleCard(brand = "", theme = CardTheme.COURT)).first
         val sunset = render(sampleCard(brand = "", theme = CardTheme.SUNSET)).first
-        val dark = render(sampleCard(theme = CardTheme.DARK)).first
+        val dark = render(sampleCard(theme = CardTheme.CLASSIC)).first
 
         val courtPixel = court.getPixel(CORNER_SAMPLE, CORNER_SAMPLE)
         val sunsetPixel = sunset.getPixel(CORNER_SAMPLE, CORNER_SAMPLE)

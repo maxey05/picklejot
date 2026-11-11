@@ -56,7 +56,7 @@ class DataStoreCardFormatStoreTest {
         )
 
     @Test
-    fun a_user_who_never_chose_gets_the_tall_dark_card_with_automatic_layout() =
+    fun a_user_who_never_chose_gets_the_tall_classic_card_with_automatic_layout() =
         runBlocking {
             val job = SupervisorJob()
 
@@ -67,7 +67,7 @@ class DataStoreCardFormatStoreTest {
     @Test
     fun the_chosen_ratio_and_variant_survive_an_app_restart() =
         runBlocking {
-            val chosen = CardFormat(CardRatio.SQUARE, CardTheme.LIGHT, CardLayout.NO_PHOTO)
+            val chosen = CardFormat(CardRatio.SQUARE, CardTheme.COURT, CardLayout.NO_PHOTO)
             val firstLaunch = SupervisorJob()
             DataStoreCardFormatStore(openDataStore(firstLaunch)).saveFormat(chosen)
             firstLaunch.cancelAndJoin()
@@ -100,6 +100,25 @@ class DataStoreCardFormatStoreTest {
 
             assertEquals(CardRatio.TALL, DataStoreCardFormatStore(dataStore).observeFormat().first().ratio)
             job.cancelAndJoin()
+        }
+
+    @Test
+    fun a_retired_dark_or_light_style_reads_back_as_classic_and_keeps_the_other_choices() =
+        runBlocking {
+            listOf("DARK", "LIGHT").forEach { retired ->
+                val job = SupervisorJob()
+                val dataStore = openDataStore(job)
+                dataStore.edit {
+                    it[stringPreferencesKey("card_ratio")] = "SQUARE"
+                    it[stringPreferencesKey("card_theme")] = retired
+                }
+
+                assertEquals(
+                    CardFormat(CardRatio.SQUARE, CardTheme.CLASSIC),
+                    DataStoreCardFormatStore(dataStore).observeFormat().first(),
+                )
+                job.cancelAndJoin()
+            }
         }
 
     @Test

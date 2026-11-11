@@ -309,8 +309,7 @@
     <string name="card_ratio_tall">Story</string>
     <string name="card_ratio_square">Square</string>
     <string name="card_theme_label">Style</string>
-    <string name="card_theme_dark">Dark</string>
-    <string name="card_theme_light">Light</string>
+    <string name="card_theme_classic">Classic</string>
     <string name="card_theme_court">Court</string>
     <string name="card_theme_sunset">Sunset</string>
     <string name="card_theme_pro_locked">%1$s · Pro</string>

@@ -273,8 +273,7 @@ private fun ratioLabel(ratio: CardRatio): Int =
 
 private fun themeLabel(theme: CardTheme): Int =
     when (theme) {
-        CardTheme.DARK -> R.string.card_theme_dark
-        CardTheme.LIGHT -> R.string.card_theme_light
+        CardTheme.CLASSIC -> R.string.card_theme_classic
         CardTheme.COURT -> R.string.card_theme_court
         CardTheme.SUNSET -> R.string.card_theme_sunset
     }

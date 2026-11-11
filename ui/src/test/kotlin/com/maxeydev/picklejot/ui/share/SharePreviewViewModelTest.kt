@@ -152,13 +152,13 @@ class SharePreviewViewModelTest {
     @Test
     fun `the remembered ratio and variant are used for the first render`() {
         val shared = match("2026-03-02")
-        formats.store(CardFormat(CardRatio.SQUARE, CardTheme.LIGHT))
+        formats.store(CardFormat(CardRatio.SQUARE, CardTheme.CLASSIC))
 
         val state = viewModel(shared.id, FakeMatchRepository(listOf(shared))).uiState.value
 
         val data = renderer.rendered.single()
         assertEquals(CardRatio.SQUARE, data.ratio)
-        assertEquals(CardTheme.LIGHT, data.theme)
+        assertEquals(CardTheme.CLASSIC, data.theme)
         assertEquals(CardRatio.SQUARE, state.format.ratio)
     }
 
@@ -168,14 +168,13 @@ class SharePreviewViewModelTest {
         val viewModel = viewModel(shared.id, FakeMatchRepository(listOf(shared)))
 
         viewModel.selectRatio(CardRatio.SQUARE)
-        viewModel.selectTheme(CardTheme.LIGHT)
 
         val last = renderer.rendered.last()
-        assertEquals(3, renderer.rendered.size)
+        assertEquals(2, renderer.rendered.size)
         assertEquals(CardRatio.SQUARE, last.ratio)
-        assertEquals(CardTheme.LIGHT, last.theme)
+        assertEquals(CardTheme.CLASSIC, last.theme)
         assertEquals("Matty", last.displayName)
-        assertEquals(CardFormat(CardRatio.SQUARE, CardTheme.LIGHT), formats.saved.last())
+        assertEquals(CardFormat(CardRatio.SQUARE, CardTheme.CLASSIC), formats.saved.last())
     }
 
     @Test
@@ -223,7 +222,7 @@ class SharePreviewViewModelTest {
         viewModel.selectTheme(CardTheme.COURT)
 
         assertEquals(UpgradeReason.PRO_THEME, viewModel.uiState.value.upgradeReason)
-        assertEquals(CardTheme.DARK, viewModel.uiState.value.format.theme)
+        assertEquals(CardTheme.CLASSIC, viewModel.uiState.value.format.theme)
         assertEquals(1, renderer.rendered.size)
         assertTrue(formats.saved.isEmpty())
 
@@ -246,14 +245,14 @@ class SharePreviewViewModelTest {
     }
 
     @Test
-    fun `a free user with a stored pro theme sees and renders dark and the choice is kept`() {
+    fun `a free user with a stored pro theme sees and renders classic and the choice is kept`() {
         val shared = match("2026-03-02")
         formats.store(CardFormat(theme = CardTheme.COURT))
 
         val state = viewModel(shared.id, FakeMatchRepository(listOf(shared))).uiState.value
 
-        assertEquals(CardTheme.DARK, renderer.rendered.single().theme)
-        assertEquals(CardTheme.DARK, state.format.theme)
+        assertEquals(CardTheme.CLASSIC, renderer.rendered.single().theme)
+        assertEquals(CardTheme.CLASSIC, state.format.theme)
         assertTrue(formats.saved.isEmpty())
     }
 

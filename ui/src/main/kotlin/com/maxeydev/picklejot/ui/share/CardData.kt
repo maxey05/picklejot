@@ -22,5 +22,5 @@ data class CardData(
     val location: String? = null,
     val photo: String? = null,
     val ratio: CardRatio = CardRatio.TALL,
-    val theme: CardTheme = CardTheme.DARK,
+    val theme: CardTheme = CardTheme.CLASSIC,
 )

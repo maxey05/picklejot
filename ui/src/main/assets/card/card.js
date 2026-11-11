@@ -5,8 +5,8 @@
     var DESIGN_HEIGHTS = { TALL: 1920, SQUARE: 1080 };
     var designHeight = DESIGN_HEIGHTS.TALL;
     var ratio = "TALL";
-    var theme = "DARK";
-    var THEME_CLASSES = { LIGHT: "light", COURT: "court", SUNSET: "sunset" };
+    var theme = "CLASSIC";
+    var THEME_CLASSES = { COURT: "court", SUNSET: "sunset" };
     var TEXT_FIELDS = ["brand", "name", "meta", "partner", "time", "opponents", "games", "location"];
 
     function byId(id) {
@@ -133,7 +133,7 @@
         var card = byId("card");
         var photo = byId("photo");
         ratio = data.ratio === "SQUARE" ? "SQUARE" : "TALL";
-        theme = Object.prototype.hasOwnProperty.call(THEME_CLASSES, data.theme) ? data.theme : "DARK";
+        theme = Object.prototype.hasOwnProperty.call(THEME_CLASSES, data.theme) ? data.theme : "CLASSIC";
         designHeight = DESIGN_HEIGHTS[ratio];
         card.classList.toggle("square", ratio === "SQUARE");
         Object.keys(THEME_CLASSES).forEach(function (key) {

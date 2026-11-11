@@ -21,16 +21,16 @@ class CardFormatTest {
     }
 
     @Test
-    fun `the two original themes are free and the two added themes are pro`() {
-        assertEquals(setOf(CardTheme.DARK, CardTheme.LIGHT), CardTheme.entries.filterNot { it.requiresPro }.toSet())
+    fun `the classic theme is free and the two added themes are pro`() {
+        assertEquals(setOf(CardTheme.CLASSIC), CardTheme.entries.filterNot { it.requiresPro }.toSet())
         assertEquals(setOf(CardTheme.COURT, CardTheme.SUNSET), CardTheme.entries.filter { it.requiresPro }.toSet())
     }
 
     @Test
-    fun `a free user is shown a stored pro theme as dark and keeps every other choice`() {
+    fun `a free user is shown a stored pro theme as classic and keeps every other choice`() {
         val stored = CardFormat(CardRatio.SQUARE, CardTheme.COURT, CardLayout.NO_PHOTO)
 
-        assertEquals(CardFormat(CardRatio.SQUARE, CardTheme.DARK, CardLayout.NO_PHOTO), stored.forEntitlement(false))
+        assertEquals(CardFormat(CardRatio.SQUARE, CardTheme.CLASSIC, CardLayout.NO_PHOTO), stored.forEntitlement(false))
     }
 
     @Test
@@ -42,15 +42,15 @@ class CardFormatTest {
 
     @Test
     fun `a free theme is never changed for anyone`() {
-        val stored = CardFormat(theme = CardTheme.LIGHT)
+        val stored = CardFormat(theme = CardTheme.CLASSIC)
 
         assertEquals(stored, stored.forEntitlement(false))
         assertEquals(stored, stored.forEntitlement(true))
     }
 
     @Test
-    fun `the default is the tall dark story card`() {
+    fun `the default is the tall classic story card`() {
         assertEquals(CardRatio.TALL, CardFormat.DEFAULT.ratio)
-        assertEquals(CardTheme.DARK, CardFormat.DEFAULT.theme)
+        assertEquals(CardTheme.CLASSIC, CardFormat.DEFAULT.theme)
     }
 }

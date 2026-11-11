@@ -57,7 +57,7 @@ internal fun sampleCard(
     location: String? = "Ayala Triangle Gardens",
     photo: String? = null,
     ratio: CardRatio = CardRatio.TALL,
-    theme: CardTheme = CardTheme.DARK,
+    theme: CardTheme = CardTheme.CLASSIC,
 ): CardData =
     CardData(
         brand = brand,
@@ -91,8 +91,6 @@ internal fun contrastBetween(
     val darker = minOf(luminance(first), luminance(second))
     return (lighter + 0.05) / (darker + 0.05)
 }
-
-internal val LIGHT_THEME_TEXT: Int = Color.rgb(0x14, 0x23, 0x1d)
 
 internal fun goldenDirectory(): File = File(targetContext.getExternalFilesDir(null), "card-goldens")
 

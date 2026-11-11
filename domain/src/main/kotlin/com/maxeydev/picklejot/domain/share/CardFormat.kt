@@ -8,8 +8,7 @@ enum class CardRatio {
 enum class CardTheme(
     val requiresPro: Boolean,
 ) {
-    DARK(requiresPro = false),
-    LIGHT(requiresPro = false),
+    CLASSIC(requiresPro = false),
     COURT(requiresPro = true),
     SUNSET(requiresPro = true),
 }
@@ -21,7 +20,7 @@ enum class CardLayout {
 
 data class CardFormat(
     val ratio: CardRatio = CardRatio.TALL,
-    val theme: CardTheme = CardTheme.DARK,
+    val theme: CardTheme = CardTheme.CLASSIC,
     val layoutOverride: CardLayout? = null,
 ) {
     fun layoutFor(hasPhoto: Boolean): CardLayout =
@@ -31,7 +30,7 @@ data class CardFormat(
         }
 
     fun forEntitlement(isPro: Boolean): CardFormat =
-        if (theme.requiresPro && !isPro) copy(theme = CardTheme.DARK) else this
+        if (theme.requiresPro && !isPro) copy(theme = CardTheme.CLASSIC) else this
 
     companion object {
         val DEFAULT: CardFormat = CardFormat()
