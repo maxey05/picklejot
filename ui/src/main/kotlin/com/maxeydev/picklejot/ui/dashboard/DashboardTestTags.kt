@@ -22,6 +22,7 @@ object DashboardTestTags {
     const val STATS_DOUBLES = "stats_doubles"
     const val STATS_PRO_SECTION = "stats_pro_section"
     const val STATS_SKIPS_HELD = "stats_skips_held"
+    const val STATS_SKIPS_INFO = "stats_skips_info"
     const val STATS_ADVANCED_SECTION = "stats_advanced_section"
     const val STATS_ADVANCED_EMPTY = "stats_advanced_empty"
     const val STATS_LOCKED_PREVIEW = "stats_locked_preview"

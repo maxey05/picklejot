@@ -54,6 +54,9 @@
     <string name="stats_pro_partners_footnote">Green is above your doubles average, orange is below. Needs 3+ matches together.</string>
     <string name="stats_pro_delta_signed">%1$+d</string>
     <string name="stats_pro_courts_title">Courts</string>
+    <string name="stats_skips_info_label">About streak skips</string>
+    <string name="stats_skips_info_expanded">Expanded</string>
+    <string name="stats_skips_info_collapsed">Collapsed</string>
     <string name="stats_pro_paddles_title">Paddles</string>
     <string name="stats_pro_no_paddles">No paddles logged yet.</string>
     <string name="stats_pro_months_title">Month by month</string>

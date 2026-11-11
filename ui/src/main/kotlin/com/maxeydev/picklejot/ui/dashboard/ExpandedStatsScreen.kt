@@ -32,9 +32,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,8 +50,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -217,6 +224,7 @@ internal fun StatRow(
     @DrawableRes icon: Int? = null,
     iconTint: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     valueStyle: TextStyle = MaterialTheme.typography.titleMedium,
+    labelTrailing: (@Composable () -> Unit)? = null,
 ) {
     Column(
         modifier =
@@ -249,11 +257,15 @@ internal fun StatRow(
                 )
             }
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold,
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.weight(1f, fill = false),
+                    )
+                    labelTrailing?.invoke()
+                }
                 supporting?.let {
                     Text(
                         text = it,
@@ -361,6 +373,7 @@ private fun weeksText(weeks: Int): String =
 @Composable
 private fun StreakSection(state: DashboardUiState) {
     val streak = state.streak
+    var skipsInfoExpanded by rememberSaveable { mutableStateOf(false) }
     StatsGroup(title = stringResource(R.string.stats_streaks)) {
         StatsCard {
             if (streak.isCurrentTheLongest) {
@@ -400,13 +413,55 @@ private fun StreakSection(state: DashboardUiState) {
                         } else {
                             stringResource(R.string.stats_skips_none)
                         },
-                    supporting = stringResource(R.string.stats_skips_explainer, StreakInsurance.MAX_HELD),
+                    supporting =
+                        if (skipsInfoExpanded) {
+                            stringResource(R.string.stats_skips_explainer, StreakInsurance.MAX_HELD)
+                        } else {
+                            null
+                        },
                     testTag = DashboardTestTags.STATS_SKIPS_HELD,
                     showDivider = true,
                     icon = R.drawable.ic_shield,
+                    labelTrailing = {
+                        SkipsInfoButton(
+                            expanded = skipsInfoExpanded,
+                            onClick = { skipsInfoExpanded = !skipsInfoExpanded },
+                        )
+                    },
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun SkipsInfoButton(
+    expanded: Boolean,
+    onClick: () -> Unit,
+) {
+    val label = stringResource(R.string.stats_skips_info_label)
+    val stateText =
+        stringResource(
+            if (expanded) R.string.stats_skips_info_expanded else R.string.stats_skips_info_collapsed,
+        )
+    Box(
+        modifier =
+            Modifier
+                .minimumInteractiveComponentSize()
+                .clip(CircleShape)
+                .clickable(role = Role.Button, onClick = onClick)
+                .semantics {
+                    contentDescription = label
+                    stateDescription = stateText
+                }.testTag(DashboardTestTags.STATS_SKIPS_INFO),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.ic_info),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(PRO_ICON_SIZE),
+        )
     }
 }
 
