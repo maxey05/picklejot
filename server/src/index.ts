@@ -80,7 +80,10 @@ async function googleAccessToken(env: Env, f: Fetch, nowMs: number): Promise<str
   }).catch(() => {
     throw new Upstream("oauth");
   });
-  if (!res.ok) throw new Upstream("oauth");
+  if (!res.ok) {
+    console.error(`oauth ${res.status} ${(await res.text()).slice(0, 300)}`);
+    throw new Upstream("oauth");
+  }
   const { access_token } = (await res.json()) as { access_token: string };
   cachedAuth = { email: env.GOOGLE_CLIENT_EMAIL, token: access_token, expiresMs: nowMs + 3_600_000 };
   return access_token;
@@ -147,7 +150,10 @@ async function purchaseState(env: Env, f: Fetch, auth: string, token: string): P
     throw new Upstream("publisher");
   });
   if ([400, 404, 410].includes(res.status)) return null;
-  if (!res.ok) throw new Upstream("publisher"); // includes 401/403: our own misconfig must not reject buyers
+  if (!res.ok) {
+    console.error(`publisher ${res.status} ${(await res.text()).slice(0, 400)}`);
+    throw new Upstream("publisher"); // includes 401/403: our own misconfig must not reject buyers
+  }
   return ((await res.json()) as { purchaseState: number }).purchaseState;
 }
 
