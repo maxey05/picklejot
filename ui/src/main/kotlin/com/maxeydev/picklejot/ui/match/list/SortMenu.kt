@@ -29,17 +29,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.RoundRect
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Outline
-import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -50,8 +47,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
@@ -75,14 +70,17 @@ private val MENU_VERTICAL_PADDING = 4.dp
 private val ITEM_START_PADDING = 16.dp
 private val ITEM_END_PADDING = 12.dp
 private val ITEM_GAP = 12.dp
-private const val OPEN_MILLIS = 280
-private const val CLOSE_MILLIS = 160
-private const val ITEM_STAGGER_FRACTION = 0.06f
-private const val ITEM_FADE_FRACTION = 0.5f
+private val MENU_SHADOW_INSET = 8.dp
+private val ITEM_RISE = 6.dp
+private const val OPEN_MILLIS = 200
+private const val CLOSE_MILLIS = 130
+private const val MENU_START_SCALE = 0.85f
+private const val ITEM_STAGGER_FRACTION = 0.05f
+private const val ITEM_FADE_FRACTION = 0.55f
 private const val CHEVRON_MILLIS = 180
 private const val CHEVRON_EXPANDED_DEGREES = 180f
 private val OpenEasing = CubicBezierEasing(0.05f, 0.7f, 0.1f, 1f)
-private val CloseEasing = CubicBezierEasing(0.3f, 0f, 0.8f, 0.15f)
+private val CloseEasing = CubicBezierEasing(0.3f, 0f, 1f, 1f)
 private val ChevronEasing = CubicBezierEasing(0.2f, 0f, 0f, 1f)
 
 @Composable
@@ -169,8 +167,10 @@ private fun SortMenuPopup(
             isShowing = false
         }
     }
-    val gap = with(LocalDensity.current) { MENU_GAP.roundToPx() }
-    val positionProvider = remember(gap) { BelowAnchorPositionProvider(gap) }
+    val density = LocalDensity.current
+    val gap = with(density) { MENU_GAP.roundToPx() }
+    val inset = with(density) { MENU_SHADOW_INSET.roundToPx() }
+    val positionProvider = remember(gap, inset) { BelowAnchorPositionProvider(gap, inset) }
     if (isExpanded || isShowing) {
         Popup(
             popupPositionProvider = positionProvider,
@@ -180,23 +180,11 @@ private fun SortMenuPopup(
             SortMenuSurface(
                 activeSort = activeSort,
                 progress = { reveal.value },
+                isOpening = { reveal.targetValue == 1f },
+                originX = { positionProvider.originX },
                 onSortSelected = onSortSelected,
             )
         }
-    }
-}
-
-private class TopRevealShape(
-    private val fraction: Float,
-    private val corner: Dp,
-) : Shape {
-    override fun createOutline(
-        size: Size,
-        layoutDirection: LayoutDirection,
-        density: Density,
-    ): Outline {
-        val radius = with(density) { corner.toPx() }
-        return Outline.Rounded(RoundRect(0f, 0f, size.width, size.height * fraction, CornerRadius(radius)))
     }
 }
 
@@ -209,6 +197,8 @@ private fun itemAlpha(
 private fun SortMenuSurface(
     activeSort: MatchSort,
     progress: () -> Float,
+    isOpening: () -> Boolean,
+    originX: () -> Float,
     onSortSelected: (MatchSort) -> Unit,
 ) {
     Surface(
@@ -217,11 +207,16 @@ private fun SortMenuSurface(
         shadowElevation = MENU_ELEVATION,
         border = BorderStroke(1.dp, PicklejotTheme.colors.cardBorder),
         modifier =
-            Modifier.graphicsLayer {
-                val fraction = progress()
-                shape = TopRevealShape(fraction, MENU_CORNER)
-                clip = fraction < 1f
-            },
+            Modifier
+                .padding(MENU_SHADOW_INSET)
+                .graphicsLayer {
+                    val fraction = progress()
+                    val scale = MENU_START_SCALE + (1f - MENU_START_SCALE) * fraction
+                    transformOrigin = TransformOrigin(originX(), 0f)
+                    scaleX = scale
+                    scaleY = scale
+                    alpha = fraction
+                },
     ) {
         Column(
             modifier =
@@ -237,7 +232,7 @@ private fun SortMenuSurface(
                 SortMenuItem(
                     sort = sort,
                     isActive = sort == activeSort,
-                    itemAlpha = { itemAlpha(progress(), index) },
+                    itemReveal = { if (isOpening()) itemAlpha(progress(), index) else 1f },
                     onClick = { onSortSelected(sort) },
                 )
             }
@@ -249,9 +244,10 @@ private fun SortMenuSurface(
 private fun SortMenuItem(
     sort: MatchSort,
     isActive: Boolean,
-    itemAlpha: () -> Float,
+    itemReveal: () -> Float,
     onClick: () -> Unit,
 ) {
+    val rise = with(LocalDensity.current) { ITEM_RISE.toPx() }
     val rowColor =
         if (isActive) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainerLowest
     Row(
@@ -259,7 +255,11 @@ private fun SortMenuItem(
             Modifier
                 .fillMaxWidth()
                 .heightIn(min = MIN_TOUCH_TARGET)
-                .graphicsLayer { alpha = itemAlpha() }
+                .graphicsLayer {
+                    val fraction = itemReveal()
+                    alpha = fraction
+                    translationY = (1f - fraction) * rise
+                }
                 .background(rowColor)
                 .testTag(MatchListTestTags.sortOption(sort))
                 .semantics { selected = isActive }
@@ -286,7 +286,11 @@ private fun SortMenuItem(
 
 private class BelowAnchorPositionProvider(
     private val gap: Int,
+    private val inset: Int,
 ) : PopupPositionProvider {
+    var originX by mutableFloatStateOf(0f)
+        private set
+
     override fun calculatePosition(
         anchorBounds: IntRect,
         windowSize: IntSize,
@@ -294,7 +298,10 @@ private class BelowAnchorPositionProvider(
         popupContentSize: IntSize,
     ): IntOffset {
         val furthestLeft = (windowSize.width - popupContentSize.width).coerceAtLeast(0)
-        return IntOffset(anchorBounds.left.coerceIn(0, furthestLeft), anchorBounds.bottom + gap)
+        val x = (anchorBounds.left - inset).coerceIn(0, furthestLeft)
+        val surfaceWidth = (popupContentSize.width - inset * 2).coerceAtLeast(1)
+        originX = ((anchorBounds.left - x - inset).toFloat() / surfaceWidth).coerceIn(0f, 1f)
+        return IntOffset(x, anchorBounds.bottom + gap - inset)
     }
 }
 
