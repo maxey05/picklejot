@@ -31,7 +31,6 @@ object DashboardTestTags {
     const val GROUP_HEAD_TO_HEAD = "head_to_head"
     const val GROUP_PARTNER = "partner"
     const val GROUP_LOCATION = "location"
-    const val GROUP_PADDLE = "paddle"
     const val GROUP_MONTH = "month"
     const val STATS_PRO_TREND = "stats_pro_trend"
     const val STATS_PRO_PER_WEEK = "stats_pro_per_week"

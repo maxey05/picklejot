@@ -49,14 +49,12 @@
     <string name="stats_pro_partners_footnote">Green is above your doubles average, orange is below. Needs 3+ matches together.</string>
     <string name="stats_pro_delta_signed">%1$+d</string>
     <string name="stats_pro_courts_title">Courts</string>
-    <string name="stats_skips_info_label">About streak skips</string>
-    <string name="stats_skips_info_expanded">Expanded</string>
-    <string name="stats_skips_info_collapsed">Collapsed</string>
-    <string name="stats_pro_paddles_title">Paddles</string>
-    <string name="stats_pro_no_paddles">No paddles logged yet.</string>
     <string name="stats_pro_months_title">Month by month</string>
     <string name="stats_pro_months_legend">Wins above the line, losses below it.</string>
     <string name="stats_pro_month_a11y">%1$s: %2$d wins, %3$d losses</string>
     <string name="stats_pro_month_a11y_gap">%1$s: no matches</string>
     <string name="dashboard_advanced_stats">See advanced stats</string>
+    <string name="stats_skips_info_label">About streak skips</string>
+    <string name="stats_skips_info_expanded">Expanded</string>
+    <string name="stats_skips_info_collapsed">Collapsed</string>
 </resources>

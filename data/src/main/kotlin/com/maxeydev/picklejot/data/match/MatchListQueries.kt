@@ -59,7 +59,7 @@ internal const val MATCH_STAT_SELECT = "SELECT m.date AS date, m.format AS forma
 
 internal const val ADVANCED_MATCH_SELECT =
     "SELECT m.id AS id, m.date AS date, m.format AS format, m.result AS result, " +
-        "m.location AS location, m.paddle AS paddle FROM `match` m"
+        "m.location AS location FROM `match` m"
 
 internal const val MATCH_PEOPLE_FOR_FILTER =
     "SELECT mp.match_id AS match_id, mp.person_id AS person_id, mp.role AS role FROM match_person mp " +

@@ -24,7 +24,6 @@ class AdvancedStatsTest {
         opponents: List<Uuid> = emptyList(),
         partner: Uuid? = null,
         location: String? = null,
-        paddle: String? = null,
     ): AdvancedMatchLine =
         AdvancedMatchLine(
             date = AppDate.parse(date),
@@ -33,7 +32,6 @@ class AdvancedStatsTest {
             opponentIds = opponents,
             partnerId = partner,
             location = location,
-            paddle = paddle,
         )
 
     private fun stats(vararg lines: AdvancedMatchLine): AdvancedStats = AdvancedStats.from(lines.toList(), today)
@@ -131,25 +129,11 @@ class AdvancedStatsTest {
     fun `blank and missing labels are ignored`() {
         val result =
             stats(
-                line("2026-09-01", location = "   ", paddle = ""),
-                line("2026-09-02", location = null, paddle = null),
+                line("2026-09-01", location = "   "),
+                line("2026-09-02", location = null),
             )
 
         assertTrue(result.byLocation.isEmpty())
-        assertTrue(result.byPaddle.isEmpty())
-    }
-
-    @Test
-    fun `paddles are ranked by matches played`() {
-        val result =
-            stats(
-                line("2026-09-01", MatchResult.WIN, paddle = "Selkirk"),
-                line("2026-09-02", MatchResult.WIN, paddle = "Joola"),
-                line("2026-09-03", MatchResult.LOSS, paddle = "Joola"),
-            )
-
-        assertEquals(listOf("Joola", "Selkirk"), result.byPaddle.map { it.label })
-        assertEquals(WinLoss(wins = 1, losses = 1), result.byPaddle.first().record)
     }
 
     @Test

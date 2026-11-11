@@ -21,8 +21,6 @@ data class AdvancedMatchRowEntity(
     val result: String,
     @ColumnInfo(name = "location")
     val location: String?,
-    @ColumnInfo(name = "paddle")
-    val paddle: String?,
 )
 
 data class MatchPersonRefEntity(
@@ -54,7 +52,6 @@ internal fun toAdvancedLines(
                     .firstOrNull { it.role == MatchPersonEntity.ROLE_PARTNER }
                     ?.let { Uuid.parse(it.personId) },
             location = row.location,
-            paddle = row.paddle,
         )
     }
 }

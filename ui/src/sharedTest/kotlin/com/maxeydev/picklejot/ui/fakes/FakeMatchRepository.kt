@@ -84,7 +84,6 @@ class FakeMatchRepository(
                         opponentIds = match.opponents.map { it.id },
                         partnerId = match.partner?.id,
                         location = match.location,
-                        paddle = match.paddle,
                     )
                 }
         }

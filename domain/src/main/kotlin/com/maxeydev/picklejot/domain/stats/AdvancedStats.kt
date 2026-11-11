@@ -36,7 +36,6 @@ data class AdvancedStats(
     val headToHead: List<PersonRecord>,
     val withPartner: List<PersonRecord>,
     val byLocation: List<LabelRecord>,
-    val byPaddle: List<LabelRecord>,
     val monthly: List<MonthRecord>,
     val insights: ProInsights = ProInsights.EMPTY,
 ) {
@@ -54,7 +53,6 @@ data class AdvancedStats(
                 headToHead = emptyList(),
                 withPartner = emptyList(),
                 byLocation = emptyList(),
-                byPaddle = emptyList(),
                 monthly = emptyList(),
             )
 
@@ -70,7 +68,6 @@ data class AdvancedStats(
                 headToHead = personRecords(all) { it.opponentIds },
                 withPartner = personRecords(all) { listOfNotNull(it.partnerId) },
                 byLocation = labelRecords(all) { it.location },
-                byPaddle = labelRecords(all) { it.paddle },
                 monthly = monthlyRecords(all, today),
                 insights = ProInsights.from(all, today),
             )

@@ -69,13 +69,6 @@ fun AdvancedStatsSection(
                 emptyText = stringResource(R.string.stats_advanced_no_locations),
                 rows = advanced.byLocation.map { it.toRow() },
             )
-            BreakdownCard(
-                title = stringResource(R.string.stats_pro_paddles_title),
-                revealKey = "pro_paddles",
-                group = DashboardTestTags.GROUP_PADDLE,
-                emptyText = stringResource(R.string.stats_pro_no_paddles),
-                rows = advanced.byPaddle.map { it.toRow() },
-            )
             MonthlyBars(months = advanced.monthly)
         }
     }

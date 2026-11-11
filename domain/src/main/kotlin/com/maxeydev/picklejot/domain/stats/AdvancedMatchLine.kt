@@ -15,5 +15,4 @@ data class AdvancedMatchLine(
     val opponentIds: List<Uuid> = emptyList(),
     val partnerId: Uuid? = null,
     val location: String? = null,
-    val paddle: String? = null,
 )
