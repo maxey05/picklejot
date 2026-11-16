@@ -37,18 +37,26 @@ val licenseServerProblems: List<String> =
         val label = "[a-z0-9]([a-z0-9-]*[a-z0-9])?"
         val urlOk =
             Regex("""https://$label(\.$label)+(:\d{1,5})?/?""").matches(licenseServerUrl) &&
-                !Regex("""(^|[/.])(example|invalid|localhost)([.:/]|$)|\.\d+(:\d+)?/?$""").containsMatchIn(licenseServerUrl)
+                !Regex("""(^|[/.])(example|invalid|localhost)([.:/]|$)|\.\d+(:\d+)?/?$""")
+                    .containsMatchIn(licenseServerUrl)
         val keyOk =
             licenseServerPublicKey.startsWith("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE") &&
                 Regex("[A-Za-z0-9+/]{122}==").matches(licenseServerPublicKey) &&
                 runCatching {
                     val spec = X509EncodedKeySpec(Base64.getDecoder().decode(licenseServerPublicKey))
-                    (KeyFactory.getInstance("EC").generatePublic(spec) as ECPublicKey).params.curve.field.fieldSize == 256
+                    (KeyFactory.getInstance("EC").generatePublic(spec) as ECPublicKey)
+                        .params.curve.field.fieldSize == 256
                 }.getOrDefault(false)
         listOfNotNull(
-            "licenseServerUrl must be a lowercase https origin such as https://<your-worker>.workers.dev (no whitespace, quotes, path, query, userinfo, IP or example/localhost host)"
+            (
+                "licenseServerUrl must be a lowercase https origin such as https://<your-worker>.workers.dev " +
+                    "(no whitespace, quotes, path, query, userinfo, IP or example/localhost host)"
+            )
                 .takeUnless { urlOk },
-            "licenseServerPublicKey must be the standard-base64 X.509 ECDSA P-256 public key from `npm run gen-key` (not the private key, no whitespace)"
+            (
+                "licenseServerPublicKey must be the standard-base64 X.509 ECDSA P-256 " +
+                    "public key from `npm run gen-key` (not the private key, no whitespace)"
+            )
                 .takeUnless { keyOk },
         )
     }
@@ -62,7 +70,10 @@ val verifyReleaseLicenseServer =
         doLast {
             if (problems.isEmpty()) return@doLast
             if (allowUnverifiedRelease) {
-                logger.warn("picklejot: unverified release allowed. ${problems.joinToString(" ")} This build grants NO new Pro purchases.")
+                logger.warn(
+                    "picklejot: unverified release allowed. ${problems.joinToString(" ")} " +
+                        "This build grants NO new Pro purchases.",
+                )
             } else {
                 throw GradleException(
                     "Release build refused. ${problems.joinToString(" ")} (see server/README.md). " +
@@ -75,7 +86,8 @@ val verifyReleaseLicenseServer =
 // above. Benchmark stays debug-signed on purpose and is not hooked.
 val verifyReleaseSigning =
     tasks.register("verifyReleaseSigning") {
-        description = "Fails a release package build with no upload keystore, or an unverified one that the keystore would sign."
+        description =
+            "Fails a release package build with no upload keystore, or an unverified one that the keystore would sign."
         val hasUploadKeystore = uploadKeystore != null
         val problems = licenseServerProblems
         inputs.property("allowUnverifiedRelease", allowUnverifiedRelease)
@@ -86,7 +98,8 @@ val verifyReleaseSigning =
             if (hasUploadKeystore) {
                 if (allowUnverifiedRelease && problems.isNotEmpty()) {
                     throw GradleException(
-                        "Release build refused. An unverified build must not be signed with the upload key: it would be uploadable " +
+                        "Release build refused. An unverified build must not be signed with the upload key: " +
+                            "it would be uploadable " +
                             "to Play but can never grant Pro. ${problems.joinToString(" ")} " +
                             "Remove -PallowUnverifiedRelease or fix licenseServerUrl/licenseServerPublicKey.",
                     )
@@ -94,10 +107,13 @@ val verifyReleaseSigning =
                 return@doLast
             }
             if (allowUnverifiedRelease) {
-                logger.warn("picklejot: unverified release allowed. The release is debug-signed and NOT uploadable to Play.")
+                logger.warn(
+                    "picklejot: unverified release allowed. The release is debug-signed and NOT uploadable to Play.",
+                )
             } else {
                 throw GradleException(
-                    "Release build refused. ~/picklelog-signing/keystore.properties is missing or its storeFile does not exist, " +
+                    "Release build refused. ~/picklelog-signing/keystore.properties is missing or " +
+                        "its storeFile does not exist, " +
                         "so the release would be debug-signed (see keystore/README.md). " +
                         "Pass -PallowUnverifiedRelease=true only for builds that will never be published.",
                 )
@@ -106,12 +122,15 @@ val verifyReleaseSigning =
     }
 // Hook the release and (release-derived) benchmark builds. named() throws if AGP ever renames a target.
 afterEvaluate {
-    listOf("generateReleaseBuildConfig", "generateBenchmarkBuildConfig").forEach { tasks.named(it) { dependsOn(verifyReleaseLicenseServer) } }
+    listOf("generateReleaseBuildConfig", "generateBenchmarkBuildConfig").forEach {
+        tasks.named(it) { dependsOn(verifyReleaseLicenseServer) }
+    }
     listOf("packageRelease", "bundleRelease").forEach { tasks.named(it) { dependsOn(verifyReleaseSigning) } }
 }
 
 // Property values are interpolated into generated Java source, so escape them.
-fun String.javaLiteral() = "\"" + replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\n").replace("\r", "\r") + "\""
+fun String.javaLiteral() =
+    "\"" + replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\n").replace("\r", "\r") + "\""
 
 android {
     namespace = "com.maxeydev.picklejot"
