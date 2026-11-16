@@ -478,6 +478,7 @@ private fun PicklejotNavGraph(
             val state by viewModel.uiState.collectAsStateWithLifecycle()
             var hasSheetOpened by rememberSaveable { mutableStateOf(false) }
             val sheetProgress = remember { Animatable(if (hasSheetOpened) 1f else 0f) }
+
             @SuppressLint("RestrictedApi")
             val backStack = navController.currentBackStack.collectAsState()
             val isCovered =
