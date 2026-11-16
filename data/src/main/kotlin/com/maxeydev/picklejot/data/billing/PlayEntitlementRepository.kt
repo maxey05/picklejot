@@ -58,8 +58,7 @@ class PlayEntitlementRepository(
             }
         }
 
-    suspend fun process(purchases: List<PlayPurchase>): SyncOutcome =
-        guarded { processLocked(purchases) }
+    suspend fun process(purchases: List<PlayPurchase>): SyncOutcome = guarded { processLocked(purchases) }
 
     private suspend fun processLocked(purchases: List<PlayPurchase>): SyncOutcome =
         processing.withLock {

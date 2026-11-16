@@ -158,13 +158,22 @@ class BillingClientWrapper(
                         val response = BillingResponse.fromCode(result.responseCode)
                         val details = productDetails.productDetailsList.firstOrNull { it.productId == PRO_PRODUCT_ID }
                         if (response == BillingResponse.OK && details == null) {
-                            val unfetched = productDetails.unfetchedProductList.joinToString { "${it.productId}=${it.statusCode}" }
-                            runCatching { Log.w(TAG, "Play returned no details for $PRO_PRODUCT_ID; unfetched: [$unfetched]") }
+                            val unfetched =
+                                productDetails.unfetchedProductList.joinToString { "${it.productId}=${it.statusCode}" }
+                            runCatching {
+                                Log.w(TAG, "Play returned no details for $PRO_PRODUCT_ID; unfetched: [$unfetched]")
+                            }
                         }
                         continuation.deliver(
                             when {
                                 response != BillingResponse.OK -> {
-                                    runCatching { Log.w(TAG, "Product details query for $PRO_PRODUCT_ID failed: $response ${result.debugMessage}") }
+                                    runCatching {
+                                        Log.w(
+                                            TAG,
+                                            "Product details query for $PRO_PRODUCT_ID failed: " +
+                                                "$response ${result.debugMessage}",
+                                        )
+                                    }
                                     GatewayResult.Failure(response)
                                 }
                                 details == null -> GatewayResult.Failure(BillingResponse.ITEM_UNAVAILABLE)

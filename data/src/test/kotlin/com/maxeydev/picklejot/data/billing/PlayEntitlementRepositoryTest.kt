@@ -55,7 +55,8 @@ class PlayEntitlementRepositoryTest {
                         val claims =
                             """{"status":"granted","purchaseToken":"token-1","clientNonce":"$nonce",""" +
                                 """"productId":"$PRO_PRODUCT_ID","packageName":"com.maxeydev.picklejot"}"""
-                        val payload = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(claims.toByteArray())
+                        val payload =
+                            java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(claims.toByteArray())
                         val sig =
                             java.security.Signature.getInstance("SHA256withECDSA").run {
                                 initSign(keys.private)
@@ -240,7 +241,7 @@ class PlayEntitlementRepositoryTest {
         }
 
     @Test
-    fun `an unreachable verifier grants nothing but the purchase is acknowledged and a later verification unlocks pro`() =
+    fun `an unreachable verifier grants nothing but the purchase is acknowledged and a later check unlocks pro`() =
         runTest {
             val local = InMemoryEntitlementRepository()
             val repository = repository(local)
