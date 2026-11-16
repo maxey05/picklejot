@@ -128,6 +128,8 @@ fun MatchListScreen(
         }
     }
     var scrolledToSavedId by rememberSaveable { mutableStateOf<String?>(null) }
+    var poppedInMatchId by rememberSaveable { mutableStateOf<String?>(null) }
+    val popInMatchId = matchRowPopInTarget(state.savedMatchId, poppedInMatchId)
     val savedMatchIndex = state.matches.indexOfFirst { it.id == state.savedMatchId }
     LaunchedEffect(state.savedMatchId, savedMatchIndex) {
         if (state.savedMatchId != null && savedMatchIndex >= 0 && scrolledToSavedId != state.savedMatchId) {
@@ -205,6 +207,8 @@ fun MatchListScreen(
                                 onSortSelected = onSortSelected,
                                 onOpenFilters = { isFilterSheetOpen = true },
                                 onLastVisibleIndexChanged = onLastVisibleIndexChanged,
+                                popInMatchId = popInMatchId,
+                                onPopInStarted = { id -> poppedInMatchId = id },
                                 onFiltersAndSearchCleared = {
                                     searchText = ""
                                     filterActions.onFiltersAndSearchCleared()
@@ -268,6 +272,8 @@ private fun MatchListContent(
     onSortSelected: (MatchSort) -> Unit,
     onOpenFilters: () -> Unit,
     onLastVisibleIndexChanged: (Int) -> Unit,
+    popInMatchId: String?,
+    onPopInStarted: (String) -> Unit,
     onFiltersAndSearchCleared: () -> Unit,
     filterActions: MatchListFilterActions,
     bottomInset: Dp,
@@ -315,10 +321,22 @@ private fun MatchListContent(
                     key = { row -> row.id },
                     contentType = { MATCH_ROW_CONTENT_TYPE },
                 ) { row ->
+                    val popsIn = remember(row.id) { row.id == popInMatchId }
+                    val glide =
+                        if (popsIn) {
+                            Modifier.animateItem(fadeInSpec = null, placementSpec = RowGlideSpec)
+                        } else {
+                            Modifier.animateItem(placementSpec = RowGlideSpec)
+                        }
                     MatchRow(
                         state = row,
                         onClick = { onOpenMatch(row.id) },
-                        modifier = Modifier.animateItem(placementSpec = RowGlideSpec),
+                        modifier =
+                            glide.matchRowPopIn(
+                                matchId = row.id,
+                                enabled = popsIn,
+                                onStarted = { onPopInStarted(row.id) },
+                            ),
                     )
                 }
             }
