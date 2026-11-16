@@ -86,7 +86,7 @@ espresso = "3.7.0"
 # App identity. Lives here so no quoted semantic-version literal ever appears in
 # app/build.gradle.kts, which AC-1.5's check would otherwise fail on.
 appVersionName = "0.2.0"
-appVersionCode = "10"
+appVersionCode = "11"
 
 [libraries]
 # --- Compose: no versions, resolved by the BOM (R3, AC-1.4) ---
