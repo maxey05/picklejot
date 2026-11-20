@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="greeting_good_morning">Good morning</string>
+    <string name="greeting_good_afternoon">Good afternoon</string>
+    <string name="greeting_good_evening">Good evening</string>
+    <string name="greeting_happy_monday">Happy Monday</string>
+    <string name="greeting_happy_tuesday">Happy Tuesday</string>
+    <string name="greeting_happy_wednesday">Happy Wednesday</string>
+    <string name="greeting_happy_thursday">Happy Thursday</string>
+    <string name="greeting_happy_friday">Happy Friday</string>
+    <string name="greeting_happy_saturday">Happy Saturday</string>
+    <string name="greeting_happy_sunday">Happy Sunday</string>
+    <string name="greeting_whats_up">What\'s up</string>
+    <string name="greeting_hey_there">Hey there</string>
+    <string name="greeting_welcome_back">Welcome back</string>
+    <string name="greeting_ready_to_play">Ready to play</string>
+    <string name="dashboard_greeting_named">%1$s,</string>
+</resources>
