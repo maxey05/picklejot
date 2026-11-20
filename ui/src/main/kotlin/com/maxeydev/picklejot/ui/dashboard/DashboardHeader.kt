@@ -19,7 +19,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -29,7 +31,6 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -73,7 +74,11 @@ private val DOT_SIZE = 12.dp
 private val DOT_RING_WIDTH = 2.dp
 private val FLAME_SIZE = 16.dp
 private val INFO_ICON_SIZE = 16.dp
-private val ADVANCED_PILL_HEIGHT = 32.dp
+private val ADVANCED_PILL_HEIGHT = 28.dp
+private val INFO_LINK_HEIGHT = 24.dp
+private val NAME_STREAK_SPACING = 8.dp
+private val LEFT_COLUMN_SPACING = 8.dp
+private val RIGHT_COLUMN_SPACING = 3.dp
 private val ADVANCED_PILL_START_PADDING = 10.dp
 private val ADVANCED_PILL_END_PADDING = 14.dp
 private val ADVANCED_ICON_SIZE = 16.dp
@@ -200,25 +205,20 @@ fun DashboardHeader(
     val summary = headerSummary(state)
     var isInfoOpen by rememberSaveable { mutableStateOf(false) }
     val showInfoButton by remember(collapseFraction) { derivedStateOf { collapseFraction() < 1f } }
+    val greeting = greetingText(rememberGreeting(), state.hasDisplayName)
     Column(modifier = modifier.fillMaxWidth()) {
         StatsSummary(
             state = state,
             figures = figures,
+            greeting = greeting,
             isCollapsed = isCollapsed,
             openLabel = openLabel,
             summary = summary,
             onOpenStats = onOpenStats,
+            onOpenInfo = { isInfoOpen = true },
+            showButtons = showInfoButton,
+            collapseFraction = collapseFraction,
         )
-        if (showInfoButton) {
-            Row(
-                modifier = Modifier.fillMaxWidth().collapseVertically(collapseFraction),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                AdvancedStatsButton(onClick = onOpenStats)
-                InfoButton(onClick = { isInfoOpen = true })
-            }
-        }
     }
     if (isInfoOpen) {
         HeaderInfoSheet(onDismiss = { isInfoOpen = false })
@@ -234,7 +234,6 @@ private fun AdvancedStatsButton(
     Box(
         modifier =
             modifier
-                .minimumInteractiveComponentSize()
                 .clip(CircleShape)
                 .clickable(role = Role.Button, onClick = onClick)
                 .testTag(DashboardTestTags.ADVANCED_STATS_BUTTON),
@@ -277,10 +276,10 @@ private fun InfoButton(
     Row(
         modifier =
             modifier
-                .minimumInteractiveComponentSize()
+                .height(INFO_LINK_HEIGHT)
                 .clip(CircleShape)
                 .clickable(role = Role.Button, onClick = onClick)
-                .padding(start = PicklejotSpacing.md, top = PicklejotSpacing.xs, bottom = PicklejotSpacing.xs)
+                .padding(start = PicklejotSpacing.sm)
                 .testTag(DashboardTestTags.INFO_BUTTON),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(PicklejotSpacing.xs),
@@ -301,10 +300,14 @@ private fun InfoButton(
 private fun StatsSummary(
     state: DashboardUiState,
     figures: HeaderFigures,
+    greeting: String,
     isCollapsed: Boolean,
     openLabel: String,
     summary: String,
     onOpenStats: () -> Unit,
+    onOpenInfo: () -> Unit,
+    showButtons: Boolean,
+    collapseFraction: () -> Float,
 ) {
     Column(
         modifier =
@@ -329,7 +332,15 @@ private fun StatsSummary(
             if (collapsed) {
                 CollapsedStats(state = state, figures = figures)
             } else {
-                ExpandedStats(state = state, figures = figures)
+                ExpandedStats(
+                    state = state,
+                    figures = figures,
+                    greeting = greeting,
+                    onOpenStats = onOpenStats,
+                    onOpenInfo = onOpenInfo,
+                    showButtons = showButtons,
+                    collapseFraction = collapseFraction,
+                )
             }
         }
     }
@@ -339,13 +350,25 @@ private fun StatsSummary(
 private fun ExpandedStats(
     state: DashboardUiState,
     figures: HeaderFigures,
+    greeting: String,
+    onOpenStats: () -> Unit,
+    onOpenInfo: () -> Unit,
+    showButtons: Boolean,
+    collapseFraction: () -> Float,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Top,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = greeting,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Medium,
+                color = PicklejotTheme.colors.headerAccent,
+                modifier = Modifier.testTag(DashboardTestTags.GREETING),
+            )
             if (state.hasDisplayName) {
                 Text(
                     text = state.displayName,
@@ -353,12 +376,29 @@ private fun ExpandedStats(
                     modifier = Modifier.testTag(DashboardTestTags.NAME),
                 )
             }
+            Spacer(modifier = Modifier.height(NAME_STREAK_SPACING))
             StreakPill(figures = figures, isCompact = false)
+            if (showButtons) {
+                Spacer(modifier = Modifier.height(LEFT_COLUMN_SPACING))
+                AdvancedStatsButton(
+                    onClick = onOpenStats,
+                    modifier = Modifier.collapseVertically(collapseFraction),
+                )
+            }
         }
-        Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(RIGHT_COLUMN_SPACING),
+        ) {
             WinRateFigure(figures = figures, isCompact = false)
             RecordFigure(figures = figures, isCompact = false)
             LastMatchesDots(results = figures.recent)
+            if (showButtons) {
+                InfoButton(
+                    onClick = onOpenInfo,
+                    modifier = Modifier.collapseVertically(collapseFraction),
+                )
+            }
         }
     }
 }

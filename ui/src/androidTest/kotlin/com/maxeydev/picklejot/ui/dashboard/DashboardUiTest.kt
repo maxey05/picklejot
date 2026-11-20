@@ -212,6 +212,16 @@ class DashboardUiTest {
     }
 
     @Test
+    fun the_expanded_header_greets_the_player_by_name() {
+        showHeader(state())
+
+        compose.onNodeWithTag(DashboardTestTags.GREETING, useUnmergedTree = true)
+            .assertIsDisplayed()
+            .assert(hasText(",", substring = true))
+        compose.onNodeWithTag(DashboardTestTags.NAME, useUnmergedTree = true).assertIsDisplayed()
+    }
+
+    @Test
     fun the_expanded_header_offers_a_see_advanced_stats_button() {
         showHeader(state())
 

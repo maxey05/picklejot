@@ -2,6 +2,7 @@ package com.maxeydev.picklejot.ui.dashboard
 
 object DashboardTestTags {
     const val HEADER = "dashboard_header"
+    const val GREETING = "dashboard_greeting"
     const val NAME = "dashboard_name"
     const val RECORD = "dashboard_record"
     const val WIN_PERCENT = "dashboard_win_percent"
